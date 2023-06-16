@@ -68,38 +68,26 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 ### Requirements
 
 * Venv module.
-* Database is used in some scripts, if in use then libmysqlclient-dev
-* MySQL version 8.x assumed but other MySQL versions with installation of compatible connector.
+* Database is used in some scripts, will need libmysqlclient-dev
+* MySQL version 8.x assumed but other MySQL versions should work with installation of compatible connector.
 
 ### Working copy
 
 ```git clone git@github.com:openrepair/tools.git ./ords-tools```
 
+### Virtual environment
+
 ```python3 -m venv ords-tools```
+
+```cd ords-tools```
+
+```source bin/activate```
+
+```pip install -r requirements.txt```
 
 ### Data
 
 Grab the [Aggregated Open Repair Data files](https://openrepair.org/open-data/downloads/), unzip the files into the [data](./dat) directory.
-
-### Virtual environment
-
-To activate.
-
-```source bin/activate```
-
-To deactivate.
-
-```deactivate```
-
-### Install dependencies
-
-```pip install -r requirements.txt```
-
-### Update dependencies
-
-To update dependencies after new modules have been added:
-
-```python -m pip freeze > requirements.txt```
 
 ### Environment variables
 
