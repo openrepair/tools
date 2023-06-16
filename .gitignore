@@ -9,6 +9,7 @@ include/
 dat/tmp/
 dat/ords/*.json
 dat/ords/*.csv
+dat/backup*.*
 out/
 tmp/
 pyvenv.cfg
