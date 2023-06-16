@@ -11,6 +11,7 @@ dat/ords/*.json
 dat/ords/*.csv
 out/
 tmp/
+pyvenv.cfg
 *.code-workspace
 
 # Byte-compiled / optimized / DLL files
