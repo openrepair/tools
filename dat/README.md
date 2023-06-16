@@ -37,7 +37,7 @@ To get an idea of the effort and challenges involved in recording repair data at
 
 ## Other files in the dat directory
 
-### tableschema.mysql.sql
+### tableschema_ords_mysql.sql
 
 An SQL script for creating a MySQL table to hold the ORDS data. It is used by ords_database_setup.py and requires the name of the ORDS filename to be set in the .env file.
 
@@ -49,7 +49,7 @@ A set of Regular Expressions used by ords_regex_category_tester.py and compiled 
 
 Lists of terms and regex snippets used by ords_regex_category_compiler.py. English, Dutch, French and German with perhaps a little Italian and Spanish.
 
-### comsumer_electronics_timeline.csv
+### consumer_electronics_timeline.csv
 
 Timeline of electronic inventions and commercial availability related to ORDS product categories.
 
@@ -65,3 +65,15 @@ A list of common item types found in the ORDS data. Mostly English.
 ### ords_testdata_multilingual_products.csv
 
 A list of common item types found in the ORDS data. English, Dutch, French and German with perhaps a little Italian and Spanish.
+
+### ords_problem_translations.csv
+
+Work-in-progress to translate the entire ORDS dataset into each of English, Dutch, German, French, Spanish and Italian. Other languages will be implemented in time.
+
+### tableschema_translations_mysql.sql
+
+An SQL script for creating a MySQL table to hold the ORDS translations. Required by the ords_deepl* scripts.
+
+### iso_country_codes.csv
+
+List of 3 character codes and country short-names.
