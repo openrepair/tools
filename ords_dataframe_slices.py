@@ -9,7 +9,7 @@ logger = logfuncs.init_logger(__file__)
 # Writes the dataframes to csv and json format files.
 
 # Get the name of the data file from the .env file.
-table_data = envfuncs.get_var('ORDS_DATA')
+tablename = envfuncs.get_var('ORDS_DATA')
 
 # Read the data file as type string with na values set to empty string.
 df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
@@ -30,96 +30,70 @@ logger.debug(df.groupby('year_of_manufacture').agg(
 # Date range is arbitrary, amend or omit
 # Sorted by event_date.
 def slice_events():
-    df_res = df.reindex(columns=['id', 'data_provider',
-                        'event_date', 'group_identifier', 'country'])
-    print(df_res.agg({'event_date': ['min', 'max']}))
-    print(df_res.groupby('event_date').agg({'event_date': ['count']}))
-    df_res.sort_values(by='event_date', ascending=True,
-                       inplace=True, ignore_index=True)
-    df_res = df_res.loc[(df_res['event_date'] > '2018') &
-                        (df_res['event_date'] < '2022')]
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_events.csv'.format(table_data), index=False)
-    with open(pathfuncs.OUT_DIR +
-              '/{}_events.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub = df.reindex(columns=['id', 'data_provider',
+                                'event_date', 'group_identifier', 'country'])
+    dfsub.sort_values(by='event_date', ascending=True,
+                      inplace=True, ignore_index=True)
+    dfsub = dfsub.loc[(dfsub['event_date'] > '2018') &
+                      (dfsub['event_date'] < '2022')]
+    write_to_files(dfsub, 'events', index=False)
 
 
 # Products and repairs.
 # NaN dropped for product_age
 # Sorted by product_age.
 def slice_repairs():
-    df_res = df.reindex(columns=['id', 'product_age', 'year_of_manufacture',
-                        'repair_status', 'repair_barrier_if_end_of_life'])
-    df_res.dropna(axis='rows', subset=[
+    dfsub = df.reindex(columns=['id', 'product_age', 'year_of_manufacture',
+                                'repair_status', 'repair_barrier_if_end_of_life'])
+    dfsub.dropna(axis='rows', subset=[
         'product_age'], inplace=True, ignore_index=True)
-    df_res.sort_values(by=['product_age'], ascending=True,
-                       inplace=True, ignore_index=True)
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_repairs.csv'.format(table_data), index=False)
-    with open(pathfuncs.OUT_DIR +
-              '/{}_repairs.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub.sort_values(by=['product_age'], ascending=True,
+                      inplace=True, ignore_index=True)
+    write_to_files(dfsub, 'repairs', index=False)
 
 
 # Product age.
 def slice_product_age():
-    df_res = df.reindex(columns=['product_category', 'product_age'])
-    df_res.dropna(axis='rows', subset=[
+    dfsub = df.reindex(columns=['product_category', 'product_age'])
+    dfsub.dropna(axis='rows', subset=[
         'product_age'], inplace=True, ignore_index=True)
-    df_res = df_res.groupby('product_category').agg(
+    dfsub = dfsub.groupby('product_category').agg(
         {'product_age': ['min', 'max', 'mean']})
-    df_res.columns = ['earliest', 'latest', 'average']
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_product_age.csv'.format(table_data))
-    with open(pathfuncs.OUT_DIR +
-              '/{}_product_age.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub.columns = ['earliest', 'latest', 'average']
+    write_to_files(dfsub, 'product_age', index=True)
 
 
 # Year of manufacture.
 def slice_year_of_manufacture():
-    df_res = df.reindex(columns=['product_category', 'year_of_manufacture'])
-    df_res.dropna(axis='rows', subset=[
+    dfsub = df.reindex(columns=['product_category', 'year_of_manufacture'])
+    dfsub.dropna(axis='rows', subset=[
         'year_of_manufacture'], inplace=True, ignore_index=True)
-    df_res['year_of_manufacture'] = df_res['year_of_manufacture'].astype(
+    dfsub['year_of_manufacture'] = dfsub['year_of_manufacture'].astype(
         'int64')
-    df_res = df_res.groupby('product_category').agg(
+    dfsub = dfsub.groupby('product_category').agg(
         {'year_of_manufacture': ['min', 'max', 'mean']})
-    df_res.columns = ['newest', 'oldest', 'average']
-    df_res['average'] = df_res['average'].astype(int)
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_year_of_manufacture.csv'.format(table_data))
-    with open(pathfuncs.OUT_DIR +
-              '/{}_year_of_manufacture.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub.columns = ['newest', 'oldest', 'average']
+    dfsub['average'] = dfsub['average'].astype(int)
+    write_to_files(dfsub, 'year_of_manufacture', index=True)
 
 
 # Product categories.
 # Sorted by product_category.
 def slice_categories():
-    df_res = df.reindex(
+    dfsub = df.reindex(
         columns=['id', 'partner_product_category', 'product_category', 'repair_status'])
-    df_res.sort_values(by=['product_category'],
-                       ascending=True, inplace=True, ignore_index=True)
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_categories.csv'.format(table_data), index=False)
-    with open(pathfuncs.OUT_DIR +
-              '/{}_categories.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub.sort_values(by=['product_category'],
+                      ascending=True, inplace=True, ignore_index=True)
+    write_to_files(dfsub, 'categories', index=False)
 
 
 # Item types.
 # Split the partner_product_category string.
 def slice_item_types():
-    df_res = df['partner_product_category'].reset_index(drop=True).squeeze()
-    np_res = df_res.str.split('~').str.get(1).str.strip().dropna().unique()
-    df_res = pd.DataFrame(np_res, columns=['item_type'])
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_item_types.csv'.format(table_data), index=False)
-    with open(pathfuncs.OUT_DIR +
-              '/{}_item_types.json'.format(table_data), 'w') as f:
-        json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
+    dfsub = df['partner_product_category'].reset_index(drop=True).squeeze()
+    np_res = dfsub.str.split('~').str.get(1).str.strip().dropna().unique()
+    dfsub = pd.DataFrame(np_res, columns=['item_type'])
+    write_to_files(dfsub, 'item_types', index=False)
 
 
 # Countries and groups.
@@ -128,22 +102,37 @@ def slice_countries():
     countries = pd.read_csv(pathfuncs.DATA_DIR +
                             '/iso_country_codes.csv')
 
-    df_res = df.reindex(
+    dfsub = df.reindex(
         columns=['country', 'group_identifier']).rename(columns={'country': 'iso',
                                                                  'group_identifier': 'group'})
-    df_res = df_res.groupby(
+    dfsub = dfsub.groupby(
         ['iso', 'group']).size().reset_index(name='records')
-    df_res = df_res.set_index(
+    dfsub = dfsub.set_index(
         'iso').join(countries.set_index('iso'))
 
-    df_res.to_csv(pathfuncs.OUT_DIR +
-                  '/{}_countries.csv'.format(table_data), index=True)
-    # JSON grouped by iso index
-    dict = df_res.groupby(level=0).apply(
-        lambda x: x.to_dict('records')).to_dict()
+    write_to_files(dfsub, 'countries', index=True)
+
+
+# Set sample to a fraction to return a subset of results.
+# Can be useful for testing, e.g. data visualisation.
+def write_to_files(df, suffix, index=False, sample=0):
+
+    if sample:
+        df = df.sample(frac=sample, replace=False, random_state=1)
+
+    # json
+    if not index:
+        dict = df.to_dict('records')
+    else:
+        dict = df.groupby(level=0).apply(
+            lambda x: x.to_dict('records')).to_dict()
     with open(pathfuncs.OUT_DIR +
-              '/{}_countries.json'.format(table_data), 'w') as f:
+              '/{}_{}.json'.format(tablename, suffix), 'w') as f:
         json.dump(dict, f, indent=4, ensure_ascii=False)
+
+    # csv
+    df.to_csv(pathfuncs.OUT_DIR +
+              '/{}_{}.csv'.format(tablename, suffix), index=index)
 
 
 slice_events()
