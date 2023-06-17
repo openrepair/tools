@@ -47,6 +47,8 @@ def slice_repairs():
                                 'repair_status', 'repair_barrier_if_end_of_life'])
     dfsub.dropna(axis='rows', subset=[
         'product_age'], inplace=True, ignore_index=True)
+    # Empty repair_barrier_if_end_of_life values
+    dfsub.fillna('', inplace=True)
     dfsub.sort_values(by=['product_age'], ascending=True,
                       inplace=True, ignore_index=True)
     write_to_files(dfsub, 'repairs', index=False)

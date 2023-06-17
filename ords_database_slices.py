@@ -45,6 +45,8 @@ def slice_repairs():
     ORDER BY product_age
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    # Empty repair_barrier_if_end_of_life values
+    dfsub.fillna('', inplace=True)
     write_to_files(dfsub, 'repairs', index=False)
 
 
