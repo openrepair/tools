@@ -4,29 +4,50 @@ from funcs import *
 import pandas as pd
 logger = logfuncs.init_logger(__file__)
 
-# Based on the LCA Reference data published by The Restart Project under a Creative Commons license (CC BY-SA 4.0) in 2021.
-# With thanks to James Pickstone and a team of volunteers!
-# [The environmental impact of our devices: revealing what many companies hide](https://therestartproject.org/consumption/hidden-impact-devices/)
-# [Fixometer reference data - 2021 ](https://docs.google.com/spreadsheets/d/1TBhczzDaJhANTMh3eoouMOFZ7PvlmyrEQMqnw9WfdHY/edit?usp=sharing)
+tablename = envfuncs.get_var('ORDS_DATA')
 
 weights = pd.read_csv(pathfuncs.DATA_DIR +
                       '/ords_category_lca_reference.csv')
 
-sql = """
-SELECT
-product_category,
-COUNT(*) as records
-FROM `{}`
-WHERE repair_status = 'Fixed'
-GROUP BY product_category
-ORDER BY product_category
-"""
 
-data = pd.DataFrame(dbfuncs.query_fetchall(
-    sql.format(envfuncs.get_var('ORDS_DATA')))).set_index('product_category').join(
-    weights.set_index('product_category'))
+# fetchfrom = 'df' (DataFrame) or 'db' (Database).
+def get_data(fetchfrom='df'):
+
+    if fetchfrom == 'df':
+        df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
+                         keep_default_na=False, na_values="")
+        data = df[df.repair_status == 'Fixed'].reindex(
+            columns=['product_category'])
+        data = data.groupby(
+            ['product_category']).size().reset_index(name='records')
+
+    elif fetchfrom == 'db':
+        sql = """
+        SELECT
+        product_category,
+        COUNT(*) as records
+        FROM `{}`
+        WHERE repair_status = 'Fixed'
+        GROUP BY product_category
+        ORDER BY product_category
+        """
+        data = pd.DataFrame(dbfuncs.query_fetchall(
+            sql.format(tablename)))
+
+    else:
+        print("I GIVE UP! GET DATA FROM WHERE EXACTLY?")
+        exit()
+
+    return data
+
+
+# Replace arg with 'db' if fetch from database preferred.
+data = get_data('df')
+
+data = data.set_index(
+    'product_category').join(weights.set_index('product_category'))
 data['total_weight'] = data.weight * data.records
 data['total_emissions'] = (data.footprint * data.records) / 0.5
 logger.debug(data)
 data.to_csv(pathfuncs.OUT_DIR +
-            '/ords_stats_emissions.csv', index=False)
+            '/{}_stats_emissions.csv'.format(tablename), index=True)
