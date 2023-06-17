@@ -147,9 +147,37 @@ def slice_item_types():
         json.dump(df_res.to_dict('records'), f, indent=4, ensure_ascii=False)
 
 
+# Countries and groups.
+def slice_countries():
+
+    countries = pd.read_csv(pathfuncs.DATA_DIR +
+                            '/iso_country_codes.csv')
+
+    sql = """
+    SELECT
+    country as iso,
+    group_identifier as `group`,
+    COUNT(*) as records
+    FROM `{}`
+    GROUP BY country, group_identifier
+    """
+    df_res = pd.DataFrame(dbfuncs.query_fetchall(sql.format(table_data))).set_index(
+        'iso').join(countries.set_index('iso'))
+    print(df_res)
+    df_res.to_csv(pathfuncs.OUT_DIR +
+                  '/{}_countries.csv'.format(table_data), index=True)
+    # JSON grouped by iso index
+    dict = df_res.groupby(level=0).apply(
+        lambda x: x.to_dict('records')).to_dict()
+    with open(pathfuncs.OUT_DIR +
+              '/{}_countries.json'.format(table_data), 'w') as f:
+        json.dump(dict, f, indent=4, ensure_ascii=False)
+
+
 slice_events()
 slice_repairs()
 slice_product_age()
 slice_year_of_manufacture()
 slice_categories()
 slice_item_types()
+slice_countries()

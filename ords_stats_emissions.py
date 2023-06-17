@@ -9,7 +9,6 @@ logger = logfuncs.init_logger(__file__)
 # [The environmental impact of our devices: revealing what many companies hide](https://therestartproject.org/consumption/hidden-impact-devices/)
 # [Fixometer reference data - 2021 ](https://docs.google.com/spreadsheets/d/1TBhczzDaJhANTMh3eoouMOFZ7PvlmyrEQMqnw9WfdHY/edit?usp=sharing)
 
-table_data = envfuncs.get_var('ORDS_DATA')
 weights = pd.read_csv(pathfuncs.DATA_DIR +
                       '/ords_category_lca_reference.csv')
 
@@ -24,7 +23,7 @@ ORDER BY product_category
 """
 
 data = pd.DataFrame(dbfuncs.query_fetchall(
-    sql.format(table_data))).set_index('product_category').join(
+    sql.format(envfuncs.get_var('ORDS_DATA')))).set_index('product_category').join(
     weights.set_index('product_category'))
 data['total_weight'] = data.weight * data.records
 data['total_emissions'] = (data.footprint * data.records) / 0.5
