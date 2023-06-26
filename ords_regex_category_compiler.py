@@ -5,10 +5,11 @@ import pandas as pd
 import re
 logger = logfuncs.init_logger(__file__)
 
-# Google sheet for editing regex terms and testing regexes. Copy for own use.
-# https://docs.google.com/spreadsheets/d/1LVQrLXPupufRhh1aNR33R6ea3f57dcvz_QA3mumbJfQ/edit?usp=sharing
 
-# Given a list of terms, return a regular expression string.
+# Given a list of "terms" (actually mini-regexes), return a whole regular expression string for each category.
+# The "terms" reside in dat/product_category_regex_elements.csv.
+# They come from a Google sheet for ease of editing and testing. Free to copy for own use.
+# https://docs.google.com/spreadsheets/d/1LVQrLXPupufRhh1aNR33R6ea3f57dcvz_QA3mumbJfQ/edit?usp=sharing
 
 
 def compile_regex(terms, pre=True, aft=True):

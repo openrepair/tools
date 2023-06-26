@@ -5,6 +5,8 @@ import re
 import pandas as pd
 logger = logfuncs.init_logger(__file__)
 
+# Test compiled regular expressions agains a list of common item types.
+
 # Create a structure to hold results.
 mapcols = ['product_category', 'term', 'lang', 'match', 'matches']
 results = pd.DataFrame(columns=mapcols)
