@@ -4,12 +4,15 @@ from funcs import *
 import pandas as pd
 logger = logfuncs.init_logger(__file__)
 
-# Values in the product_age and year_of_manufacture columns are not always correct.
-# Often a seemingly impossible product age can mean a vintage or antique device.
-# Someimes a value is simply an input error. See the "Data Collection" story in the docs dir.
-# Every effort is made to tidy up mistakes at source but it is an ongoing task.
-# This code can find outliers using a timeline of consumer electronics.
-# To verify an outlier it is necessary to look at the item type, brand and problem.
+"""
+Values in the product_age and year_of_manufacture columns are not always correct.
+Often a seemingly impossible product age can mean a vintage or antique device.
+Someimes a value is simply an input error. See the "Data Collection" story in the docs dir.
+Every effort is made to tidy up mistakes at source but it is an ongoing task.
+This code can find outliers using a timeline of consumer electronics.
+To verify an outlier it is necessary to look at the item type, brand and problem.
+"""
+
 
 # Read the data file as type string with na values set to empty string.
 df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,

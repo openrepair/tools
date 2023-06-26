@@ -9,15 +9,43 @@ from sklearn import model_selection
 from joblib import dump
 from joblib import load
 
-# A rudimentary attempt at using Quest data to train an NLP model using scikit-learn.
-# Quests are citizen-science type microtasks that ask humans to evaluate and classify repair data.
-# See the docs/Quests.md for details.
-# Some of the problems of using the quest data for training and validation are that:
-#   Early quests did not filter out very poor quality problem text.
-#   Quest data is multi-lingual and NLP tends to require a single language.
-#   Human evaluation was not always conclusive or accurate when problem text was ambiguous or poorly translated.
-# Consequently, after cleaning and filtering, the data left for training is not really sufficient.
-# The training data may benefit from manual curation.
+"""
+A rudimentary attempt at using Quest data to train an NLP model using scikit-learn.
+
+Quests are citizen-science type microtasks that ask humans to evaluate and classify repair data.
+Most quests aim to determine a set of common fault types for a given product category.
+See the dat/quests/README.md for details.
+Some of the problems of using the quest data for training and validation are that:
+  . Early quests did not filter out very poor quality problem text.
+  . Quest data is multi-lingual and NLP tends to require a single language.
+  . Human evaluation was not always conclusive or accurate when problem text was ambiguous or poorly translated.
+Consequently, after cleaning and filtering, the data left for training is not really sufficient.
+The training data may benefit from manual curation. (Also cleaning stopwords #todo)
+
+The following is a live data "test":
+1. Selected quest no. 5 "DustUp" as it has decent quality data.
+2. Removed the validation step and used all of the quest data for training. (English language, 738 records)
+3. Used the model on all ORA "Vacuum" records from countries GBP and USA. (English language, 1446 records)
+4. Exported the results to a spreadsheet and manually reviewed the predictions, excluding records used in training.
+5. Found that I agreed with 60% of the predictions and that this was roughly reflected across all fault types:
+    58.67%	Power/battery
+    64.17%	Blockage
+    67.39%	Poor data
+    58.43%	Motor
+    65.08%	Cable/cord
+    55.81%	Internal damage
+    56.41%	Button/switch
+    60.61%	Brush
+    71.43%	Filter
+    57.89%	External damage
+    50.00%	Hose/tube/pipe
+    46.15%	Other
+    41.67%	Overheating
+    50.00%	Dustbag/canister
+    33.33%	Accessories/attachments
+    50.00%	Wheels/rollers
+
+"""
 
 
 def dump_data(data, countries):
@@ -61,6 +89,10 @@ def dump_data(data, countries):
     data_val.to_csv(format_path('ords_quest_validation_data'), index=False)
 
 
+# Most of the quest data returns an alpha of 0.01.
+# One of the quests returns a slightly higher alpha.
+# Use this to check for best values.
+# It will slow down execution considerably.
 def get_alpha(data, labels, vects, search=False, refit=False):
     if search:
         # Try out some alpha values to find the best one for this data.
@@ -122,7 +154,7 @@ def do_training(data):
     data.loc[:, 'prediction'] = preds
     data.to_csv(format_path('ords_quest_training_results'), index=False)
 
-    # Prediction misses.
+    # Save prediction misses.
     misses = data[(data['fault_type'] != data['prediction'])]
     logger.debug(misses)
     misses.to_csv(format_path('ords_quest_training_misses'), index=False)
@@ -199,7 +231,7 @@ quests = [
 ]
 
 # Select a dataset 0 to 5.
-quest, path, category = quests[0]
+quest, path, category = quests[5]
 
 logger = logfuncs.init_logger('ords_quest_training_' + quest)
 
