@@ -6,6 +6,11 @@ logger = logfuncs.init_logger(__file__)
 
 tablename = envfuncs.get_var('ORDS_DATA')
 
+# This LCA data is a work-in-progress.
+# Based on LCA data produced by The Restart Project which has been mapped to ORDS categories.
+# See dat/README.md.
+# In some cases the mapping could use improvement, perhaps tying it to individual item types.
+# Investigation into other methods of categorisation and weight estimation is ongoing.
 weights = pd.read_csv(pathfuncs.DATA_DIR +
                       '/ords_category_lca_reference.csv')
 
