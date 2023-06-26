@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>ORDS</title>
+  <style>
+    html,
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #666;
+      background-color: #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <header>
+      <h3><a href="https://openrepair.org" target="_blank">Open Repair Data</a> - Coffee vs Tea</h3>
+    </header>
+
+    <main>
+      <canvas id="datavis" style="width:100%;max-width:700px"></canvas>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+  <script>
+
+    // https://www.chartjs.org/
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+
+      console.log('ready');
+
+      // Load the dataset produced by the Python script.
+      fetch('ords_coffee_v_tea.json')
+        .then((response) => response.json())
+        .then((data) => draw(data));
+
+    });
+
+    function draw(data) {
+
+      console.log(data)
+      const xValues = Object.keys(data);
+      const products = data[xValues[0]].map(d => d.product);
+      const series = Object.fromEntries(products.map(d => [d, []]));
+      const colors = ['red', 'blue'];
+      xValues.forEach(function (d, i, v) {
+        for (i = 0; i < data[d].length; i++) {
+          series[data[d][i].product].push(data[d][i].records);
+        }
+      });
+      const datasets = [];
+      products.forEach(function (d, i, v) {
+        datasets.push({
+          label: d,
+          data: series[d],
+          borderColor: colors[i],
+          fill: true
+        });
+      });
+
+      new Chart("datavis", {
+        type: "line",
+        data: {
+          labels: xValues,
+          datasets: datasets,
+        },
+        options: {
+          legend: {
+            display: true
+          },
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
