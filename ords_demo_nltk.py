@@ -20,8 +20,8 @@ logger = logfuncs.init_logger(__file__)
 # Read the data file as type string with na values set to empty string.
 df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
                  keep_default_na=False, na_values="")
-# Filter for records from the UK/USA as they will mostly be in English (see 'stopwords').
-df = df[df['country'].isin(['GBR', 'USA'])]
+# Filter for small subset with English language text.
+df = df[df['country'].isin(['USA'])]
 # Filter for decent length strings in the `problem` column.
 df = df[(df['problem'].apply(lambda s: len(str(s)) > 64))]
 

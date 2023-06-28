@@ -26,7 +26,7 @@ Some of the things you can do:
 
 Feedback and contributions welcome.
 
-Aiming for efficiency, simplicity, readability and maintainability. One day.
+Aiming for efficiency, simplicity, readability and maintainability. One day. Maybe.
 
 ## About the data
 

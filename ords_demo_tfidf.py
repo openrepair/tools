@@ -11,8 +11,8 @@ logger = logfuncs.init_logger(__file__)
 # Read the data file as type string with na values set to empty string.
 df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
                  keep_default_na=False, na_values="")
-# Filter for records from the UK/USA as they will mostly be in English (see 'stopwords').
-df = df[df['country'].isin(['GBR', 'USA'])]
+# Filter for small subset with English language text.
+df = df[df['country'].isin(['USA'])]
 # Filter for decent length problem strings.
 dfx = df[(df['problem'].apply(lambda s: len(str(s)) > 64))]
 
@@ -34,7 +34,7 @@ def get_problem_text(category):
     return dfx.loc[df.product_category == category]['problem'].reset_index(drop=True).squeeze().dropna().unique()
 
 
-tv = TfidfVectorizer(norm=None)
+tv = TfidfVectorizer()
 cv = CountVectorizer()
 
 def fit_item_types():
@@ -85,6 +85,11 @@ def fit_problem_text():
         logger.debug(tv.vocabulary_)
         logger.debug('** CV vocabulary **')
         logger.debug(cv.vocabulary_)
+
+        logger.debug('** TV stop words **')
+        logger.debug(tv.get_stop_words())
+        logger.debug('** CV stop words **')
+        logger.debug(cv.get_stop_words())
 
         foo = tv.get_feature_names_out()
         bar = cv.get_feature_names_out()
