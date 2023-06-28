@@ -53,10 +53,10 @@ The following "test" was conducted on the 202303 dataset:
 8. Compared new predictions with opinions given in previous manual review.
 9. Found that yet again human opinion agreed with 60% of predictions, although the spread had changed slightly.
     60.43%	Power/battery	        (+1.76%)
-    63.25%	Blockage	            (-0.92%)
-    63.73%	Poor data	            (-3.67%)
+    63.25%	Blockage                (-0.92%)
+    63.73%	Poor data               (-3.67%)
     60.00%	Motor	                (+1.57%)
-    70.49%	Cable/cord	            (+5.41%)
+    70.49%	Cable/cord              (+5.41%)
     55.56%	Internal damage	        (-0.26%)
     55.26%	Brush	                (-5.34%)
     60.61%	Button/switch	        (+4.20%)
@@ -65,9 +65,9 @@ The following "test" was conducted on the 202303 dataset:
     62.50%	External damage	        (+4.61%)
     38.46%	Other	                (-7.69%)
     36.36%	Wheels/rollers	        (-13.64%)
-    37.50%	Overheating	            (-4.17%)
+    37.50%	Overheating             (-4.17%)
     40.00%	Accessories/attachments	(+6.67%)
-    50.00%	Dustbag/canister	    (0.00%)
+    50.00%	Dustbag/canister        (0.00%)
 10. It is worth noting that the % difference represents only a handful of records (<7) for each fault type (avg=0).
 11. Conclusion: need more/better data and better `fault_type` labels.
     Would be worth curating a custom vocabulary for each `product_category`.
