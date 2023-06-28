@@ -6,6 +6,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
 from sklearn import model_selection
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk import word_tokenize
 from joblib import dump
 from joblib import load
 
@@ -16,16 +19,17 @@ Quests are citizen-science type microtasks that ask humans to evaluate and class
 Most quests aim to determine a set of common fault types for a given product category.
 See the dat/quests/README.md for details.
 Some of the problems of using the quest data for training and validation are that:
-  . Early quests did not filter out very poor quality problem text.
-  . Quest data is multi-lingual and NLP tends to require a single language.
+  . Early quests did not filter out very poor quality problem text at all.
   . Human evaluation was not always conclusive or accurate when problem text was ambiguous or poorly translated.
+  . The problem text is multi-lingual and training works best with a single language at a time.
+  . The fault types (training labels) are imprecise "buckets" and better values could be gleaned after the quest.
 Consequently, after cleaning and filtering, the data left for training is not really sufficient.
-The training data may benefit from manual curation. (Also cleaning stopwords #todo)
+Nonetheless the quests have been useful learning exercises that could inform future quests.
 
-The following is a live data "test":
-1. Selected quest no. 5 "DustUp" as it has decent quality data.
-2. Removed the validation step and used all of the quest data for training. (English language, 738 records)
-3. Used the model on all ORA "Vacuum" records from countries GBP and USA. (English language, 1446 records)
+The following "test" was conducted on the 202303 dataset:
+1. Selected quest no. 5 "DustUp" as it has decent quality data compared to previous quests.
+2. Removed the validation step and used all of the GBR/USA quest data for training. (738 records)
+3. Used the model on all ORA "Vacuum" GBR/USA records. (1446 records)
 4. Exported the results to a spreadsheet and manually reviewed the predictions, excluding records used in training.
 5. Found that I agreed with 60% of the predictions and that this was roughly reflected across all fault types:
     58.67%	Power/battery
@@ -44,11 +48,33 @@ The following is a live data "test":
     50.00%	Dustbag/canister
     33.33%	Accessories/attachments
     50.00%	Wheels/rollers
-
+6. Refactored the script to optionally train with "clean" data, i.e. ignoring punctuation and stopwords.
+7. Retrained without validation, using all of the GBR/USA quest data.
+8. Compared new predictions with opinions given in previous manual review.
+9. Found that yet again human opinion agreed with 60% of predictions, although the spread had changed slightly.
+    60.43%	Power/battery	        (+1.76%)
+    63.25%	Blockage	            (-0.92%)
+    63.73%	Poor data	            (-3.67%)
+    60.00%	Motor	                (+1.57%)
+    70.49%	Cable/cord	            (+5.41%)
+    55.56%	Internal damage	        (-0.26%)
+    55.26%	Brush	                (-5.34%)
+    60.61%	Button/switch	        (+4.20%)
+    58.33%	Filter	                (-13.10%)
+    75.00%	Hose/tube/pipe	        (+25.00%)
+    62.50%	External damage	        (+4.61%)
+    38.46%	Other	                (-7.69%)
+    36.36%	Wheels/rollers	        (-13.64%)
+    37.50%	Overheating	            (-4.17%)
+    40.00%	Accessories/attachments	(+6.67%)
+    50.00%	Dustbag/canister	    (0.00%)
+10. It is worth noting that the % difference represents only a handful of records (<7) for each fault type (avg=0).
+11. Conclusion: need more/better data and better `fault_type` labels.
+    Would be worth curating a custom vocabulary for each `product_category`.
 """
 
 
-def dump_data(data, countries):
+def dump_data(data, countries, validate=True):
 
     logger.debug('*** RAW DATA ***')
     logger.debug(len(data))
@@ -57,7 +83,6 @@ def dump_data(data, countries):
         'problem'], inplace=True, ignore_index=True)
     logger.debug('*** NO NAN DATA ***')
     logger.debug(len(data))
-    # Filter for records from the UK/USA as they will mostly be in English.
     data = data[data['country'].isin(countries)]
     logger.debug('*** COUNTRY DATA ***')
     logger.debug(len(data))
@@ -71,15 +96,19 @@ def dump_data(data, countries):
     data = data.reindex(
         columns=['id_ords', 'fault_type', 'problem'])
 
-    # Take % of the data for validation.
-    data_val = data.groupby(['fault_type']).sample(
-        frac=0.3, replace=False, random_state=1)
-    logger.debug('*** VALIDATION DATA ***')
-    logger.debug(len(data_val))
-    logger.debug(len(data_val) / len(data))
+    if validate:
+        # Take % of the data for validation.
+        data_val = data.groupby(['fault_type']).sample(
+            frac=0.3, replace=False, random_state=1)
+        logger.debug('*** VALIDATION DATA ***')
+        logger.debug(len(data_val))
+        logger.debug(len(data_val) / len(data))
+        # Remaining % of the data is for training.
+        data_train = data.drop(data_val.index)
+    else:
+        data_val = pd.DataFrame()
+        data_train = data
 
-    # Remaining % of the data is for training.
-    data_train = data.drop(data_val.index)
     logger.debug('*** TRAINING DATA ***')
     logger.debug(len(data_train))
     logger.debug(len(data_train) / len(data))
@@ -116,13 +145,34 @@ def get_alpha(data, labels, vects, search=False, refit=False):
         return 0.01
 
 
-def do_training(data):
+# Required if cleaning the training data.
+class LemmaTokenizer:
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+        self.punct = [',', '.', ';', ':', '"', '``',
+                              "''", '`', '&', '!', '~', '#', '?', '+', '(', ')']
+
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if t not in self.punct]
+
+
+def do_training(data, clean=False):
 
     column = data.problem
     labels = data.fault_type
 
-    vectorizer = TfidfVectorizer()
-    feature_vects = vectorizer.fit_transform(column)
+    # Strip punctuation and ignore stop words.
+    if clean:
+        logger.debug('** WITH STOPWORDS **')
+        stop_words = set(stopwords.words('english'))
+        tokenizer = LemmaTokenizer()
+        token_stop = tokenizer(' '.join(stop_words))
+        vectorizer = TfidfVectorizer(
+            stop_words=token_stop, tokenizer=tokenizer)
+        feature_vects = vectorizer.fit_transform(column)
+    else:
+        vectorizer = TfidfVectorizer()
+        feature_vects = vectorizer.fit_transform(column)
 
     # Get the alpha value. Use search=True to find a good value, or False for default.
     alpha = get_alpha(column, labels, feature_vects, search=False)
@@ -239,20 +289,32 @@ logger = logfuncs.init_logger('ords_quest_training_' + quest)
 clsfile = format_path('ords_quest_obj_nbcl', 'joblib')
 tdffile = format_path('ords_quest_obj_tdif', 'joblib')
 
+# Split training data and execute validation step?
+validate = True
+
+# Quest data is multi-lingual and NLP tends to require a single language.
+# Using stopwords will require English language text.
+# Filter for subset of records with English language text.
+countries=['GBR', 'USA']
+# Other countries with en lang `problem` - another 99 records.
+# Could be used for validation instead of splitting the training data.
+# Or used as the test data to exclude training/validation data.
+# 'ARG','AUS','AUT','CAN','ESP','IRL','ISL','ITA','JEY','NOR','NZL','SWE'
+
 # Initialise the training/validation datasets.
 data = pd.read_csv(pathfuncs.DATA_DIR + '/quests/' + path,
                    dtype=str, keep_default_na=False, na_values="")
-dump_data(data, countries=['GBR', 'USA'])
-
+dump_data(data, countries=countries, validate=validate)
 # Use the dumped training dataset.
 data = pd.read_csv(format_path('ords_quest_training_data'),
                    dtype=str, keep_default_na=False, na_values="")
 do_training(data)
 
-# Use the dumped validation dataset.
-data = pd.read_csv(format_path('ords_quest_validation_data'),
-                   dtype=str, keep_default_na=False, na_values="")
-do_validation(data)
+if validate:
+    # Use the dumped validation dataset.
+    data = pd.read_csv(format_path('ords_quest_validation_data'),
+                       dtype=str, keep_default_na=False, na_values="")
+    do_validation(data)
 
 # Read the entire ORDS export.
 data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
@@ -260,4 +322,4 @@ data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
 # The subset will contain the training and validation data
 # but does not have a fault_type column and id_ords will not match.
 # Early ORDS exports did not have permanent unique identifiers.
-do_test(data, category, countries=['GBR', 'USA'])
+do_test(data, category, countries=countries)
