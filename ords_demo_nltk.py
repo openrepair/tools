@@ -33,7 +33,10 @@ for n in range(0, len(categories)):
     logger.debug('**** {} ****'.format(category))
 
     # Fetch a single string for demo purposes.
-    text = df.loc[df.product_category == category]['problem'].iloc[0]
+    data = df.loc[df.product_category == category]['problem']
+    if not data.any():
+        continue
+    text = data.iloc[0]
 
     logger.debug('** TEXT **')
     logger.debug(text)

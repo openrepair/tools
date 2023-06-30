@@ -22,20 +22,25 @@ categories = pd.read_csv(pathfuncs.ORDS_DIR +
 
 def get_item_types(category):
 
+    logger.debug('**** get_item_types ****')
     sr_res = df.loc[df.product_category ==
                     category]['partner_product_category'].reset_index(drop=True).squeeze()
-    np_res = sr_res.str.split('~').str.get(1).str.strip().dropna().unique()
+    logger.debug(sr_res)
+    if df.empty:
+        logger.debug('No records for catgegory')
+    np_res = sr_res.str.rsplit('~').str.get(0).str.strip().dropna().unique()
     logger.debug(np_res)
     return np_res
 
 
 def get_problem_text(category):
 
-    return dfx.loc[df.product_category == category]['problem'].reset_index(drop=True).squeeze().dropna().unique()
+    return dfx.loc[df.product_category == category]['problem'].reset_index(drop=True)
 
 
 tv = TfidfVectorizer()
 cv = CountVectorizer()
+
 
 def fit_item_types():
 
@@ -45,6 +50,8 @@ def fit_item_types():
         category = categories.iloc[n].product_category
         logger.debug('**** {} ****'.format(category))
         strings = get_item_types(category)
+        if not strings.any():
+            continue
 
         tv_fit = tv.fit_transform(strings).toarray()
         cv_fit = cv.fit_transform(strings).toarray()
@@ -64,6 +71,7 @@ def fit_item_types():
         # logger.debug('** CV bag of words **')
         # logger.debug(cv_fit)
 
+
 def fit_problem_text():
 
     logger.debug('*** PROBLEM ***')
@@ -73,6 +81,8 @@ def fit_problem_text():
         category = categories.iloc[n].product_category
         logger.debug('**** {} ****'.format(category))
         strings = get_problem_text(category)
+        if not strings.any():
+            continue
 
         tv_fit = tv.fit_transform(strings).toarray()
         cv_fit = cv.fit_transform(strings).toarray()
@@ -104,6 +114,7 @@ def fit_problem_text():
         # logger.debug(tv_fit)
         # logger.debug('** CV bag of words **')
         # logger.debug(cv_fit)
+
 
 fit_item_types()
 fit_problem_text()
