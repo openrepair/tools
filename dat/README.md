@@ -77,3 +77,7 @@ An SQL script for creating a MySQL table to hold the ORDS translations. Required
 ### iso_country_codes.csv
 
 List of 3 character codes and country short-names.
+
+### stopwords-english.txt
+
+List of English stopwords from a dataset published on [Kaggle](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages). "This dataset is Copyright (c) 2005, Jacques Savoy and distributed under the [BSD License](https://opensource.org/license/bsd-2-clause/)."
