@@ -2,6 +2,7 @@
 
 from funcs import *
 import pandas as pd
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 from nltk import word_tokenize
@@ -28,11 +29,10 @@ def get_docs():
 class LemmaTokenizer:
     def __init__(self):
         self.wnl = WordNetLemmatizer()
-        self.ignore_tokens = [',', '.', ';', ':', '"', '``',
-                              "''", '`', '&', '!', '~', '#', '?', '+', '(', ')']
+        self.rx = re.compile('[\W\d_]')
 
     def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if t not in self.ignore_tokens]
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))]
 
 
 def log_vectors(title):

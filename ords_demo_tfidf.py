@@ -13,8 +13,6 @@ df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
                  keep_default_na=False, na_values="")
 # Filter for small subset with English language text.
 df = df[df['country'].isin(['USA'])]
-# Filter for decent length problem strings.
-dfx = df[(df['problem'].apply(lambda s: len(str(s)) > 64))]
 
 categories = pd.read_csv(pathfuncs.ORDS_DIR +
                          '/{}.csv'.format(envfuncs.get_var('ORDS_CATS')))
@@ -22,20 +20,22 @@ categories = pd.read_csv(pathfuncs.ORDS_DIR +
 
 def get_item_types(category):
 
-    logger.debug('**** get_item_types ****')
-    sr_res = df.loc[df.product_category ==
-                    category]['partner_product_category'].reset_index(drop=True).squeeze()
-    logger.debug(sr_res)
-    if df.empty:
+    sr = df.loc[df.product_category ==
+                category]['partner_product_category'].reset_index(drop=True).squeeze()
+    if sr.empty:
         logger.debug('No records for catgegory')
-    np_res = sr_res.str.rsplit('~').str.get(0).str.strip().dropna().unique()
-    logger.debug(np_res)
-    return np_res
+        return sr
+
+    return sr.str.rsplit('~').str.get(0).str.strip().dropna().unique()
 
 
 def get_problem_text(category):
 
-    return dfx.loc[df.product_category == category]['problem'].reset_index(drop=True)
+    sr = df.loc[df.product_category == category]['problem'].dropna()
+    if sr.empty:
+        logger.debug('No records for catgegory')
+
+    return sr
 
 
 tv = TfidfVectorizer()

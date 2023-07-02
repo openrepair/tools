@@ -23,7 +23,7 @@ df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
 # Filter for small subset with English language text.
 df = df[df['country'].isin(['USA'])]
 # Filter for decent length strings in the `problem` column.
-df = df[(df['problem'].apply(lambda s: len(str(s)) > 64))]
+df = df[(df['problem'].apply(lambda s: len(str(s)) > 24))]
 
 categories = pd.read_csv(pathfuncs.ORDS_DIR +
                          '/{}.csv'.format(envfuncs.get_var('ORDS_CATS')))
