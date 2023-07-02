@@ -2,11 +2,11 @@
 
 from funcs import *
 import pandas as pd
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
 from sklearn import model_selection
-from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import word_tokenize
 from joblib import dump
@@ -50,7 +50,7 @@ The following "test" was conducted on the 202303 dataset:
     50.00%	Wheels/rollers
 6. Refactored the script to optionally train with "clean" data, i.e. ignoring punctuation and stopwords.
 7. Retrained without validation, using all of the GBR/USA quest data.
-8. Compared new predictions with opinions given in previous manual review.
+8. Compared new predictions with opinions given in first manual review.
 9. Found that yet again human opinion agreed with 60% of predictions, although the spread had changed slightly.
     60.43%	Power/battery	        (+1.76%)
     63.25%	Blockage                (-0.92%)
@@ -71,6 +71,26 @@ The following "test" was conducted on the 202303 dataset:
 10. It is worth noting that the % difference represents only a handful of records (<7) for each fault type (avg=0).
 11. Conclusion: need more/better data and better `fault_type` labels.
     Would be worth curating a custom vocabulary for each `product_category`.
+12. Implemented improved list of stopwords, including corpus-specific, plus improved lemma char filtering.
+13. Retrained without validation, using all of the GBR/USA quest data.
+14. Compared new predictions with opinions given in first manual review.
+15. Found that human opinion agreed with 66% of predictions.
+    61.94%	Poor data               (-5.45%)
+    70.18%	Power/battery           (+11.51%)
+    69.52%	Blockage                (+5.36%)
+    75.00%	Motor                   (+16.57%)
+    76.27%	Cable/cord              (+11.19%)
+    65.79%	Internal damage         (+9.98%)
+    63.16%	Brush                   (+2.55%)
+    70.59%	Button/switch           (+14.18%)
+    65.63%	Filter                  (-5.80%)
+    72.22%	Hose/tube/pipe          (+22.22%)
+    58.82%	External damage         (+0.93%)
+    52.94%	Other                   (+6.79%)
+    53.33%	Wheels/rollers          (+3.33%)
+    50.00%	Overheating             (+8.33%)
+    22.22%	Accessories/attachments	(-11.11%)
+    14.29%	Dustbag/canister        (-35.71%)
 """
 
 
@@ -86,7 +106,7 @@ def dump_data(data, countries, validate=True):
     data = data[data['country'].isin(countries)]
     logger.debug('*** COUNTRY DATA ***')
     logger.debug(len(data))
-    # Filter for string length. Earlier quests often contained poor quality problem text.
+    # Filter for string length. Earlier quests often contained very short problem text.
     # However, this can leave almost no data for training.
     # data = data[(data['problem'].apply(lambda x: len(str(x)) > 8))]
     # logger.debug('*** LENGTH DATA ***')
@@ -149,11 +169,20 @@ def get_alpha(data, labels, vects, search=False, refit=False):
 class LemmaTokenizer:
     def __init__(self):
         self.wnl = WordNetLemmatizer()
-        self.punct = [',', '.', ';', ':', '"', '``',
-                              "''", '`', '&', '!', '~', '#', '?', '+', '(', ')']
+        self.rx = re.compile('[\W\d_]')
 
     def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if t not in self.punct]
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))]
+
+
+def get_stopwords():
+    stopfile1 = open(pathfuncs.DATA_DIR + '/stopwords-english.txt', "r")
+    stopfile2 = open(pathfuncs.DATA_DIR + '/stopwords-english-repair.txt', "r")
+    stoplist = stopfile1.read().replace("\n", ' ') + \
+        stopfile2.read().replace("\n", ' ')
+    stopfile1.close()
+    stopfile2.close()
+    return stoplist
 
 
 def do_training(data, clean=False):
@@ -164,11 +193,10 @@ def do_training(data, clean=False):
     # Strip punctuation and ignore stop words.
     if clean:
         logger.debug('** WITH STOPWORDS **')
-        stop_words = set(stopwords.words('english'))
         tokenizer = LemmaTokenizer()
-        token_stop = tokenizer(' '.join(stop_words))
+        stop_tokens = tokenizer(get_stopwords())
         vectorizer = TfidfVectorizer(
-            stop_words=token_stop, tokenizer=tokenizer)
+            stop_words=stop_tokens, tokenizer=tokenizer)
         feature_vects = vectorizer.fit_transform(column)
     else:
         vectorizer = TfidfVectorizer()
@@ -295,7 +323,7 @@ validate = True
 # Quest data is multi-lingual and NLP tends to require a single language.
 # Using stopwords will require English language text.
 # Filter for subset of records with English language text.
-countries=['GBR', 'USA']
+countries = ['GBR', 'USA']
 # Other countries with en lang `problem` - another 99 records.
 # Could be used for validation instead of splitting the training data.
 # Or used as the test data to exclude training/validation data.
@@ -308,7 +336,7 @@ dump_data(data, countries=countries, validate=validate)
 # Use the dumped training dataset.
 data = pd.read_csv(format_path('ords_quest_training_data'),
                    dtype=str, keep_default_na=False, na_values="")
-do_training(data)
+do_training(data, clean=False)
 
 if validate:
     # Use the dumped validation dataset.
