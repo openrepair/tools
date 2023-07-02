@@ -99,6 +99,8 @@ def fit_item_types():
 
         dfc = pd.DataFrame({'category': category, 'term': tv.vocabulary_.keys(
         ), 'idx': tv.vocabulary_.values()})
+        dfc.sort_values(by=['idx', 'term'],
+                      ascending=True, inplace=True, ignore_index=True)
         dfx = pd.concat([dfx, dfc])
 
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_itemtype.csv'
@@ -130,6 +132,8 @@ def fit_problem_text():
 
         dfc = pd.DataFrame({'category': category, 'term': tv.vocabulary_.keys(
         ), 'idx': tv.vocabulary_.values()})
+        dfc.sort_values(by=['idx', 'term'],
+                      ascending=True, inplace=True, ignore_index=True)
         dfx = pd.concat([dfx, dfc])
 
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_problem.csv'
