@@ -104,6 +104,13 @@ def fit_item_types():
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_itemtype.csv'
     dfx.to_csv(path, index=False)
 
+    dfs = dfx.groupby(
+        ['term']).size().reset_index(name='records')
+    dfs.sort_values(by=['records'],
+                      ascending=False, inplace=True, ignore_index=True)
+    path = pathfuncs.OUT_DIR + '/ords_vocabulary_itemtype_freq.csv'
+    dfs.to_csv(path, index=False)
+
 
 def fit_problem_text():
 
@@ -127,6 +134,13 @@ def fit_problem_text():
 
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_problem.csv'
     dfx.to_csv(path, index=False)
+
+    dfs = dfx.groupby(
+        ['term']).size().reset_index(name='records')
+    dfs.sort_values(by=['records'],
+                      ascending=False, inplace=True, ignore_index=True)
+    path = pathfuncs.OUT_DIR + '/ords_vocabulary_problem_freq.csv'
+    dfs.to_csv(path, index=False)
 
 
 fit_item_types()
