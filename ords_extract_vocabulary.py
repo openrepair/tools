@@ -8,15 +8,10 @@ from nltk.stem import WordNetLemmatizer
 from nltk import word_tokenize
 logger = logfuncs.init_logger(__file__)
 
-"""
-Attempts to extract a vocabulary from the data for each ORDS category
-from either the problem text or by deriving the `item_type`.
-ToDo:
-    Describe use-cases, e.g. "find fault types" and "verify category".
-    Build corpus-specific stopword list for each context
-        e.g. for `problem` - "broke", "broken", "fail", "failed", etc.
-        e.g. for `item_type` - "electric", "household", "equipment", "device", etc.
-"""
+
+# Attempts to extract a vocabulary from the data for each ORDS category
+# from either the problem text or by deriving the `item_type`.
+# ToDo: Describe vocabulary use-cases, e.g. "find fault types" and "verify category".
 
 
 # Read the data file as type string with na values set to empty string.
@@ -30,7 +25,7 @@ categories = pd.read_csv(pathfuncs.ORDS_DIR +
                          '/{}.csv'.format(envfuncs.get_var('ORDS_CATS')))
 
 
-# This can leave a number of 2-char words in the vocabulary but some are useful e.g. "tv", "cd".
+# This can leave a number of 2-char words in the vocabulary but some are useful e.g. "tv", "cd", "pc".
 # Numbers may be useful for some purposes, e.g. "mp3", "ps1"
 class LemmaTokenizer:
     def __init__(self):
@@ -47,10 +42,15 @@ tokenizer = LemmaTokenizer()
 # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
 # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
 # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-stopfile = open(pathfuncs.DATA_DIR + '/stopwords-english.txt', "r")
+stopfile1 = open(pathfuncs.DATA_DIR + '/stopwords-english.txt', "r")
+# ORDS corpus custom stopwords.
+stopfile2 = open(pathfuncs.DATA_DIR + '/stopwords-english-repair.txt', "r")
+stoplist = stopfile1.read().replace("\n", ' ') + \
+    stopfile2.read().replace("\n", ' ')
+stopfile1.close()
+stopfile2.close()
 # Use same tokenizer on stopwords as used in the vectorizer.
-stop_tokens = tokenizer(stopfile.read().replace("\n", ' '))
-stopfile.close()
+stop_tokens = tokenizer(stoplist)
 
 tv = TfidfVectorizer(stop_words=stop_tokens, tokenizer=tokenizer)
 logger.debug('*** STOPWORDS ***')
@@ -107,7 +107,7 @@ def fit_item_types():
     dfs = dfx.groupby(
         ['term']).size().reset_index(name='records')
     dfs.sort_values(by=['records'],
-                      ascending=False, inplace=True, ignore_index=True)
+                    ascending=False, inplace=True, ignore_index=True)
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_itemtype_freq.csv'
     dfs.to_csv(path, index=False)
 
@@ -138,7 +138,7 @@ def fit_problem_text():
     dfs = dfx.groupby(
         ['term']).size().reset_index(name='records')
     dfs.sort_values(by=['records'],
-                      ascending=False, inplace=True, ignore_index=True)
+                    ascending=False, inplace=True, ignore_index=True)
     path = pathfuncs.OUT_DIR + '/ords_vocabulary_problem_freq.csv'
     dfs.to_csv(path, index=False)
 

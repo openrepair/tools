@@ -81,3 +81,7 @@ List of 3 character codes and country short-names.
 ### stopwords-english.txt
 
 List of English stopwords from a dataset published on [Kaggle](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages). "This dataset is Copyright (c) 2005, Jacques Savoy and distributed under the [BSD License](https://opensource.org/license/bsd-2-clause/)."
+
+### stopwords-english-repair.txt
+
+List of repair-related stopwords extracted from the ORDS corpus using `ords_extract_vocabulary.py`.
