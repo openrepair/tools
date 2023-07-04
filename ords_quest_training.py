@@ -94,7 +94,8 @@ The following "test" was conducted on the 202303 dataset:
 """
 
 
-def dump_data(data, countries, validate=True):
+# Split value is the fraction to take for validation, e.g. 0.3
+def dump_data(data, countries, split=0):
 
     logger.debug('*** RAW DATA ***')
     logger.debug(len(data))
@@ -116,10 +117,10 @@ def dump_data(data, countries, validate=True):
     data = data.reindex(
         columns=['id_ords', 'fault_type', 'problem'])
 
-    if validate:
+    if split != 0:
         # Take % of the data for validation.
         data_val = data.groupby(['fault_type']).sample(
-            frac=0.3, replace=False, random_state=1)
+            frac=split, replace=False, random_state=1)
         logger.debug('*** VALIDATION DATA ***')
         logger.debug(len(data_val))
         logger.debug(len(data_val) / len(data))
@@ -153,13 +154,10 @@ def get_alpha(data, labels, vects, search=False, refit=False):
         multinomial_nb_grid = model_selection.GridSearchCV(MultinomialNB(
         ), param_grid=params, scoring='f1_macro', n_jobs=-1, cv=cvval, refit=False, verbose=2)
         multinomial_nb_grid.fit(vects, labels)
-        logger.debug(
-            '** TRAIN {}: classifier best alpha value(s): {}'.format(quest, multinomial_nb_grid.best_params_))
-        print(
-            '** TRAIN {}: classifier best alpha value(s): {}'.format(quest, multinomial_nb_grid.best_params_))
-        # This function could return the classifier instead of just the alpha param.
-        # if refit == True:
-        #     return multinomial_nb_grid.best_estimator_
+        msg = '** TRAIN {}: classifier best alpha value(s): {}'.format(
+            quest, multinomial_nb_grid.best_params_)
+        logger.debug(msg)
+        print(msg)
         return multinomial_nb_grid.best_params_['alpha']
     else:
         return 0.01
@@ -185,22 +183,30 @@ def get_stopwords():
     return stoplist
 
 
-def do_training(data, clean=False):
+def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
 
     column = data.problem
     labels = data.fault_type
 
-    # Strip punctuation and ignore stop words.
-    if clean:
-        logger.debug('** WITH STOPWORDS **')
-        tokenizer = LemmaTokenizer()
-        stop_tokens = tokenizer(get_stopwords())
-        vectorizer = TfidfVectorizer(
-            stop_words=stop_tokens, tokenizer=tokenizer)
-        feature_vects = vectorizer.fit_transform(column)
-    else:
-        vectorizer = TfidfVectorizer()
-        feature_vects = vectorizer.fit_transform(column)
+    vectorizer = TfidfVectorizer()
+
+    # Ignore punctuation, tokenize stop words.
+    if tokenizer != False:
+        vectorizer.set_params(tokenizer=tokenizer)
+
+    # Ignore punctuation, if tokenizer then must tokenize stop words.
+    if stopwords != False:
+        if tokenizer != False:
+            stopwords = tokenizer(stopwords)
+        else:
+            stopwords = list(stopwords)
+
+        vectorizer.set_params(stop_words=stopwords)
+
+    if vocabulary != False:
+        vectorizer.vocabulary_ = vocabulary
+
+    feature_vects = vectorizer.fit_transform(column)
 
     # Get the alpha value. Use search=True to find a good value, or False for default.
     alpha = get_alpha(column, labels, feature_vects, search=False)
@@ -297,6 +303,8 @@ def format_path(filename, ext='csv'):
 
 # START
 
+logger = logfuncs.init_logger('ords_quest_training_' + quest)
+
 # Available quest datasets.
 # See dat/quests for details.
 quests = [
@@ -311,35 +319,51 @@ quests = [
 # Select a dataset 0 to 5.
 quest, path, category = quests[5]
 
-logger = logfuncs.init_logger('ords_quest_training_' + quest)
-
-# Path to the classifier and vectoriser objects.
+# Path to the classifier and vectoriser objects for dump/load.
 clsfile = format_path('ords_quest_obj_nbcl', 'joblib')
 tdffile = format_path('ords_quest_obj_tdif', 'joblib')
 
-# Split training data and execute validation step?
-validate = True
-
 # Quest data is multi-lingual and NLP tends to require a single language.
-# Using stopwords will require English language text.
+# Using English stopwords/vocabulary will require English language text.
 # Filter for subset of records with English language text.
-countries = ['GBR', 'USA']
-# Other countries with en lang `problem` - another 99 records.
-# Could be used for validation instead of splitting the training data.
-# Or used as the test data to exclude training/validation data.
-# 'ARG','AUS','AUT','CAN','ESP','IRL','ISL','ITA','JEY','NOR','NZL','SWE'
+iso_list = ['GBR', 'USA']
+# Other countries with en lang `problem` (only a few dozen more records)
+# ['AUS', 'IRL', 'ISL', 'JEY', 'NOR', 'NZL', 'SWE']
 
-# Initialise the training/validation datasets.
+# Get vocabulary for `product_category` from list of terms after stopwords extracted.
+# See `ords_extract_vocabulary.py`
+vocabulary = False
+# dfvocab = pd.read_csv(pathfuncs.OUT_DIR + '/ords_vocabulary_problem.csv',
+#                     dtype=str)
+# vocabulary = list(dfvocab.loc[dfvocab.category == category].groupby(
+#     'term', sort=False).groups)
+
+# Use stopwords?
+stopwords = False
+# stopwords = get_stopwords()
+
+# Use tokenisation?
+tokenizer = False
+# tokenizer = LemmaTokenizer()
+
+# # Initialise the training and (optional) validation datasets.
 data = pd.read_csv(pathfuncs.DATA_DIR + '/quests/' + path,
                    dtype=str, keep_default_na=False, na_values="")
-dump_data(data, countries=countries, validate=validate)
+
+# Do validation step?
+validate = False
+# If validating, take a fraction of corpus, e.g. 0.3
+splitval = 0
+
+dump_data(data, iso_list, splitval)
+
 # Use the dumped training dataset.
 data = pd.read_csv(format_path('ords_quest_training_data'),
                    dtype=str, keep_default_na=False, na_values="")
-do_training(data, clean=False)
+do_training(data, tokenizer=tokenizer, stopwords=stopwords, vocabulary=vocabulary)
 
 if validate:
-    # Use the dumped validation dataset.
+    # Use the dumped validation dataset or provide other dataset.
     data = pd.read_csv(format_path('ords_quest_validation_data'),
                        dtype=str, keep_default_na=False, na_values="")
     do_validation(data)
@@ -348,6 +372,6 @@ if validate:
 data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
 # The function will filter the data for the appropriate product_category.
 # The subset will contain the training and validation data
-# but does not have a fault_type column and id_ords will not match.
+# but does not have a fault_type column and id_ords may not match.
 # Early ORDS exports did not have permanent unique identifiers.
-do_test(data, category, countries=countries)
+do_test(data, category, iso_list)
