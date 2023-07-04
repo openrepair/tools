@@ -206,6 +206,8 @@ def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
     if vocabulary != False:
         vectorizer.vocabulary_ = vocabulary
 
+    logger.debug(vectorizer.get_stop_words())
+    logger.debug(vectorizer.vocabulary_)
     feature_vects = vectorizer.fit_transform(column)
 
     # Get the alpha value. Use search=True to find a good value, or False for default.
@@ -303,7 +305,6 @@ def format_path(filename, ext='csv'):
 
 # START
 
-logger = logfuncs.init_logger('ords_quest_training_' + quest)
 
 # Available quest datasets.
 # See dat/quests for details.
@@ -318,6 +319,8 @@ quests = [
 
 # Select a dataset 0 to 5.
 quest, path, category = quests[5]
+
+logger = logfuncs.init_logger('ords_quest_training_' + quest)
 
 # Path to the classifier and vectoriser objects for dump/load.
 clsfile = format_path('ords_quest_obj_nbcl', 'joblib')
@@ -355,12 +358,21 @@ validate = False
 # If validating, take a fraction of corpus, e.g. 0.3
 splitval = 0
 
+logger.debug('*** quest={} ***'.format(quest))
+logger.debug('*** countries={} ***'.format(iso_list))
+logger.debug('*** validate={} ***'.format(validate))
+logger.debug('*** splitval={} ***'.format(splitval))
+logger.debug('*** vocabulary={} ***'.format(vocabulary))
+logger.debug('*** stopwords={} ***'.format(stopwords))
+logger.debug('*** tokenizer={} ***'.format(tokenizer))
+
 dump_data(data, iso_list, splitval)
 
 # Use the dumped training dataset.
 data = pd.read_csv(format_path('ords_quest_training_data'),
                    dtype=str, keep_default_na=False, na_values="")
-do_training(data, tokenizer=tokenizer, stopwords=stopwords, vocabulary=vocabulary)
+do_training(data, tokenizer=tokenizer,
+            stopwords=stopwords, vocabulary=vocabulary)
 
 if validate:
     # Use the dumped validation dataset or provide other dataset.
