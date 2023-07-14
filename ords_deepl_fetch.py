@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+
+from funcs import *
 import pandas as pd
 import deepl
-from funcs import *
+
 logger = logfuncs.init_logger(__file__)
 
 # Step 1: ords_deepl_setup.py
@@ -38,7 +40,7 @@ def get_work():
     AND TRIM(t3.problem) > ''
     LIMIT {limit}
     """
-    return pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var('ORDS_DATA'), limit=1)))
+    return pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var('ORDS_DATA'), limit=10000)))
 
 
 def translate(data):
@@ -46,54 +48,58 @@ def translate(data):
     sql = """
     SELECT *
     FROM ords_problem_translations
-    WHERE problem = '{}'
+    WHERE problem = %(problem)s
     LIMIT 1
     """
 
-    print(len(data))
-    # For each record fetch a translation for each target language.
-    for i in range(0, len(data)):
-        # Is there already a translation for this text?
-        found = pd.DataFrame(dbfuncs.query_fetchall(
-            sql.format(data.iloc[i].problem)))
-        if found.empty:
-            # No existing translation so fetch from API.
-            problem = data.iloc[i].problem
-            d_lang = False
-            for t_lang in langs:
-                # Has a language been detected for this problem?
-                # Is the target language the same as the detected language?
-                if (d_lang == t_lang):
-                    # Don't use up API credits.
-                    text = problem
-                else:
-                    # No existing translation so fetch from API.
-                    try:
-                        key = t_lang.rstrip("-gb")
-                        result = translator.translate_text(
-                            problem, target_lang=t_lang)
-                        print(result)
-                        d_lang = result.detected_source_lang
-                        text = result.text
-                    except deepl.DeepLException as error:
-                        print("exception: {}".format(error))
-                        data.loc[i, 'language_detected'] = ''
-                        return data
-                data.loc[i, 'language_known'] = '??'
-                data.loc[i, 'translator'] = 'DeepL'
-                data.loc[i, 'language_detected'] = d_lang
-                data.loc[i, key] = text
-        else:
-            # Translation exists so copy from existing.
-            data.loc[i, 'language_known'] = found.language_known.values[0]
-            data.loc[i, 'translator'] = found.translator.values[0]
-            data.loc[i, 'language_detected'] = found.language_detected.values[0]
-            for t_lang in langs:
-                key = t_lang.rstrip("-gb")
-                data.loc[i, key] = found[key].values[0]
+    try:
+        # For each record fetch a translation for each target language.
+        for i in range(0, len(data)):
+            # Is there already a translation for this text?
+            found = pd.DataFrame(dbfuncs.query_fetchall(sql,  { 'problem': data.iloc[i].problem}))
+            if found.empty:
+                # No existing translation so fetch from API.
+                problem = data.iloc[i].problem
+                d_lang = False
+                for t_lang in langs:
+                    # Has a language been detected for this problem?
+                    # Is the target language the same as the detected language?
+                    if (d_lang == t_lang):
+                        # Don't use up API credits.
+                        text = problem
+                    else:
+                        # No existing translation so fetch from API.
+                        try:
+                            key = t_lang.rstrip("-gb")
+                            result = translator.translate_text(
+                                problem, target_lang=t_lang)
+                            print(result)
+                            d_lang = result.detected_source_lang
+                            text = result.text
+                        except deepl.DeepLException as error:
+                            print("exception: {}".format(error))
+                            data.loc[i, 'language_detected'] = ''
+                            return data
+                    data.loc[i, 'language_known'] = '??'
+                    data.loc[i, 'translator'] = 'DeepL'
+                    data.loc[i, 'language_detected'] = d_lang
+                    data.loc[i, key] = text
+            else:
+                # Translation exists so copy from existing.
+                data.loc[i, 'language_known'] = found.language_known.values[0]
+                data.loc[i, 'translator'] = found.translator.values[0]
+                data.loc[i, 'language_detected'] = found.language_detected.values[0]
+                for t_lang in langs:
+                    key = t_lang.rstrip("-gb")
+                    data.loc[i, key] = found[key].values[0]
 
-        print(data.iloc[i])
-    return data
+            print(data.iloc[i])
+
+    except Exception as error:
+        print("Exception: {}".format(error))
+
+    finally:
+        return data
 
 
 def write_data(data):
@@ -115,7 +121,7 @@ def write_data(data):
 
     rows = data.to_sql(name='ords_problem_translations', con=dbfuncs.alchemy_eng(),
                        if_exists='append', index=False)
-    logger.debug('{} written to table {}'.format(
+    logger.debug('{} rows written to table {}'.format(
         rows, 'ords_problem_translations'))
     return True
 
@@ -129,5 +135,7 @@ translator = deepl.Translator(auth_key)
 if limit_reached():
     exit()
 else:
-    data = translate(get_work())
+    work = get_work()
+    work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
+    data = translate(work)
     write_data(data)

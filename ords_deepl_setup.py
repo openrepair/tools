@@ -43,7 +43,7 @@ def dbsetup(path_to_csv=''):
 
     # Get translations table schema.
     path_to_sql = pathfuncs.get_path(
-        [pathfuncs.DATA_DIR, '/dbsetup.sql'])
+        [pathfuncs.DATA_DIR + '/tableschema_translations_mysql.sql'])
     print(path_to_sql)
     logger.debug('Reading sql from file {}'.format(path_to_sql))
     # Create table.

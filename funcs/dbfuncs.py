@@ -16,16 +16,15 @@ def dbtest():
     return dbvars
 
 
-def query_fetchall(sql):
+def query_fetchall(sql, params=None):
     result = False
     try:
         dbh = mysql_con()
         cursor = dbh.cursor(dictionary=True)
-        cursor.execute(sql)
+        cursor.execute(sql, params)
         result = cursor.fetchall()
     except mysql.connector.Error as error:
         print("MySQL exception: {}".format(error))
-
     finally:
         if dbh.is_connected():
             cursor.close()
