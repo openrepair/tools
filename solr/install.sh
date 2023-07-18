@@ -19,9 +19,10 @@ tar -xzf "${SOLR_FILE}" -C ./
 
 ls -l "${SOLR_DIR}"
 
-echo "Installing ORDS core..."
+echo "Installing cores..."
 
 cp -R ./core/ords "${SOLR_DIR}/server/solr"
+cp -R ./core/test "${SOLR_DIR}/server/solr"
 
 ls -l "${SOLR_DIR}/server/sol"
 
@@ -40,9 +41,15 @@ wait
 
 "${SOLR_DIR}/bin/solr" status
 
+
+echo "Importing test data..."
+
+# If imports fail due to still waiting for service, copy and paste to command line.
+
+curl 'http://localhost:8983/solr/test_lang/update?commit=true' --data-binary @core/data/test_lang.csv -H 'Content-type:application/csv'
+
 echo "Importing ORDS data..."
 
-# If this fails due to still waiting for service, copy and paste to command line.
 curl 'http://localhost:8983/solr/ords202303/update?commit=true' --data-binary @../dat/ords/OpenRepairData_v0.3_aggregate_202303.csv -H 'Content-type:application/csv'
 
 # Retrieve system status

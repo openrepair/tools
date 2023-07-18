@@ -535,7 +535,7 @@
   <dynamicField name="*_t" type="text_general" multiValued="false" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <copyField source="country" dest="country_str" maxChars="256"/>
-  <copyField source="group_identifier" dest="country_str" maxChars="256"/>
+  <copyField source="group_identifier" dest="group_identifier_str" maxChars="256"/>
   <copyField source="repair_status" dest="repair_status_str" maxChars="256"/>
   <copyField source="data_provider" dest="data_provider_str" maxChars="256"/>
   <copyField source="repair_barrier_if_end_of_life" dest="repair_barrier_if_end_of_life_str" maxChars="256"/>

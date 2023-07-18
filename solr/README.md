@@ -53,8 +53,14 @@ If there is no "Core Selector" box, wait a few seconds and refresh page.
 To Do
 
 1. Queries
-2. ...
+2. Multi-lang
+3. Phonetic
+4. Synonyms
+5. Stopwords
+6. Intl Chars
 
+[cafe](http://localhost:8983/solr/#/test_lang/query?q=phonetic_en:cafe&q.op=OR&indent=true&useParams=)
+[Denmark](http://localhost:8983/solr/#/test_lang/query?q=phonetic_en:denmark&q.op=OR&indent=true&useParams=)
 
 ## Links
 
