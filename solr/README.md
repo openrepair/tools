@@ -19,9 +19,10 @@ The install script will
 
 1. Check for Solr package and download if not found.
 2. Extract contents.
-3. Copy the ORDS core configuration files to the Solr home directory.
-4. Start Solr and load the ORDS core.
-5. Import the ORDS data to the ORDS core.
+3. Copy the ORDS and test core configuration files to the Solr home directory.
+4. Start Solr and load the cores.
+5. Import the test data to the test core.
+6. Import the ORDS data to the ORDS core.
 
 `bash install.sh`
 
@@ -29,7 +30,6 @@ The install script will
 
 In a web browser, navigate to `http://localhost:8983/solr` and you should see the Solr dashboard.
 
-In the "Core Selector" box select "ords202303".
 If there is no "Core Selector" box, wait a few seconds and refresh page.
 
 ## Commands
@@ -50,17 +50,26 @@ If there is no "Core Selector" box, wait a few seconds and refresh page.
 
 ## Usage
 
+### Multi-lingual text, international characters and phonetic search
+
+See core test_lang for examples of various field types and filters for use with indexing and querying text with international characters as well as phonetic searching.
+
+[Solr Filters](https://solr.apache.org/guide/solr/latest/indexing-guide/filters.html)
+
+After installation, try these queries
+
+Filter accents: http://localhost:8983/solr/test_lang/select?indent=true&q=text_icuFolding%3Acafe
+Phonetic match: http://localhost:8983/solr/test_lang/select?indent=true&q=text_doubleMetaphone%3Adenmark
+Combined accent filter and phonetic match: http://localhost:8983/solr/test_lang/select?indent=true&q=text_icufdm%3AOtuatahi
+
 To Do
 
-1. Queries
-2. Multi-lang
-3. Phonetic
-4. Synonyms
-5. Stopwords
-6. Intl Chars
-
-[cafe](http://localhost:8983/solr/#/test_lang/query?q=phonetic_en:cafe&q.op=OR&indent=true&useParams=)
-[Denmark](http://localhost:8983/solr/#/test_lang/query?q=phonetic_en:denmark&q.op=OR&indent=true&useParams=)
+1. Fuzzy matching
+2. Wildcards
+3. Date queries
+4. Multi-language sorting
+5. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
+6. Facets
 
 ## Links
 

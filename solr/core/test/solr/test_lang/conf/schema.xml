@@ -172,16 +172,83 @@
       <filter name="lowercase"/>
     </analyzer>
   </fieldType>
-  <fieldType name="phonetic_en" class="solr.TextField" indexed="true" stored="false">
+  <fieldType name="text_doubleMetaphone" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="doubleMetaphone" inject="true" />
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="doubleMetaphone" inject="true" />
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_BeiderMorse" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="beiderMorse" nameType="GENERIC" ruleType="APPROX" concat="true" languageSet="auto" />
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="beiderMorse" nameType="GENERIC" ruleType="APPROX" concat="true" languageSet="auto" />
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_MappingChar" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <charFilter name="mapping" mapping="mapping-FoldToASCII.txt"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <charFilter name="mapping" mapping="mapping-FoldToASCII.txt"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_asciiFolding" class="solr.TextField">
+    <analyzer>
+      <tokenizer name="whitespace"/>
+      <filter name="asciiFolding" preserveOriginal="true"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="whitespace"/>
+      <filter name="asciiFolding" preserveOriginal="true"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_icuFolding" class="solr.TextField">
     <analyzer>
       <tokenizer name="standard"/>
-      <filter inject="false" name="doubleMetaphone"/>
+      <filter name="icuFolding"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="icuFolding"/>
+    </analyzer>
+  </fieldType>
+
+  <fieldType name="text_icufbm" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="icuFolding"/>
+      <filter name="beiderMorse" nameType="GENERIC" ruleType="APPROX" concat="true" languageSet="auto" />
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="icuFolding"/>
+      <filter name="beiderMorse" nameType="GENERIC" ruleType="APPROX" concat="true" languageSet="auto" />
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_icufdm" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="icuFolding"/>
+      <filter name="doubleMetaphone" inject="true" />
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="icuFolding"/>
+      <filter name="doubleMetaphone" inject="true" />
     </analyzer>
   </fieldType>
   <!-- https://solr.apache.org/docs/9_0_0/modules/analysis-extras/org/apache/solr/schema/ICUCollationField.html -->
-  <fieldType name="collatedROOT" class="solr.ICUCollationField"
-           locale="en"
-           strength="primary" />
+  <fieldType name="collatedROOT" class="solr.ICUCollationField" locale="" strength="primary" />
 
   <field name="_nest_path_" type="_nest_path_"/>
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
@@ -191,11 +258,23 @@
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <uniqueKey>id</uniqueKey>
 
-  <field name="text_general" type="text_general"/>
-  <field name="phonetic_en" type="phonetic_en"/>
-  <field name="collatedROOT" type="collatedROOT"/>
+  <field name="text_general" type="text_general" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="text_doubleMetaphone" type="text_doubleMetaphone" multiValued="false" indexed="true"/>
+  <field name="text_BeiderMorse" type="text_BeiderMorse" multiValued="false" indexed="true"/>
+  <field name="text_asciiFolding" type="text_asciiFolding" multiValued="false" indexed="true"/>
+  <field name="text_icuFolding" type="text_icuFolding" multiValued="false" indexed="true"/>
+  <field name="text_MappingChar" type="text_MappingChar" multiValued="false" indexed="true"/>
+  <field name="collatedROOT" type="collatedROOT" multiValued="false" indexed="true"/>
+  <field name="text_icufbm" type="text_icufbm" multiValued="false" indexed="true"/>
+  <field name="text_icufdm" type="text_icufdm" multiValued="false" indexed="true"/>
 
-  <copyField source="text_general" dest="phonetic_en" maxChars="256"/>
-  <copyField source="text_general" dest="collatedROOT" maxChars="256"/>
+  <copyField source="text_general" dest="text_doubleMetaphone"/>
+  <copyField source="text_general" dest="text_BeiderMorse"/>
+  <copyField source="text_general" dest="text_asciiFolding"/>
+  <copyField source="text_general" dest="text_icuFolding"/>
+  <copyField source="text_general" dest="text_MappingChar"/>
+  <copyField source="text_general" dest="collatedROOT"/>
+  <copyField source="text_general" dest="text_icufbm"/>
+  <copyField source="text_general" dest="text_icufdm"/>
 
 </schema>

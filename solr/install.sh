@@ -21,14 +21,12 @@ ls -l "${SOLR_DIR}"
 
 echo "Installing cores..."
 
-cp -R ./core/ords "${SOLR_DIR}/server/solr"
 cp -R ./core/test "${SOLR_DIR}/server/solr"
+cp -R ./core/ords "${SOLR_DIR}/server/solr"
 
 ls -l "${SOLR_DIR}/server/sol"
 
 echo "Starting Solr..."
-
-ls -l "${SOLR_DIR}/bin"
 
 # Arg 'solr.jetty.host' allows WSL browser interface.
 "${SOLR_DIR}/bin/solr" start -Dsolr.jetty.host="0.0.0.0"
@@ -41,12 +39,11 @@ wait
 
 "${SOLR_DIR}/bin/solr" status
 
+# If imports fail due to still waiting for service, copy and paste to command line.
 
 echo "Importing test data..."
 
-# If imports fail due to still waiting for service, copy and paste to command line.
-
-curl 'http://localhost:8983/solr/test_lang/update?commit=true' --data-binary @core/data/test_lang.csv -H 'Content-type:application/csv'
+curl 'http://localhost:8983/solr/test_lang/update?commit=true' --data-binary @./core/data/test_lang.csv -H 'Content-type:application/csv'
 
 echo "Importing ORDS data..."
 
