@@ -54,6 +54,10 @@ Look for groups in Denmark, which can be listed as Danmark.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_doubleMetaphone:denmark`
 
+#### Query with a Beider Morse field
+
+`http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_BeiderMorse:denmark`
+
 ### Combined accent filter and phonetic match
 
 Look for group "Ōtautahi Repair Revolution" using a miss-spelling that involves both a wrong character and wrong character order.
