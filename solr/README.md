@@ -10,8 +10,9 @@ The result will be a very basic, out-of-the-box installation for local use witho
 2. Java >= 17
 3. cURL
 4. wget
-5. Web browser
-6. ORDS data csv file in the `ords-tools/dat/ords` folder
+5. Local web server
+6. Web browser
+7. ORDS data csv file in the `ords-tools/dat/ords` folder
 
 ## Set up
 
