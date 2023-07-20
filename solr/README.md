@@ -56,11 +56,17 @@ If there is no "Core Selector" box, wait a few seconds and refresh page.
 Out of the box, Solr's Standard Query Parser provides a wide variety of search handling functionality.
 
 [Boolean Operators](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#boolean-operators-supported-by-the-standard-query-parser)
+
 [Wildcard Searches](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#wildcard-searches)
+
 [Fuzzy matching](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#fuzzy-searches)
+
 [Proximity Searches](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#proximity-searches)
+
 [Range Searches](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#range-searches)
+
 [Boosting](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#boosting-a-term-with)
+
 [Sub-Queries](https://solr.apache.org/guide/solr/latest/query-guide/standard-query-parser.html#grouping-terms-to-form-sub-queries)
 
 ### Other parsers and complex handlers are available
@@ -76,8 +82,11 @@ See [core/data/README.md](core/data/README.md) for details of the test_lang core
 ### Other useful functionality
 
 [Spell Checking](https://solr.apache.org/guide/solr/latest/query-guide/spell-checking.html)
+
 [Faceting](https://solr.apache.org/guide/solr/latest/query-guide/faceting.html)
+
 [Suggester](https://solr.apache.org/guide/solr/latest/query-guide/suggester.html)
+
 [MoreLikeThis](https://solr.apache.org/guide/solr/latest/query-guide/morelikethis.html)
 
 ## To Do
@@ -90,6 +99,9 @@ See [core/data/README.md](core/data/README.md) for details of the test_lang core
 ## Links
 
 [System requirements](https://solr.apache.org/guide/solr/latest/deployment-guide/system-requirements.html)
+
 [Installation](https://solr.apache.org/guide/solr/latest/deployment-guide/installing-solr.html)
+
 [Github](https://github.com/apache/solr)
+
 [Java versions](https://endoflife.date/java)
