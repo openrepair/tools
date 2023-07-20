@@ -16,13 +16,75 @@ Query with a vanilla `text_general` field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:cafe`
 
-![Results](img/cafe-text_general.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":0,
+    "params":{
+      "q":"text_general:cafe",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":7,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Cafe Belfast"},
+      {
+        "text_general":"Repair Cafe Blefast"},
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Cafe Malmo"},
+      {
+        "text_general":"Repair Cafe Blenny"},
+      {
+        "text_general":"Repair cafe Portsmouth"},
+      {
+        "text_general":"Repair Cafe de Neufchateau"}]
+}}
+```
 
 Query with an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) field type
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icuFolding:cafe`
 
-![Results](img/cafe-text_icuFolding.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":0,
+    "params":{
+      "q":"text_icuFolding:cafe",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":12,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Café Danmark"},
+      {
+        "text_general":"Repair Café Denmark"},
+      {
+        "text_general":"Repair Café Portsmouth"},
+      {
+        "text_general":"Repair Cafe Belfast"},
+      {
+        "text_general":"Repair Cafe Blefast"},
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Café Blégny"},
+      {
+        "text_general":"Repair Cafe Malmo"},
+      {
+        "text_general":"Repair Cafe Blenny"},
+      {
+        "text_general":"Repair cafe Portsmouth"},
+      {
+        "text_general":"Repair Café de Neufchâteau"},
+      {
+        "text_general":"Repair Cafe de Neufchateau"}]
+}}
+```
 
 #### Look for a repair cafe in "Malmö"
 
@@ -32,13 +94,43 @@ Query with a vanilla `text_general` field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:malmo`
 
-![Results](img/malmo-text_general.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_general:malmo",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":1,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Cafe Malmo"}]
+}}
+```
 
 Query with an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) field type
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icuFolding:malmo`
 
-![Results](img/malmo-text_icuFolding.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_icuFolding:malmo",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":2,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Cafe Malmo"}]
+}}
+```
 
 ## Sorting strings with international characters
 
@@ -46,19 +138,165 @@ With no sort order.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18`
 
-![Results](img/sorting-none.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":0,
+    "params":{
+      "q":"text_general:*",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":18,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Café Danmark"},
+      {
+        "text_general":"Repair Café Denmark"},
+      {
+        "text_general":"Repair Café Portsmouth"},
+      {
+        "text_general":"Repair Cafe Belfast"},
+      {
+        "text_general":"Repair Cafe Blefast"},
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Café Blégny"},
+      {
+        "text_general":"Ōtautahi Repair Revolution"},
+      {
+        "text_general":"Otautahi Repair Revolution"},
+      {
+        "text_general":"LES 100TINEL Fix Club Bénin"},
+      {
+        "text_general":"LES 100TINEL Fix Club Benin"},
+      {
+        "text_general":"Repair Café de Neufchâteau"},
+      {
+        "text_general":"Repair Cafe de Neufchateau"},
+      {
+        "text_general":"Repair Cafe Malmo"},
+      {
+        "text_general":"Repair Cafe Blenny"},
+      {
+        "text_general":"Repair Caf Foo"},
+      {
+        "text_general":"Repair caff Bar"},
+      {
+        "text_general":"Repair cafe Portsmouth"}]
+}}
+```
 
 Sorted on a vanilla `text_general` field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18&sort=text_general asc`
 
-![Results](img/sorting-text_general.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_general:*",
+      "indent":"true",
+      "fl":"text_general",
+      "sort":"text_general asc",
+      "rows":"18"}},
+  "response":{"numFound":18,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"LES 100TINEL Fix Club Bénin"},
+      {
+        "text_general":"LES 100TINEL Fix Club Benin"},
+      {
+        "text_general":"Repair caff Bar"},
+      {
+        "text_general":"Repair Cafe Belfast"},
+      {
+        "text_general":"Repair Cafe Blefast"},
+      {
+        "text_general":"Repair Cafe Blenny"},
+      {
+        "text_general":"Repair Café Blégny"},
+      {
+        "text_general":"Repair Caf Foo"},
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Cafe de Neufchateau"},
+      {
+        "text_general":"Repair Cafe Malmo"},
+      {
+        "text_general":"Repair cafe Portsmouth"},
+      {
+        "text_general":"Repair Café Danmark"},
+      {
+        "text_general":"Repair Café Denmark"},
+      {
+        "text_general":"Repair Café Portsmouth"},
+      {
+        "text_general":"Repair Café de Neufchâteau"},
+      {
+        "text_general":"Otautahi Repair Revolution"},
+      {
+        "text_general":"Ōtautahi Repair Revolution"}]
+}}
+```
 
 Sorted on an [ICU collation](https://solr.apache.org/docs/9_0_0/modules/analysis-extras/org/apache/solr/schema/ICUCollationField.html) field type.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18&sort=collatedROOT asc`
 
-![Results](img/sorting-text_icucollation.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":0,
+    "params":{
+      "q":"text_general:*",
+      "indent":"true",
+      "fl":"text_general",
+      "sort":"collatedROOT asc",
+      "rows":"18"}},
+  "response":{"numFound":18,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"LES 100TINEL Fix Club Bénin"},
+      {
+        "text_general":"LES 100TINEL Fix Club Benin"},
+      {
+        "text_general":"Ōtautahi Repair Revolution"},
+      {
+        "text_general":"Otautahi Repair Revolution"},
+      {
+        "text_general":"Repair Caf Foo"},
+      {
+        "text_general":"Repair Cafe Belfast"},
+      {
+        "text_general":"Repair Cafe Blefast"},
+      {
+        "text_general":"Repair Café Blégny"},
+      {
+        "text_general":"Repair Cafe Blenny"},
+      {
+        "text_general":"Repair Café Danmark"},
+      {
+        "text_general":"Repair Café de Neufchâteau"},
+      {
+        "text_general":"Repair Cafe de Neufchateau"},
+      {
+        "text_general":"Repair Café Denmark"},
+      {
+        "text_general":"Repair Cafe Malmö"},
+      {
+        "text_general":"Repair Cafe Malmo"},
+      {
+        "text_general":"Repair Café Portsmouth"},
+      {
+        "text_general":"Repair cafe Portsmouth"},
+      {
+        "text_general":"Repair caff Bar"}]
+}}
+```
 
 ### Phonetic matching
 
@@ -68,13 +306,43 @@ Look for groups in Denmark, which can be listed as Danmark.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:denmark`
 
-![Results](img/denmark-text_general.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_general:denmark",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":1,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Café Denmark"}]
+}}
+```
 
 #### Query with a Double Metaphone field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_doubleMetaphone:denmark`
 
-![Results](img/denmark-text_doublemetaphone.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_doubleMetaphone:denmark",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":2,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Repair Café Danmark"},
+      {
+        "text_general":"Repair Café Denmark"}]
+}}
+```
 
 #### Query with a Beider Morse field
 
@@ -90,13 +358,41 @@ Query with a vanilla `text_general field.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:Otuatahi`
 
-![Results](img/otuatahi-text_general.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_general:Otuatahi",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":0,"start":0,"numFoundExact":true,"docs":[]
+}}
+```
 
 Query with a field indexed using both Double Metaphone phonetic algorithm and an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) filter
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icufdm:Otuatahi`
 
-![Results](img/otuatahi-text_icufdm.png "Results")
+```json
+{
+  "responseHeader":{
+    "status":0,
+    "QTime":1,
+    "params":{
+      "q":"text_icufdm:Otuatahi",
+      "indent":"true",
+      "fl":"text_general",
+      "rows":"18"}},
+  "response":{"numFound":2,"start":0,"numFoundExact":true,"docs":[
+      {
+        "text_general":"Ōtautahi Repair Revolution"},
+      {
+        "text_general":"Otautahi Repair Revolution"}]
+}}
+```
 
 ## Links
 
