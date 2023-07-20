@@ -101,11 +101,7 @@ Query with a field indexed using both Double Metaphone phonetic algorithm and an
 ## Links
 
 [The Missing Guide to the ICU Message Format](https://phrase.com/blog/posts/guide-to-the-icu-message-format/)
-
 [Class ICUCollationField](https://solr.apache.org/docs/9_0_0/modules/analysis-extras/org/apache/solr/schema/ICUCollationField.html)
-
 [Phonetic Matching](https://solr.apache.org/guide/solr/9_1/indexing-guide/phonetic-matching.html)
-
 [Phonetic Matching with Apache Solr - Slideshare](https://www.slideshare.net/MarkusGnther9/phonetic-matching-with-apache-solr)
-
 [Understanding phonetic matching](https://subscription.packtpub.com/book/data/9781788837385/4/ch04lvl1sec33/understanding-phonetic-matching)
