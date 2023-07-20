@@ -8,25 +8,37 @@ Set of real and fake `group_identifier` strings for testing international charac
 
 ### Filter accents
 
-#### Query with a vanilla `text_general` field
+#### Groups with any variation of the word "cafe", i.e. "Café", "café", "Cafe"
 
-Look for all groups with any variation of the word "cafe", i.e. "Café", "café", "Cafe"
+Not phonetic, exact spelling, case-insensitive.
+
+Query with a vanilla `text_general` field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:cafe`
 
-Look for a repair cafe in "Malmö"
+![Results](img/cafe-text_general.png "Results")
 
-`http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:malmo`
-
-#### Query with an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) field type
-
-Look for all groups with any variation of the word "cafe", i.e. "Café", "café", "Cafe"
+Query with an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) field type
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icuFolding:cafe`
 
-Look for a repair cafe in "Malmö"
+![Results](img/cafe-text_icuFolding.png "Results")
+
+#### Look for a repair cafe in "Malmö"
+
+Not phonetic, exact spelling, case-insensitive.
+
+Query with a vanilla `text_general` field
+
+`http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:malmo`
+
+![Results](img/malmo-text_general.png "Results")
+
+Query with an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) field type
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icuFolding:malmo`
+
+![Results](img/malmo-text_icuFolding.png "Results")
 
 ## Sorting strings with international characters
 
@@ -34,13 +46,19 @@ With no sort order.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18`
 
+![Results](img/sorting-none.png "Results")
+
 Sorted on a vanilla `text_general` field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18&sort=text_general asc`
 
+![Results](img/sorting-text_general.png "Results")
+
 Sorted on an [ICU collation](https://solr.apache.org/docs/9_0_0/modules/analysis-extras/org/apache/solr/schema/ICUCollationField.html) field type.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&fl=text_general&q=text_general:*&rows=18&sort=collatedROOT asc`
+
+![Results](img/sorting-text_icucollation.png "Results")
 
 ### Phonetic matching
 
@@ -50,11 +68,17 @@ Look for groups in Denmark, which can be listed as Danmark.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:denmark`
 
+![Results](img/denmark-text_general.png "Results")
+
 #### Query with a Double Metaphone field
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_doubleMetaphone:denmark`
 
+![Results](img/denmark-text_doublemetaphone.png "Results")
+
 #### Query with a Beider Morse field
+
+To Do: not working properly?
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_BeiderMorse:denmark`
 
@@ -66,9 +90,13 @@ Query with a vanilla `text_general field.
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_general:Otuatahi`
 
+![Results](img/otuatahi-text_general.png "Results")
+
 Query with a field indexed using both Double Metaphone phonetic algorithm and an [ICU](https://unicode-org.github.io/icu/userguide/icu4j/why-use-icu4j.html) filter
 
 `http://localhost:8983/solr/test_lang/select?indent=true&rows=18&fl=text_general&q=text_icufdm:Otuatahi`
+
+![Results](img/otuatahi-text_icufdm.png "Results")
 
 ## Links
 

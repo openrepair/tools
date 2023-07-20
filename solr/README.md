@@ -57,8 +57,9 @@ See [core/data/README.md](core/data/README.md) for details of the test_lang core
 
 1. Document wildcards, fuzzy matching, date queries and facets
 2. Tidy up config and schema files
-3. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
-4. OpenNLP integration
+3. Spellchecker and synonyms
+4. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
+5. OpenNLP integration
 
 ## Links
 
