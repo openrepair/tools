@@ -51,26 +51,14 @@ If there is no "Core Selector" box, wait a few seconds and refresh page.
 
 ## Usage
 
-### Multi-lingual text, international characters and phonetic search
+See [core/data/README.md](core/data/README.md) for details of the test_lang core and example queries.
 
-See core test_lang for examples of various field types and filters for use with indexing and querying text with international characters as well as phonetic searching.
+## To Do
 
-[Solr Filters](https://solr.apache.org/guide/solr/latest/indexing-guide/filters.html)
-
-After installation, try these queries
-
-Filter accents: http://localhost:8983/solr/test_lang/select?indent=true&q=text_icuFolding%3Acafe
-Phonetic match: http://localhost:8983/solr/test_lang/select?indent=true&q=text_doubleMetaphone%3Adenmark
-Combined accent filter and phonetic match: http://localhost:8983/solr/test_lang/select?indent=true&q=text_icufdm%3AOtuatahi
-
-To Do
-
-1. Fuzzy matching
-2. Wildcards
-3. Date queries
-4. Multi-language sorting
-5. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
-6. Facets
+1. Document wildcards, fuzzy matching, date queries and facets
+2. Tidy up config and schema files
+3. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
+4. OpenNLP integration
 
 ## Links
 
