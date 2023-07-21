@@ -79,6 +79,8 @@ The `test_lang` core demonstrates more custom functionality to handle internatio
 
 See [core/data/README.md](core/data/README.md) for details of the test_lang core and example queries.
 
+Some of this functionality has been implemented in the ORDS core. Compare schema files for details.
+
 ### Other useful functionality
 
 [Spell Checking](https://solr.apache.org/guide/solr/latest/query-guide/spell-checking.html)
@@ -91,10 +93,9 @@ See [core/data/README.md](core/data/README.md) for details of the test_lang core
 
 ## To Do
 
-1. Tidy up config and schema files
-2. Implement spellchecking and synonyms
-3. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
-4. [OpenNLP integration](https://solr.apache.org/guide/solr/latest/indexing-guide/language-analysis.html#opennlp-integration)
+1. Implement spellchecking and synonyms demonstrations
+2. [Language detection](https://solr.apache.org/guide/solr/latest/indexing-guide/language-detection.html)
+3. [OpenNLP integration](https://solr.apache.org/guide/solr/latest/indexing-guide/language-analysis.html#opennlp-integration)
 
 ## Links
 

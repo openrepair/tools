@@ -24,7 +24,7 @@ echo "Installing cores..."
 cp -R ./core/test "${SOLR_DIR}/server/solr"
 cp -R ./core/ords "${SOLR_DIR}/server/solr"
 
-ls -l "${SOLR_DIR}/server/sol"
+ls -l "${SOLR_DIR}/server/solr"
 
 echo "Starting Solr..."
 
