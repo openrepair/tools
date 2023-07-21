@@ -92,6 +92,31 @@ def recover_log():
     result = pd.DataFrame(data = rows, columns=columns)
     result.to_csv(pathfuncs.OUT_DIR + '/ords_deepl_parsed_foobar.csv', index=False)
 
+# Fetch assorted language strings for Solr lang detection test.
+def query_lang_strings():
+
+    langs = ["en","de","nl","fr","it","es"]
+    qry = """
+(SELECT
+GROUP_CONCAT(DISTINCT id_ords) as id,
+{fld} as problem,
+'{fld}' as lang_known
+FROM `ords_problem_translations`
+WHERE language_known = '{fld}'
+AND LENGTH(problem) > 12
+GROUP BY {fld}
+LIMIT {max} )
+"""
+    sql = ''
+    print(len(langs))
+    for i in range(0, len(langs)):
+        sql = sql + qry.format(fld=langs[i], max=10)
+        print(i)
+        if i != len(langs)-1:
+            sql = sql + "UNION"
+    print(sql)
+    df_res = pd.DataFrame(dbfuncs.query_fetchall(sql)) #, {'max': 10}))
+    df_res.to_csv(pathfuncs.OUT_DIR + '/test_lang_detect_small.csv', index=False)
 
 # START
 

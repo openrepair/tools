@@ -114,7 +114,7 @@ def write_data(data):
         print('No data to write.')
         return False
 
-    cfile = pathfuncs.OUT_DIR + '/deepl_latest.csv'
+    cfile = pathfuncs.DATA_DIR + '/ords_problem_translations.csv'
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
     print('New data written to {}'.format(cfile))

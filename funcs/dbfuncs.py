@@ -15,7 +15,7 @@ def dbtest():
     print("This is the ORDS dbfuncs module")
     return dbvars
 
-
+# https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-execute.html
 def query_fetchall(sql, params=None):
     result = False
     try:
