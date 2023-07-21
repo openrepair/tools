@@ -85,3 +85,7 @@ List of English stopwords from a dataset published on [Kaggle](https://www.kaggl
 ### stopwords-english-repair.txt
 
 List of repair-related stopwords extracted from the ORDS corpus using `ords_extract_vocabulary.py`.
+
+### ords_product_category_item_type_translations.csv
+
+List of device type names per `product_category`. Translations in English, Dutch, German, French.
