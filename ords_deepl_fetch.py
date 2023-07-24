@@ -56,7 +56,8 @@ def translate(data):
         # For each record fetch a translation for each target language.
         for i in range(0, len(data)):
             # Is there already a translation for this text?
-            found = pd.DataFrame(dbfuncs.query_fetchall(sql,  { 'problem': data.iloc[i].problem}))
+            found = pd.DataFrame(dbfuncs.query_fetchall(
+                sql,  {'problem': data.iloc[i].problem}))
             if found.empty:
                 # No existing translation so fetch from API.
                 problem = data.iloc[i].problem
@@ -102,7 +103,7 @@ def translate(data):
         return data
 
 
-def write_data(data):
+def insert_data(data):
 
     if 'language_detected' in data.columns:
         data = data.loc[data.language_detected > '']
@@ -114,19 +115,36 @@ def write_data(data):
         print('No data to write.')
         return False
 
-    cfile = pathfuncs.DATA_DIR + '/ords_problem_translations.csv'
+    cfile = pathfuncs.OUT_DIR + '/deepl_latest.csv'
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
     print('New data written to {}'.format(cfile))
 
-    rows = data.to_sql(name='ords_problem_translations', con=dbfuncs.alchemy_eng(),
+    rows = data.to_sql(name='deepl_latest', con=dbfuncs.alchemy_eng(),
                        if_exists='append', index=False)
     logger.debug('{} rows written to table {}'.format(
-        rows, 'ords_problem_translations'))
+        rows, 'deepl_latest'))
+
     return True
 
 
+def dump_data():
+    sql = """
+    SELECT *
+    FROM ords_problem_translations
+    """
+    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    path_to_csv = pathfuncs.DATA_DIR + '/ords_problem_translations.csv'
+    df.to_csv(path_to_csv, index=False)
+    if pathfuncs.check_path(path_to_csv):
+        print('Data dumped to {}'.format(path_to_csv))
+        return path_to_csv
+    else:
+        print('Failed to dump data to {}'.format(path_to_csv))
+        return False
+
 # START
+
 
 langs = ['en-gb', 'de', 'nl', 'fr', 'it', 'es']
 auth_key = envfuncs.get_var('DEEPL_KEY')
@@ -138,4 +156,5 @@ else:
     work = get_work()
     work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
     data = translate(work)
-    write_data(data)
+    insert_data(data)
+    dump_data()
