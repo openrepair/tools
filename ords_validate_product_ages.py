@@ -7,7 +7,8 @@ logger = logfuncs.init_logger(__file__)
 """
 Values in the product_age and year_of_manufacture columns are not always correct.
 Often a seemingly impossible product age can mean a vintage or antique device.
-Someimes a value is simply an input error. See the "Data Collection" story in the docs dir.
+Sometimes a value is simply an input error.
+See the "How" story in the [data/README.md](data/README.md) about data collection.
 Every effort is made to tidy up mistakes at source but it is an ongoing task.
 This code can find outliers using a timeline of consumer electronics.
 To verify an outlier it is necessary to look at the item type, brand and problem.
