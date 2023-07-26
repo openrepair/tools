@@ -48,7 +48,7 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 
 * Code
   * [GNU General Public License v3.0](LICENSE.txt)
-* [Data](data/README.md)
+* [Data](dat/README.md)
   * [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International)
 * [ORDS Quest Data](https://github.com/openrepair/data) is covered by the license for [ORDS Data](https://openrepair.org/open-data/downloads/)
   * [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International)
