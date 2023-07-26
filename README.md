@@ -17,16 +17,13 @@ Some of the things you can do:
 * Get familiar with ORDS data.
 * Set up a MySQL database for ORDS data.
 * Slice the data up in various ways.
-* Compile waste and emission stats.
 * Investigate devices against the timeline of consumer electronics.
 * Translate multi-lingual text using the DeepL API.
 * Muck about with regular expressions.
 * Try out some Natural Language Processing and even a little (very basic) machine learning.
 * Generate Open Repair Data poetry.
 
-Feedback and contributions welcome.
-
-Aiming for efficiency, simplicity, readability and maintainability. One day. Maybe.
+There is also an [installer and ORDS configuration](solr/README.md) for an Apache Solr search platform that demonstrates indexing and querying multi-lingual text with international (ICU) characters.
 
 ## About the data
 
@@ -46,22 +43,15 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 * Write a few tests.
 * Data visualisation.
 * Document all the things.
-  * Brief history of ORDS
-  * About the standard and the data structure.
-  * How the data is collected.
-  * How the data is compiled and aggregated and the issues.
-  * About waste and emission stats.
-  * About the regular expressions.
-  * Challenges and wishlist.
 
 ## Licences & acknowledgments
 
-* Code and reference data
-  * GNU General Public License v3.0
+* Code
+  * [GNU General Public License v3.0](LICENSE.txt)
+* [Data](data/README.md)
+  * [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International)
 * [ORDS Quest Data](https://github.com/openrepair/data) is covered by the license for [ORDS Data](https://openrepair.org/open-data/downloads/)
-  * CC BY-SA 4.0 (Creative Commons Attribution-ShareAlike 4.0 International)
-* Waste and emissions data is based on the [Fixometer reference data - 2021](https://docs.google.com/spreadsheets/d/1TBhczzDaJhANTMh3eoouMOFZ7PvlmyrEQMqnw9WfdHY/edit?usp=sharing) published by The Restart Project. With thanks to James Pickstone and a team of volunteers!
-  * Creative Commons license (CC BY-SA 4.0).
+  * [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International)
 
 ## Setup
 

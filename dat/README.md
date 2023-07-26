@@ -53,21 +53,6 @@ Lists of terms and regex snippets used by ords_regex_category_compiler.py. Engli
 
 Timeline of electronic inventions and commercial availability related to ORDS product categories.
 
-### ords_category_unu_map.csv
-
-Maps the ORDS `product_category` values to a set known as "UNU Keys" produced by [UNITAR - United Nations Institute for Training and Research](https://www.unitar.org/). These keys are commonly found in academic papers dealing with  subjects around e-waste and trickle out to wider reports and news stories, e.g. [OF 16 BILLION MOBILE PHONES POSSESSED WORLDWIDE, 5.3 BILLION WILL BECOME WASTE IN 2022](https://www.unitar.org/about/news-stories/news/16-billion-mobile-phones-possessed-worldwide-53-billion-will-become-waste-2022). Note that UNITAR is reviewing their codes as part of a 4 year project due to concluded December 2023.
-
-The UNU average weights (kgs) in the file are lifted from [E-waste statistics: Guidelines on classifications, reporting and indicators](https://www.researchgate.net/publication/271845217_E-waste_statistics_Guidelines_on_classifications_reporting_and_indicators).
-
-The TRP average weights (kgs) in the file are based on lifecycle assessment work carried out by The Restart Project.
-
-Not all ORDS categories can be directly mapped to other sets of product categories. Combining category maps wit queries to find item types could produce better results.
-
-### ords_category_lca_reference.csv
-
-Average weights (kgs) and carbon footprints relating to ORDS product categories. Based on lifecycle assessment work carried out by The Restart Project.
-[The environmental impact of our devices: revealing what many companies hide](https://therestartproject.org/consumption/hidden-impact-devices/)
-
 ### ords_testdata_common_products.csv
 
 A list of common item types found in the ORDS data. Mostly English.
