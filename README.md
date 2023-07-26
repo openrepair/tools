@@ -73,7 +73,13 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 
 ```source bin/activate```
 
+To install the requirements.
+
 ```pip install -r requirements.txt```
+
+To upgrade to the newest requirements.
+
+```pip install -r requirements.txt --upgrade```
 
 ### Data
 
