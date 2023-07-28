@@ -6,7 +6,7 @@ from nltk import word_tokenize
 from nltk import sent_tokenize
 import nltk
 logger = logfuncs.init_logger(__file__)
-# Uncomment the following on first run.
+# Uncomment the following on first run or to update.
 # nltk.download('punkt')
 # nltk.download('stopwords')
 # nltk.download('averaged_perceptron_tagger')

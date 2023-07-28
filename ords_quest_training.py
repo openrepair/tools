@@ -205,9 +205,9 @@ def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
 
     if vocabulary != False:
         vectorizer.vocabulary_ = vocabulary
+        logger.debug(vectorizer.vocabulary_)
 
     logger.debug(vectorizer.get_stop_words())
-    logger.debug(vectorizer.vocabulary_)
     feature_vects = vectorizer.fit_transform(column)
 
     # Get the alpha value. Use search=True to find a good value, or False for default.
