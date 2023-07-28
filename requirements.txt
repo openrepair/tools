@@ -7,6 +7,7 @@ fuzzywuzzy==0.18.0
 greenlet==2.0.2
 idna==3.4
 joblib==1.2.0
+langdetect==1.0.9
 Levenshtein==0.21.0
 mysql-connector-python==8.0.33
 mysqlclient==2.1.1
