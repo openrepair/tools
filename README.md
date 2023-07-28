@@ -18,7 +18,8 @@ Some of the things you can do:
 * Set up a MySQL database for ORDS data.
 * Slice the data up in various ways.
 * Investigate devices against the timeline of consumer electronics.
-* Translate multi-lingual text using the DeepL API.
+* Calculate how much waste was prevented from going to landfill.
+* Detect languages in the text and translate using the DeepL API.
 * Muck about with regular expressions.
 * Try out some Natural Language Processing and even a little (very basic) machine learning.
 * Generate Open Repair Data poetry.
