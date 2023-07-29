@@ -12,15 +12,22 @@ from nltk import word_tokenize
 from joblib import dump
 from joblib import load
 
-logger = logfuncs.init_logger('ords_lang_training')
+logger = logfuncs.init_logger(__file__)
 
 # An attempt at using the DeepL translated problem text to train an NLP model using scikit-learn.
 # See dat/ords_problem_translations.csv and ords_deepl_setup.py
 
 """
+WORK IN PROGRESS!
+TO DO:
+    Strip html symbols
+    Split sentences
+    Translate Danish text
+    Remove lemmatization
+
 Total predictions	86,341
 
-* Comparisons
+* Comparisons on first pass:
 
 ** Google
 [Sheets 'DETECTLANGUAGE' function](https://support.google.com/docs/answer/3093278?hl=en-GB)
@@ -137,6 +144,7 @@ def get_alpha(data, labels, vects, search=False, refit=False):
 
 class LemmaTokenizer:
     def __init__(self):
+        # English only?
         self.wnl = WordNetLemmatizer()
         # Ignore all punctuation except apostrophes.
         self.rx = re.compile("[^'^\s\w]+|[\d]")
@@ -241,7 +249,7 @@ tdffile = format_path('ords_lang_obj_tdif', 'joblib')
 
 training_data = get_training_data()
 do_training(data=training_data,
-            stopwords=get_stopwords(), tokenizer=True)
+            stopwords=get_stopwords(), tokenizer=False)
 
 # Read the entire ORDS export.
 all_data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
