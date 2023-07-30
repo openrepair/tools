@@ -26,7 +26,8 @@ def bad_detections():
     sql = """
     SELECT *
     FROM `ords_problem_translations`
-    WHERE UPPER(language_detected) NOT IN ('en', 'en-gb', 'de', 'nl', 'fr', 'it', 'es')
+    WHERE language_detected NOT IN ('en', 'en-gb', 'de', 'nl', 'fr', 'it', 'es')
+    ORDER BY language_detected DESC, problem
     """
     df_res = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df_res.to_csv(pathfuncs.OUT_DIR + '/deepl_bad_detect.csv', index=False)
@@ -117,6 +118,38 @@ LIMIT {max} )
     df_res = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df_res.to_csv(pathfuncs.DATA_DIR + '/ords_lang_training.csv', index=False)
 
+def fix_lang_known():
+    import re
+    rxNoWord = re.compile('[\W\d]+', flags=re.IGNORECASE+re.UNICODE)
+    rxWeight = re.compile('[\W\dkg]+', flags=re.IGNORECASE+re.UNICODE)
+    langs = ["en","de","nl","fr","it","es"]
+    sql = """
+SELECT *
+FROM `ords_problem_translations`
+"""
+    data = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    for i, row in data.iterrows():
+        # print(row.problem)
+        # 99% of the time certain data providers use a known language.
+        # Strings that only contain punctuation or weights/codes are either '??' or 'EN'
+        # Other values in this column arrived as a result of previous translations for quests.
+        if rxNoWord.search(row.problem)!= None:
+            data.at[row.id_ords, 'language_known'] = '??'
+        elif rxWeight.search(row.problem) != None:
+            data.at[row.id_ords, 'language_known'] = 'EN'
+        elif row.data_provider == 'anstiftung':
+            data.at[row.id_ords, 'language_known'] = 'DE'
+        elif row.data_provider == 'Repair Café Denmark':
+            data.at[row.id_ords, 'language_known'] = 'DA'
+        elif row.data_provider == 'Repair Cafe Wales':
+            data.at[row.id_ords, 'language_known'] = 'EN'
+        elif row.data_provider == 'Fixit Clinic':
+            data.at[row.id_ords, 'language_known'] = 'EN'
+        # else:
+        #     data.loc[i, 'language_known'] = '??'
+    data.to_csv(pathfuncs.DATA_DIR + '/ords_problem_translations_foo.csv', index=False)
+
 # START
 
-bad_detections()
+# bad_detections()
+fix_lang_known()

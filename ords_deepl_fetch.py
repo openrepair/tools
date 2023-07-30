@@ -23,7 +23,8 @@ def limit_reached():
         return True
     return False
 
-
+# AND country = 'DNK'
+# 'ITA' 'ESP' 'BEL'
 def get_work():
 
     sql = """
@@ -37,6 +38,7 @@ def get_work():
     RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
     ) t3
     WHERE t3.id_ords IS NULL
+    AND country = 'DNK'
     AND TRIM(t3.problem) > ''
     LIMIT {limit}
     """
@@ -44,14 +46,15 @@ def get_work():
 
 
 def translate(data):
-
+    import re
     sql = """
     SELECT *
     FROM ords_problem_translations
     WHERE problem = %(problem)s
     LIMIT 1
     """
-
+    rxNoWord = re.compile('[\W\d]+', flags=re.IGNORECASE+re.UNICODE)
+    rxWeight = re.compile('[\W\dkg]+', flags=re.IGNORECASE+re.UNICODE)
     try:
         # For each record fetch a translation for each target language.
         for i in range(0, len(data)):
@@ -65,7 +68,7 @@ def translate(data):
                 for t_lang in langs:
                     # Has a language been detected for this problem?
                     # Is the target language the same as the detected language?
-                    if (d_lang == t_lang):
+                    if (d_lang.upper() == t_lang.upper()):
                         # Don't use up API credits.
                         text = problem
                     else:
@@ -81,15 +84,34 @@ def translate(data):
                             print("exception: {}".format(error))
                             data.loc[i, 'language_detected'] = ''
                             return data
-                    data.loc[i, 'language_known'] = '??'
+                    # 99% of the time certain data providers use a known language.
+                    # Strings that only contain punctuation or weights/codes are either '??' or 'EN'
+                    # Other values in this column arrived as a result of previous translations for quests.
+                    if rxNoWord.search(data.iloc[i].problem != None):
+                        data.loc[i, 'language_known'] = '??'
+                    elif rxWeight.search(data.iloc[i].problem != None):
+                        data.loc[i, 'language_known'] = '??'
+                    elif text == 'n.a.':
+                        data.loc[i, 'language_known'] = '??'
+                    elif data.iloc[i].data_provider == 'anstiftung':
+                        data.loc[i, 'language_known'] = 'DE'
+                    elif data.iloc[i].data_provider == 'Repair Café Denmark':
+                        data.loc[i, 'language_known'] = 'DA'
+                    elif data.iloc[i].data_provider == 'Repair Cafe Wales':
+                        data.loc[i, 'language_known'] = 'EN'
+                    elif data.iloc[i].data_provider == 'Fixit Clinic':
+                        data.loc[i, 'language_known'] = 'EN'
+                    else:
+                        data.loc[i, 'language_known'] = '??'
+
                     data.loc[i, 'translator'] = 'DeepL'
-                    data.loc[i, 'language_detected'] = d_lang
+                    data.loc[i, 'language_detected'] = d_lang.upper()
                     data.loc[i, key] = text
             else:
                 # Translation exists so copy from existing.
                 data.loc[i, 'language_known'] = found.language_known.values[0]
                 data.loc[i, 'translator'] = found.translator.values[0]
-                data.loc[i, 'language_detected'] = found.language_detected.values[0]
+                data.loc[i, 'language_detected'] = found.language_detected.values[0].upper()
                 for t_lang in langs:
                     key = t_lang.rstrip("-gb")
                     data.loc[i, key] = found[key].values[0]
