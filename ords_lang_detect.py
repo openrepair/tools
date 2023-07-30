@@ -6,7 +6,7 @@ import pandas as pd
 from langdetect import DetectorFactory
 DetectorFactory.seed = 0
 
-logger = logfuncs.init_logger('ords_lang_detect')
+logger = logfuncs.init_logger(__file__)
 
 # Detect languages in ORDS data using the Python langdetect package.
 
