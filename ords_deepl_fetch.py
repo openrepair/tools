@@ -22,9 +22,6 @@ def limit_reached():
         return True
     return False
 
-# AND country = 'DNK'
-# 'ITA' 'ESP' 'BEL'
-
 
 def get_work(max=10000):
 
