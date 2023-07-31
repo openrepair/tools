@@ -1,13 +1,4 @@
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
-
+DROP TABLE IF EXISTS `ords_problem_translations`;
 CREATE TABLE `ords_problem_translations` (
   `id_ords` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `data_provider` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -16,7 +7,6 @@ CREATE TABLE `ords_problem_translations` (
   `language_known` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `translator` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `language_detected` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `language` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL,
   `en` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `de` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `nl` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -35,8 +25,3 @@ ALTER TABLE `ords_problem_translations`
   ADD KEY `language_known` (`language_known`),
   ADD KEY `lang_detected` (`language_detected`),
   ADD KEY `problem` (`problem`(64));
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

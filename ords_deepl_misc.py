@@ -26,7 +26,7 @@ def bad_detections():
     sql = """
     SELECT *
     FROM `ords_problem_translations`
-    WHERE language_detected NOT IN ('en', 'en-gb', 'de', 'nl', 'fr', 'it', 'es')
+    WHERE language_detected NOT IN ('en', 'en-gb', 'de', 'nl', 'fr', 'it', 'es', 'da')
     ORDER BY language_detected DESC, problem
     """
     df_res = pd.DataFrame(dbfuncs.query_fetchall(sql))
@@ -40,12 +40,13 @@ def bad_detections():
 def recover_log():
 
     rxReq = re.compile("'target_lang': '([-A-Z]{2,5})', 'text': '(.*)'")
-    rxRes = re.compile('"detected_source_language":"([-A-Z]{2,5})","text":"(.*)"')
+    rxRes = re.compile(
+        '"detected_source_language":"([-A-Z]{2,5})","text":"(.*)"')
     rows = []
     file = open(pathfuncs.LOG_DIR + '/ords_deepl_fetch_foobar.log', "r")
     lines = file.readlines()
     file.close()
-    for i in range(0,len(lines)):
+    for i in range(0, len(lines)):
         if lines[i].startswith('Request to DeepL API method=POST'):
             targetlang = ''
             sourcetext = ''
@@ -74,9 +75,11 @@ def recover_log():
 
             rows.append([sourcelang, sourcetext, targetlang, translation])
 
-    df = pd.DataFrame(data=rows, columns=['language_detected', 'problem', 'targetlang', 'translation'])
-    langs = ["en","de","nl","fr","it","es"]
-    columns = ["problem", "language_known", "translator", "language_detected"] + langs
+    df = pd.DataFrame(data=rows, columns=[
+                      'language_detected', 'problem', 'targetlang', 'translation'])
+    langs = ["en", "de", "nl", "fr", "it", "es"]
+    columns = ["problem", "language_known",
+               "translator", "language_detected"] + langs
     rows = []
     dfg = df.groupby('problem')
     for problem, group in dfg:
@@ -86,18 +89,21 @@ def recover_log():
         row["problem"] = problem
         row["language_detected"] = group.language_detected.unique()[0]
         for lang in langs:
-            row[lang] = df.loc[(df['problem'] == problem) & (df['targetlang'] == lang)].translation.values[0]
+            row[lang] = df.loc[(df['problem'] == problem) & (
+                df['targetlang'] == lang)].translation.values[0]
         print(row)
         rows.append(row)
 
-    result = pd.DataFrame(data = rows, columns=columns)
-    result.to_csv(pathfuncs.OUT_DIR + '/ords_deepl_parsed_foobar.csv', index=False)
+    result = pd.DataFrame(data=rows, columns=columns)
+    result.to_csv(pathfuncs.OUT_DIR +
+                  '/ords_deepl_parsed_foobar.csv', index=False)
+
 
 # Fetch assorted language strings for lang detection.
 # See ords_lang_training.py for a pandas version.
 def query_lang_strings():
 
-    langs = ["en","de","nl","fr","it","es"]
+    langs = ["en", "de", "nl", "fr", "it", "es"]
     qry = """
 (SELECT
 {fld} as problem,
@@ -108,7 +114,7 @@ AND LENGTH(problem) > 12
 GROUP BY {fld}
 LIMIT {max} )
 """
-    sql = "" # "SELECT * FROM ("
+    sql = ""  # "SELECT * FROM ("
     for i in range(0, len(langs)):
         sql = sql + qry.format(fld=langs[i], max=10000)
         if i != len(langs)-1:
@@ -118,38 +124,7 @@ LIMIT {max} )
     df_res = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df_res.to_csv(pathfuncs.DATA_DIR + '/ords_lang_training.csv', index=False)
 
-def fix_lang_known():
-    import re
-    rxNoWord = re.compile('[\W\d]+', flags=re.IGNORECASE+re.UNICODE)
-    rxWeight = re.compile('[\W\dkg]+', flags=re.IGNORECASE+re.UNICODE)
-    langs = ["en","de","nl","fr","it","es"]
-    sql = """
-SELECT *
-FROM `ords_problem_translations`
-"""
-    data = pd.DataFrame(dbfuncs.query_fetchall(sql))
-    for i, row in data.iterrows():
-        # print(row.problem)
-        # 99% of the time certain data providers use a known language.
-        # Strings that only contain punctuation or weights/codes are either '??' or 'EN'
-        # Other values in this column arrived as a result of previous translations for quests.
-        if rxNoWord.search(row.problem)!= None:
-            data.at[row.id_ords, 'language_known'] = '??'
-        elif rxWeight.search(row.problem) != None:
-            data.at[row.id_ords, 'language_known'] = 'EN'
-        elif row.data_provider == 'anstiftung':
-            data.at[row.id_ords, 'language_known'] = 'DE'
-        elif row.data_provider == 'Repair Café Denmark':
-            data.at[row.id_ords, 'language_known'] = 'DA'
-        elif row.data_provider == 'Repair Cafe Wales':
-            data.at[row.id_ords, 'language_known'] = 'EN'
-        elif row.data_provider == 'Fixit Clinic':
-            data.at[row.id_ords, 'language_known'] = 'EN'
-        # else:
-        #     data.loc[i, 'language_known'] = '??'
-    data.to_csv(pathfuncs.DATA_DIR + '/ords_problem_translations_foo.csv', index=False)
 
 # START
 
-# bad_detections()
-fix_lang_known()
+bad_detections()

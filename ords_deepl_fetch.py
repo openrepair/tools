@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
-
 from funcs import *
 import pandas as pd
 import deepl
+import re
 
 logger = logfuncs.init_logger(__file__)
 
 # Step 1: ords_deepl_setup.py
 # Step 2: ords_deepl_fetch.py
-# Step 3: ords_deepl_misc.py
 # https://github.com/DeepLcom/deepl-python
 
 
@@ -25,8 +24,11 @@ def limit_reached():
 
 # AND country = 'DNK'
 # 'ITA' 'ESP' 'BEL'
-def get_work():
 
+
+def get_work(max=10000):
+
+    print('*** FETCHING FROM DB ***')
     sql = """
     SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
     SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
@@ -38,85 +40,100 @@ def get_work():
     RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
     ) t3
     WHERE t3.id_ords IS NULL
-    AND country = 'DNK'
     AND TRIM(t3.problem) > ''
     LIMIT {limit}
     """
-    return pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var('ORDS_DATA'), limit=10000)))
+    work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
+        tablename=envfuncs.get_var('ORDS_DATA'), limit=max)))
+
+    # Assumptions!
+    # 99% of the time certain data_providers/countries use a known language.
+    # Subject to change, e.g. new Canadian events might use French.
+    # "Nonsense" strings with only punctuation or weights/codes flagged with '??'
+    work['language_known'] = ''
+    filters = {
+        0: work['country'].isin(['GBR', 'USA', 'CAN', 'AUS']),
+        1: work['country'].isin(['BEL', 'FRA']),
+        2: work['country'].isin(['DEU']),
+        3: work['country'].isin(['DNK']),
+        4: work['country'].isin(['NLD']),
+        5: work['problem'].str.fullmatch(
+            r'([\W\dkg]+)', flags=re.IGNORECASE+re.UNICODE),
+    }
+    filterlangs = {
+        0: 'en',
+        1: 'fr',
+        2: 'de',
+        3: 'da',
+        4: 'nl',
+        5: '??',
+    }
+    print('*** APPLYING FILTERS ***')
+    for i in range(0, len(filters.keys())):
+        print(i)
+        flt = filters[i]
+        dff = work.where(flt)
+        dff.dropna(inplace=True)
+        dff.language_known = filterlangs[i]
+        logger.debug(dff)
+        work.update(dff)
+    return work
+
+
+# Mock DeepL result class for testing
+class MockDeepLResult:
+    def __init__(self):
+        self.detected_source_lang = miscfuncs.randstr(len=2, up=True)
+        self.text = miscfuncs.randstr()
 
 
 def translate(data):
-    import re
     sql = """
     SELECT *
     FROM ords_problem_translations
     WHERE problem = %(problem)s
     LIMIT 1
     """
-    rxNoWord = re.compile('[\W\d]+', flags=re.IGNORECASE+re.UNICODE)
-    rxWeight = re.compile('[\W\dkg]+', flags=re.IGNORECASE+re.UNICODE)
     try:
         # For each record fetch a translation for each target language.
-        for i in range(0, len(data)):
+        for i, row in data.iterrows():
             # Is there already a translation for this text?
             found = pd.DataFrame(dbfuncs.query_fetchall(
-                sql,  {'problem': data.iloc[i].problem}))
+                sql,  {'problem': row.problem}))
             if found.empty:
                 # No existing translation so fetch from API.
-                problem = data.iloc[i].problem
                 d_lang = False
                 for t_lang in langs:
+                    print('{} : {}'.format(i, t_lang))
                     # Has a language been detected for this problem?
                     # Is the target language the same as the detected language?
-                    if (d_lang.upper() == t_lang.upper()):
+                    if d_lang == t_lang:
                         # Don't use up API credits.
-                        text = problem
+                        text = row.problem
                     else:
                         # No existing translation so fetch from API.
                         try:
                             key = t_lang.rstrip("-gb")
                             result = translator.translate_text(
-                                problem, target_lang=t_lang)
-                            print(result)
-                            d_lang = result.detected_source_lang
+                                row.problem, target_lang=t_lang)
+                            d_lang = result.detected_source_lang.lower()
                             text = result.text
                         except deepl.DeepLException as error:
                             print("exception: {}".format(error))
-                            data.loc[i, 'language_detected'] = ''
+                            data.at[i, 'language_detected'] = ''
                             return data
-                    # 99% of the time certain data providers use a known language.
-                    # Strings that only contain punctuation or weights/codes are either '??' or 'EN'
-                    # Other values in this column arrived as a result of previous translations for quests.
-                    if rxNoWord.search(data.iloc[i].problem != None):
-                        data.loc[i, 'language_known'] = '??'
-                    elif rxWeight.search(data.iloc[i].problem != None):
-                        data.loc[i, 'language_known'] = '??'
-                    elif text == 'n.a.':
-                        data.loc[i, 'language_known'] = '??'
-                    elif data.iloc[i].data_provider == 'anstiftung':
-                        data.loc[i, 'language_known'] = 'DE'
-                    elif data.iloc[i].data_provider == 'Repair Café Denmark':
-                        data.loc[i, 'language_known'] = 'DA'
-                    elif data.iloc[i].data_provider == 'Repair Cafe Wales':
-                        data.loc[i, 'language_known'] = 'EN'
-                    elif data.iloc[i].data_provider == 'Fixit Clinic':
-                        data.loc[i, 'language_known'] = 'EN'
-                    else:
-                        data.loc[i, 'language_known'] = '??'
 
-                    data.loc[i, 'translator'] = 'DeepL'
-                    data.loc[i, 'language_detected'] = d_lang.upper()
-                    data.loc[i, key] = text
+                    data.at[i, 'translator'] = 'DeepL'
+                    data.at[i, 'language_detected'] = d_lang
+                    data.at[i, key] = text
             else:
                 # Translation exists so copy from existing.
-                data.loc[i, 'language_known'] = found.language_known.values[0]
-                data.loc[i, 'translator'] = found.translator.values[0]
-                data.loc[i, 'language_detected'] = found.language_detected.values[0].upper()
+                data.at[i, 'language_known'] = found.language_known.values[0]
+                data.at[i, 'translator'] = found.translator.values[0]
+                data.at[i, 'language_detected'] = found.language_detected.values[0]
                 for t_lang in langs:
                     key = t_lang.rstrip("-gb")
-                    data.loc[i, key] = found[key].values[0]
-
-            print(data.iloc[i])
+                    data.at[i, key] = found[key].values[0]
 
     except Exception as error:
         print("Exception: {}".format(error))
@@ -142,10 +159,10 @@ def insert_data(data):
     data.to_csv(cfile, index=False)
     print('New data written to {}'.format(cfile))
 
-    rows = data.to_sql(name='deepl_latest', con=dbfuncs.alchemy_eng(),
+    rows = data.to_sql(name='ords_problem_translations', con=dbfuncs.alchemy_eng(),
                        if_exists='append', index=False)
     logger.debug('{} rows written to table {}'.format(
-        rows, 'deepl_latest'))
+        rows, 'ords_problem_translations'))
 
     return True
 
@@ -168,15 +185,22 @@ def dump_data():
 # START
 
 
+# To Do: add Danish translations to 'da' column.
 langs = ['en-gb', 'de', 'nl', 'fr', 'it', 'es']
-auth_key = envfuncs.get_var('DEEPL_KEY')
-translator = deepl.Translator(auth_key)
+
+# 10k recommended
+work = get_work(10)
+work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
+
+if auth_key := envfuncs.get_var('DEEPL_KEY'):
+    translator = deepl.Translator(auth_key)
+else:
+    print('Add your DeepL API key to the .env file.')
+    exit()
 
 if limit_reached():
     exit()
 else:
-    work = get_work()
-    work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
     data = translate(work)
     insert_data(data)
     dump_data()
