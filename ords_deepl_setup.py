@@ -6,7 +6,6 @@ logger = logfuncs.init_logger(__file__)
 
 # Step 1: ords_deepl_setup.py
 # Step 2: ords_deepl_fetch.py
-# Step 3: ords_deepl_misc.py
 # https://github.com/DeepLcom/deepl-python
 
 
@@ -67,13 +66,13 @@ def replace_csv_file(path_to_csv_new):
 
 # START
 
-replace = False
-clean = False
-
 path_to_csv = dbbackup()
 
+replace = False
 if replace:
     replace_csv_file(path_to_csv)
 
+# Drop and recreate table, import data from csv file.
+clean = False
 if clean:
     dbsetup()
