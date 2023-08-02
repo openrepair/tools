@@ -117,7 +117,7 @@ def translate(data):
                         text = row.problem
                     else:
                         # No existing translation so fetch from API.
-                        logger.debug('{} is new... translating').format(row.id_ords)
+                        logger.debug('{} is new... translating'.format(row.id_ords))
                         try:
                             key = t_lang.rstrip("-gb")
                             result = translator.translate_text(
@@ -134,7 +134,7 @@ def translate(data):
                     data.at[i, key] = text
             else:
                 # Translation exists so copy from existing.
-                logger.debug('{} exists... copying').format(row.id_ords)
+                logger.debug('{} exists... copying'.format(row.id_ords))
                 data.at[i, 'language_known'] = found.language_known.values[0]
                 data.at[i, 'translator'] = found.translator.values[0]
                 data.at[i, 'language_detected'] = found.language_detected.values[0]
