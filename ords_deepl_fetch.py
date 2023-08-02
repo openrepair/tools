@@ -12,17 +12,6 @@ logger = logfuncs.init_logger(__file__)
 # https://github.com/DeepLcom/deepl-python
 
 
-def limit_reached():
-    usage = translator.get_usage()
-    if usage.character.valid:
-        print(
-            f"Character usage: {usage.character.count} of {usage.character.limit}")
-    if usage.any_limit_reached:
-        print('Translation limit reached.')
-        return True
-    return False
-
-
 # Fetch problem text that has not yet been translated.
 # Ignore the more useless values.
 # Guess the language for sanity checks later.
@@ -83,13 +72,6 @@ def get_work(max=10000, minlen=16):
     work.drop(work[work.language_known=='??'].index, inplace=True)
     logger.debug(work)
     return work
-
-
-# Mock DeepL result class for testing.
-class MockDeepLResult:
-    def __init__(self):
-        self.detected_source_lang = miscfuncs.randstr(len=2, up=True)
-        self.text = miscfuncs.randstr()
 
 
 def translate(data):
@@ -189,25 +171,26 @@ def dump_data():
         print('Failed to dump data to {}'.format(path_to_csv))
         return False
 
+
 # START
 
+# Allows for trial and error without using up API credits.
+# Should create a test and use mock there, ideally.
+mock=True
+translator = deeplfuncs.deeplWrapper(mock)
 
-# To Do: add Danish translations to 'da' column.
-langs = ['en-gb', 'de', 'nl', 'fr', 'it', 'es']
+langs = translator.langs
 
-# 10k recommended.
+# 5-10k recommended for live run.
 work = get_work(10)
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
 
-if auth_key := envfuncs.get_var('DEEPL_KEY'):
-    translator = deepl.Translator(auth_key)
-else:
-    print('Add your DeepL API key to the .env file.')
-    exit()
-
-if limit_reached():
+if translator.api_limit_reached():
     exit()
 else:
     data = translate(work)
-    insert_data(data)
-    dump_data()
+    if not mock:
+        insert_data(data)
+        dump_data()
+    else:
+        logger.debug(data)
