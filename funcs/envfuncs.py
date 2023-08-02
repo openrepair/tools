@@ -6,7 +6,6 @@ load_dotenv()
 
 
 def get_var(key):
-    foo = os.environ
     if key in os.environ:
         return os.environ[key]
     else:
