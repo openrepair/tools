@@ -23,9 +23,12 @@ def limit_reached():
     return False
 
 
-def get_work(max=10000):
+# Fetch problem text that has not yet been translated.
+# Ignore the more useless values.
+# Guess the language for sanity checks later.
+def get_work(max=10000, minlen=16):
 
-    print('*** FETCHING FROM DB ***')
+    print('*** FETCHING WORK ***')
     sql = """
     SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
     SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
@@ -37,16 +40,16 @@ def get_work(max=10000):
     RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
     ) t3
     WHERE t3.id_ords IS NULL
-    AND TRIM(t3.problem) > ''
+    AND LENGTH(TRIM(t3.problem)) >= {chars}
     LIMIT {limit}
     """
     work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
-        tablename=envfuncs.get_var('ORDS_DATA'), limit=max)))
+        tablename=envfuncs.get_var('ORDS_DATA'), limit=max, chars=minlen)))
 
     # Assumptions!
     # 99% of the time certain data_providers/countries use a known language.
     # Subject to change, e.g. new Canadian events might use French.
-    # "Nonsense" strings with only punctuation or weights/codes flagged with '??'
+    # "Nonsense" strings with only punctuation or weights/codes dropped.
     work['language_known'] = ''
     filters = {
         0: work['country'].isin(['GBR', 'USA', 'CAN', 'AUS']),
@@ -65,19 +68,24 @@ def get_work(max=10000):
         4: 'nl',
         5: '??',
     }
-    print('*** APPLYING FILTERS ***')
+    logger.debug('*** BEFORE FILTERS ***')
+    logger.debug(work)
     for i in range(0, len(filters.keys())):
-        print(i)
+        print('Applying filter {}'.format(i))
         flt = filters[i]
         dff = work.where(flt)
         dff.dropna(inplace=True)
         dff.language_known = filterlangs[i]
-        logger.debug(dff)
         work.update(dff)
+    logger.debug('*** AFTER FILTERS ***')
+    logger.debug(work)
+    logger.debug('*** AFTER DROPPING ?? ***')
+    work.drop(work[work.language_known=='??'].index, inplace=True)
+    logger.debug(work)
     return work
 
 
-# Mock DeepL result class for testing
+# Mock DeepL result class for testing.
 class MockDeepLResult:
     def __init__(self):
         self.detected_source_lang = miscfuncs.randstr(len=2, up=True)
@@ -187,7 +195,7 @@ def dump_data():
 # To Do: add Danish translations to 'da' column.
 langs = ['en-gb', 'de', 'nl', 'fr', 'it', 'es']
 
-# 10k recommended
+# 10k recommended.
 work = get_work(10)
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
 

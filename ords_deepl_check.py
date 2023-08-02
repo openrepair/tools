@@ -77,3 +77,20 @@ sql = """
     """
 df = pd.DataFrame(dbfuncs.query_fetchall(sql))
 df.to_csv(path, index=False)
+
+
+# Missing translations across languages.
+# Could have run out of DeepL credits before lang set completion.
+# Write results to csv file.
+logger.debug('*** MISSING TRANSLATIONS ***')
+path = pathfuncs.OUT_DIR + '/deepl_missing.csv'
+logger.debug('See ' + path)
+sql = """
+    SELECT id_ords, language_known, language_detected,
+    en, de, nl, fr, it, es, da
+    FROM `ords_problem_translations`
+    WHERE CONCAT(`en`,`de`, `nl`, `fr`, `it`, `es`) IS NULL;
+    """
+df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+df.to_csv(path, index=False)
+
