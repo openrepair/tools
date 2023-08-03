@@ -16,6 +16,8 @@ def dbtest():
     return dbvars
 
 # https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-execute.html
+
+
 def query_fetchall(sql, params=None):
     result = False
     try:
@@ -74,3 +76,54 @@ def create_ords_tables(sql):
             cursor.close()
             dbh.close()
         return result
+
+
+def execute(sql, params=None):
+    result = 0
+    try:
+        dbh = mysql_con()
+        cursor = dbh.cursor()
+        cursor.execute(sql, params)
+        dbh.commit()
+        result = cursor.rowcount
+    except mysql.connector.Error as error:
+        print("MySQL exception: {}".format(error))
+    finally:
+        if dbh.is_connected():
+            cursor.close()
+            dbh.close()
+        return result
+
+
+def executemany(sql, params=None):
+    result = 0
+    try:
+        dbh = mysql_con()
+        cursor = dbh.cursor()
+        cursor.executemany(sql, params)
+        dbh.commit()
+        result = cursor.rowcount
+    except mysql.connector.Error as error:
+        print("MySQL exception: {}".format(error))
+    finally:
+        if dbh.is_connected():
+            cursor.close()
+            dbh.close()
+        return result
+
+
+def dump_table_to_csv(table, path):
+    import pandas as pd
+    sql = """
+    SELECT *
+    FROM {}
+    """
+    df = pd.DataFrame(query_fetchall(sql.format(table)))
+    path_to_csv = path + '/{}.csv'.format(table)
+    df.to_csv(path_to_csv, index=False)
+    if os.path.exists(path_to_csv):
+        print('Data dumped to {}'.format(path_to_csv))
+        return path_to_csv
+    else:
+        print('Failed to dump data to {}'.format(path_to_csv))
+        return False

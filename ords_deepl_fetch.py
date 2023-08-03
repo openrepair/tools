@@ -156,22 +156,6 @@ def insert_data(data):
     return True
 
 
-def dump_data():
-    sql = """
-    SELECT *
-    FROM ords_problem_translations
-    """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
-    path_to_csv = pathfuncs.DATA_DIR + '/ords_problem_translations.csv'
-    df.to_csv(path_to_csv, index=False)
-    if pathfuncs.check_path(path_to_csv):
-        print('Data dumped to {}'.format(path_to_csv))
-        return path_to_csv
-    else:
-        print('Failed to dump data to {}'.format(path_to_csv))
-        return False
-
-
 # START
 
 # Allows for trial and error without using up API credits.
@@ -191,6 +175,6 @@ else:
     data = translate(work)
     if not mock:
         insert_data(data)
-        dump_data()
+        dbfuncs.dump_table_to_csv('ords_problem_translations', pathfuncs.DATA_DIR)
     else:
         logger.debug(data)

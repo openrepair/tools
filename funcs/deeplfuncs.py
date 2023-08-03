@@ -20,8 +20,8 @@ class deeplWrapper:
                 self.translator = False
                 print('Add your DeepL API key to the .env file.')
 
-    def translate_text(self, text, target_lang):
-        return self.translator.translate_text(text, target_lang=target_lang)
+    def translate_text(self, text, target_lang, source_lang=''):
+        return self.translator.translate_text(text, target_lang=target_lang, source_lang=source_lang)
 
     def api_limit_reached(self):
         usage = self.translator.get_usage()
@@ -44,7 +44,7 @@ class deeplWrapper:
 # To Do: mock exception
 class mockDeepLTranslator:
 
-    def translate_text(self, text, target_lang):
+    def translate_text(self, text, target_lang, source_lang=''):
         self.detected_source_lang = mockDeepLTranslator.mockTranslation(len=2, up=True)
         self.text = mockDeepLTranslator.mockTranslation()
         return self
