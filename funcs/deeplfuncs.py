@@ -6,10 +6,13 @@ import string
 
 # Wrap/mock DeepL calls.
 class deeplWrapper:
+
     # Vast majority of English problem text is British, currently.
     # Fixit Clinic is only US English, too few to make a case for 'en-us' just yet.
     # There are a few Danish (DNK) records in the dataset, so will need 'da' before long.
-    langs = ['en-gb', 'de', 'nl', 'fr', 'it', 'es']
+    langdict = {'en': 'en-gb', 'de': 'de', 'nl': 'nl',
+                'fr': 'fr', 'it': 'it', 'es': 'es'}
+
     def __init__(self, mock=False):
         if mock:
             self.translator = mockDeepLTranslator()
@@ -33,7 +36,13 @@ class deeplWrapper:
             return True
         return False
 
-    def get_key():
+    def get_languages():
+        return list(deeplWrapper.langdict.values())
+
+    def get_columns():
+        return list(deeplWrapper.langdict.keys())
+
+    def get_api_key():
         if 'DEEPL_KEY' in os.environ:
             return os.environ['DEEPL_KEY']
         else:
@@ -45,7 +54,8 @@ class deeplWrapper:
 class mockDeepLTranslator:
 
     def translate_text(self, text, target_lang, source_lang=''):
-        self.detected_source_lang = mockDeepLTranslator.mockTranslation(len=2, up=True)
+        self.detected_source_lang = mockDeepLTranslator.mockTranslation(
+            len=2, up=True)
         self.text = mockDeepLTranslator.mockTranslation()
         return self
 
@@ -55,7 +65,7 @@ class mockDeepLTranslator:
     @staticmethod
     def mockTranslation(len=0, lo=False, up=False, ws=False, nums=False, punct=False):
         if len == 0:
-            len = random.randint(6,12)
+            len = random.randint(6, 12)
 
         if lo:
             chars = string.ascii_lowercase
@@ -86,4 +96,3 @@ class mockDeepLUsageChar:
         self.valid = True
         self.count = 0
         self.limit = 500000
-

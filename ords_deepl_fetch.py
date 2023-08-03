@@ -69,12 +69,12 @@ def get_work(max=10000, minlen=16):
     logger.debug('*** AFTER FILTERS ***')
     logger.debug(work)
     logger.debug('*** AFTER DROPPING ?? ***')
-    work.drop(work[work.language_known=='??'].index, inplace=True)
+    work.drop(work[work.language_known == '??'].index, inplace=True)
     logger.debug(work)
     return work
 
 
-def translate(data):
+def translate(data, langdict):
     sql = """
     SELECT *
     FROM ords_problem_translations
@@ -90,7 +90,8 @@ def translate(data):
             if found.empty:
                 # No existing translation so fetch from API.
                 d_lang = False
-                for t_lang in langs:
+                for column in langdict.keys():
+                    t_lang = langdict[column]
                     print('{} : {} : {}'.format(i, row.id_ords, t_lang))
                     # Has a language been detected for this problem?
                     # Is the target language the same as the detected language?
@@ -99,9 +100,9 @@ def translate(data):
                         text = row.problem
                     else:
                         # No existing translation so fetch from API.
-                        logger.debug('{} is new... translating'.format(row.id_ords))
+                        logger.debug(
+                            '{} is new... translating'.format(row.id_ords))
                         try:
-                            key = t_lang.rstrip("-gb")
                             result = translator.translate_text(
                                 row.problem, target_lang=t_lang)
                             d_lang = result.detected_source_lang.lower()
@@ -113,16 +114,15 @@ def translate(data):
 
                     data.at[i, 'translator'] = 'DeepL'
                     data.at[i, 'language_detected'] = d_lang
-                    data.at[i, key] = text
+                    data.at[i, column] = text
             else:
                 # Translation exists so copy from existing.
                 logger.debug('{} exists... copying'.format(row.id_ords))
                 data.at[i, 'language_known'] = found.language_known.values[0]
                 data.at[i, 'translator'] = found.translator.values[0]
                 data.at[i, 'language_detected'] = found.language_detected.values[0]
-                for t_lang in langs:
-                    key = t_lang.rstrip("-gb")
-                    data.at[i, key] = found[key].values[0]
+                for column in langdict.keys():
+                    data.at[i, column] = found[column].values[0]
 
     except Exception as error:
         print("Exception: {}".format(error))
@@ -160,21 +160,20 @@ def insert_data(data):
 
 # Allows for trial and error without using up API credits.
 # Should create a test and use mock there, ideally.
-mock=True
+mock = True
 translator = deeplfuncs.deeplWrapper(mock)
 
-langs = translator.langs
-
 # 5-10k recommended for live run.
-work = get_work(10)
+work = get_work(1000)
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
 
 if translator.api_limit_reached():
     exit()
 else:
-    data = translate(work)
+    data = translate(work, deeplfuncs.deeplWrapper.langdict)
     if not mock:
         insert_data(data)
-        dbfuncs.dump_table_to_csv('ords_problem_translations', pathfuncs.DATA_DIR)
+        dbfuncs.dump_table_to_csv(
+            'ords_problem_translations', pathfuncs.DATA_DIR)
     else:
         logger.debug(data)
