@@ -11,13 +11,6 @@ dbvars = {
 }
 
 
-def dbtest():
-    print("This is the ORDS dbfuncs module")
-    return dbvars
-
-# https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-execute.html
-
-
 def query_fetchall(sql, params=None):
     result = False
     try:
@@ -27,50 +20,6 @@ def query_fetchall(sql, params=None):
         result = cursor.fetchall()
     except mysql.connector.Error as error:
         print("MySQL exception: {}".format(error))
-    finally:
-        if dbh.is_connected():
-            cursor.close()
-            dbh.close()
-        return result
-
-
-def alchemy_con():
-    return "mysql+mysqldb://{ORDS_DB_USER}:{ORDS_DB_PWD}@{ORDS_DB_HOST}/{ORDS_DB_DATABASE}".format(**os.environ)
-
-
-def alchemy_eng():
-    from sqlalchemy import create_engine
-    con = alchemy_con()
-    return create_engine(con)
-
-
-def mysql_con():
-    dbh = False
-    try:
-        dbh = mysql.connector.connect(
-            host=dbvars['host'],
-            database=dbvars['database'],
-            user=dbvars['user'],
-            password=dbvars['pwd'],
-            # collation=dbvars['collation'],
-            # raw=True
-        )
-    except mysql.connector.Error as error:
-        print("MySQL exception: {}".format(error))
-
-    finally:
-        return dbh
-
-
-def create_ords_tables(sql):
-    result = False
-    try:
-        dbh = mysql_con()
-        cursor = dbh.cursor(dictionary=True)
-        result = cursor.execute(sql)
-    except mysql.connector.Error as error:
-        print("MySQL exception: {}".format(error))
-
     finally:
         if dbh.is_connected():
             cursor.close()
@@ -117,8 +66,8 @@ def dump_table_to_csv(table, path):
     sql = """
     SELECT *
     FROM {}
-    """
-    df = pd.DataFrame(query_fetchall(sql.format(table)))
+    """.format(table)
+    df = pd.DataFrame(query_fetchall(sql))
     path_to_csv = path + '/{}.csv'.format(table)
     df.to_csv(path_to_csv, index=False)
     if os.path.exists(path_to_csv):
@@ -127,3 +76,31 @@ def dump_table_to_csv(table, path):
     else:
         print('Failed to dump data to {}'.format(path_to_csv))
         return False
+
+
+def mysql_con():
+    dbh = False
+    try:
+        dbh = mysql.connector.connect(
+            host=dbvars['host'],
+            database=dbvars['database'],
+            user=dbvars['user'],
+            password=dbvars['pwd'],
+            # collation=dbvars['collation'],
+            # raw=True
+        )
+    except mysql.connector.Error as error:
+        print("MySQL exception: {}".format(error))
+
+    finally:
+        return dbh
+
+
+def alchemy_con():
+    return "mysql+mysqldb://{ORDS_DB_USER}:{ORDS_DB_PWD}@{ORDS_DB_HOST}/{ORDS_DB_DATABASE}".format(**os.environ)
+
+
+def alchemy_eng():
+    from sqlalchemy import create_engine
+    con = alchemy_con()
+    return create_engine(con)
