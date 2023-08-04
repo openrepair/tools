@@ -4,6 +4,7 @@ from funcs import *
 import pandas as pd
 import datetime
 from datetime import datetime
+import re
 
 logger = logfuncs.init_logger(__file__)
 
@@ -24,7 +25,10 @@ df_in.dropna(axis='rows', subset=[
     'year_of_manufacture'], inplace=True, ignore_index=True)
 # Misc records have no timeline data.
 df_in = df_in.loc[df_in.product_category != 'Misc']
-# Uncomment if only interested in success stories.
+# The type of item is the interesting part of the partner_product_category.
+df_in.partner_product_category = df_in.partner_product_category.str.split('~').str.get(1).str.strip()
+df_in.rename(columns={'partner_product_category': 'item_type'}, inplace=True)
+# Uncomment the following if only interested in success stories.
 # df_in = df_in.loc[df_in.repair_status.isin(['Fixed', 'Repairable'])]
 
 # Convert string to date so year can be extracted.
@@ -48,6 +52,7 @@ curr_year = datetime.now().year
 dict = {'year_event': 0,
     'year_recent': 0,
     'year_vintage': 0,
+    'year_decade': 0,
     'is_impossible': False,
     'is_mistake': False,
     'is_vintage': False,
@@ -60,8 +65,9 @@ for i, row in data.iterrows():
     try:
         d = row.to_dict() | dict
         d['year_curr'] = curr_year
-        d['year_event'] = row.event_date.year
         d['year_recent'] = curr_year-10
+        d['year_event'] = row.event_date.year
+        d['year_decade'] = re.sub('([1-9]\.0)', '0', str(row.year_of_manufacture))
         d['year_vintage'] = round(d['year_curr']-((d['year_curr']-row.earliest)/2))
         if row.year_of_manufacture >= d['year_event']:
             d['is_mistake'] = True
