@@ -13,7 +13,7 @@ from joblib import load
 logger = logfuncs.init_logger(__file__)
 
 # An attempt at using the DeepL translated problem text to train an NLP model using scikit-learn.
-# See dat/ords_problem_translations.csv and ords_deepl_setup.py
+# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
 
 """
 WORK IN PROGRESS!

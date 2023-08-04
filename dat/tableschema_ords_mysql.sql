@@ -26,7 +26,7 @@ CREATE TABLE `{1}` (
   `problem` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE `{1}`
-  ADD KEY `id` (`id`),
+  ADD PRIMARY KEY `id` (`id`),
   ADD KEY `product_category` (`product_category`),
   ADD KEY `product_category_id` (`product_category_id`),
   ADD KEY `data_provider` (`data_provider`),
