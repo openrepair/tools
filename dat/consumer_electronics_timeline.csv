@@ -1,40 +1,40 @@
-product_category_id,product_category,vintage,antique
-1,Aircon/dehumidifier,2000,1945
-2,Battery/charger/adapter,1997,1997
-36,Coffee maker,1960,1954
-3,Decorative or safety lights,1920,1879
-4,Desktop computer,2000,1977
-5,Digital compact camera,1994,1994
-6,DSLR/video camera,1991,1991
-7,Fan,1950,1910
-8,Flat screen,2000,1998
-37,Food processor,1950,1910
-38,Games console,1972,1972
-9,Hair & beauty item,1950,1920
-39,Hair dryer,1950,1920
-10,Handheld entertainment device,1970,1976
-11,Headphones,1950,1958
-12,Hi-Fi integrated,1950,1877
-13,Hi-Fi separates,1950,1877
-40,Iron,1950,1920
-14,Kettle,1950,1955
-15,Lamp,1920,1879
-16,Laptop,1990,1991
-17,Large home electrical,1960,1900
-19,Mobile,1997,1997
-20,Musical instrument,1930,1932
-21,Paper shredder,1990,1980
-22,PC Accessory,1980,1986
-23,Portable radio,1950,1919
-24,Power tool,1950,1917
-25,Printer/scanner,1980,1984
-26,Projector,1950,1950
-27,Sewing machine,1920,1889
-28,Small home electrical,1930,1900
-29,Small kitchen item,1930,1900
-30,Tablet,1990,1989
-31,Toaster,1930,1921
-32,Toy,1930,1930
-33,TV and gaming-related accessories,1960,1963
-34,Vacuum,1940,1908
-35,Watch/clock,1930,1931
+product_category_id,product_category,earliest
+1,Aircon/dehumidifier,1945
+2,Battery/charger/adapter,1997
+36,Coffee maker,1954
+3,Decorative or safety lights,1879
+4,Desktop computer,1977
+5,Digital compact camera,1994
+6,DSLR/video camera,1991
+7,Fan,1910
+8,Flat screen,1998
+37,Food processor,1910
+38,Games console,1972
+9,Hair & beauty item,1920
+39,Hair dryer,1920
+10,Handheld entertainment device,1976
+11,Headphones,1958
+12,Hi-Fi integrated,1877
+13,Hi-Fi separates,1877
+40,Iron,1920
+14,Kettle,1955
+15,Lamp,1879
+16,Laptop,1991
+17,Large home electrical,1900
+19,Mobile,1997
+20,Musical instrument,1932
+21,Paper shredder,1980
+22,PC Accessory,1986
+23,Portable radio,1919
+24,Power tool,1917
+25,Printer/scanner,1984
+26,Projector,1950
+27,Sewing machine,1889
+28,Small home electrical,1900
+29,Small kitchen item,1900
+30,Tablet,1989
+31,Toaster,1921
+32,Toy,1930
+33,TV and gaming-related accessories,1963
+34,Vacuum,1908
+35,Watch/clock,1931
