@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 
-import pandas as pd
 from funcs import *
+import pandas as pd
+
 logger = logfuncs.init_logger(__file__)
 
-# Step 1: ords_deepl_setup.py
-# Step 2: ords_deepl_fetch.py
-# https://github.com/DeepLcom/deepl-python
+"""
+Series of scripts for translating ORDS `problem` text.
+
+https://github.com/DeepLcom/deepl-python
+
+Step 1: ords_deepl_1setup.py
+    Table created, MySQL database required.
+Step 2: ords_deepl_2fetch.py
+    Compiles workload, translates, DeepL API key required.
+Step 3: ords_deepl_3check.py
+    Inspect data integrity.
+Step 4: ords_deepl_4backfill.py
+    Translate missing values for given languages.
+"""
 
 
 def dbbackup():
@@ -47,7 +59,7 @@ def dbsetup(path_to_csv=''):
     logger.debug('Reading sql from file {}'.format(path_to_sql))
     # Create table.
     sql = path_to_sql.read_text().format(tablename='ords_problem_translations')
-    dbfuncs.create_ords_tables(sql)
+    dbfuncs.execute(sql)
 
     # Import existing translations.
     rows = df.to_sql(name='ords_problem_translations', con=dbfuncs.alchemy_eng(),
@@ -68,6 +80,7 @@ def replace_csv_file(path_to_csv_new):
 
 path_to_csv = dbbackup()
 
+# Replace the csv file with the table dump file?
 replace = False
 if replace:
     replace_csv_file(path_to_csv)

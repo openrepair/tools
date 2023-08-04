@@ -5,7 +5,21 @@ import pandas as pd
 
 logger = logfuncs.init_logger(__file__)
 
-# Check the outcome of DeepL translations.
+"""
+Series of scripts for translating ORDS `problem` text.
+
+https://github.com/DeepLcom/deepl-python
+
+Step 1: ords_deepl_1setup.py
+    Table created, MySQL database required.
+Step 2: ords_deepl_2fetch.py
+    Compiles workload, translates, DeepL API key required.
+Step 3: ords_deepl_3check.py
+    Inspect data integrity.
+Step 4: ords_deepl_4backfill.py
+    Translate missing values for given languages.
+"""
+
 
 # Language detection stats.
 logger.debug('*** DETECTED ***')

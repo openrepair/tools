@@ -15,7 +15,7 @@ logger.debug('Reading file "{}"'.format(path))
 sql = path.read_text().format(table_cats, table_data)
 
 # Set up tables
-dbfuncs.create_ords_tables(sql)
+dbfuncs.execute(sql)
 
 # Import ORDS product_category values.
 path = pathfuncs.get_path([pathfuncs.ORDS_DIR, table_cats + '.csv'])
