@@ -35,7 +35,7 @@ df = pd.read_csv(pathfuncs.path_to_ords_csv())
 df.dropna(subset="partner_product_category", inplace=True, ignore_index=True)
 
 topics = pd.DataFrame(data={
-    'topic': ['Christmas', 'Bake-Off'],
+    'topic': ['Christmas', 'Bake-Off', 'Entertainment'],
     'regex': [
         compile_regex_string([
             "[yj]ule?", "(christ|x)mas", "fairy", "fatate", "fe lys", "féériques", "hadas?", "kerst",
@@ -47,7 +47,12 @@ topics = pd.DataFrame(data={
             '[wv]a[f]+[el]{2}', 'biscotto', 'biscuit', 'bollo', 'br(ea|oo)d', 'br[øo]{1,2}[dt]', 'cake',
             'cialda', 'cr[êe]pe', 'g(au|o)[f]+re', 'galleta', 'gâteau', 'k[ie]ks', 'kage', 'krepp', 'kuchen',
             'pain', 'pan(cake|e|nenkoek|dekage|ini)', 'pastel', 'pfannkuchen', 'scone', 'taart', 'torta', 'tortita'
-        ])]})
+        ]),
+        compile_regex_string([
+            '[ck]assette','dis[ck][ -]?man','game[ -]?boy','i[ -]?pod','mp3','walk[ -]?man','atari','sega',
+            'nintendo','xbox','transistor','dab','vhs','vcr','pvr','video','ps[1-9]'
+        ])
+    ]})
 
 itemtypes = get_item_types(df)
 
