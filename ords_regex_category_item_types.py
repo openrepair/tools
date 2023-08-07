@@ -26,7 +26,7 @@ categories = pd.read_csv(pathfuncs.ORDS_DIR +
 tablename = envfuncs.get_var('ORDS_DATA')
 
 
-def get_data(category_id):
+def get_data_from_db(category_id):
     sql = """
     SELECT
     t1.item_type,
@@ -40,11 +40,28 @@ def get_data(category_id):
     WHERE product_category_id = {}
     ) t1
     GROUP BY item_type
-    HAVING records > 10
     ORDER BY records DESC
     """
     df = pd.DataFrame(dbfuncs.query_fetchall(
         sql.format(tablename, category_id)))
+    logger.debug(df.columns)
+    return df
+
+
+# Fetch data from csv into frame.
+# ToDo: find why result differs slightly from get_data_from_db()
+def get_data_from_df(category_id):
+    df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
+                    keep_default_na=False, na_values="")
+    df = df.loc[df['product_category_id'].astype('int64') == category_id]
+    df.partner_product_category = df.partner_product_category.str.split('~').str.get(1).str.strip()
+    df.rename(columns={'partner_product_category': 'item_type'}, inplace=True)
+    logger.debug(df)
+    df = df.groupby(
+        ['item_type']).size().reset_index(name='records')
+    logger.debug(df.columns)
+    df.sort_values(by=['records'],
+                   ascending=False, inplace=True, ignore_index=True)
     return df
 
 
@@ -70,7 +87,7 @@ for n in range(0, len(categories)):
     category = categories.iloc[n].product_category
     logger.debug('*** {} ***'.format(category))
     print('*** {} ***'.format(category))
-    data = get_data(categories.iloc[n].product_category_id)
+    data = get_data_from_db(categories.iloc[n].product_category_id)
     rx = get_regex(category)
     for i in range(0, len(data)):
         logger.debug('{}'.format(data.loc[i]))
