@@ -12,18 +12,6 @@ logger = logfuncs.init_logger(__file__)
 # https://docs.google.com/spreadsheets/d/1LVQrLXPupufRhh1aNR33R6ea3f57dcvz_QA3mumbJfQ/edit?usp=sharing
 
 
-def compile_regex(terms, pre=True, aft=True):
-    result = '(?i)('
-    if (pre == True):
-        result += '([a-zß-ÿœ]{3,}[ -]?)?'
-    if (len(terms) > 0):
-        result += '(' + '|'.join(list(set(terms))) + ')'
-    if (aft == True):
-        result += '([a-zß-ÿœ]{3,}[ -]?)?'
-    result += ')'
-    return result
-
-
 # Fetch regexes and test terms.
 testterms = pd.read_csv(pathfuncs.DATA_DIR +
                         '/ords_testdata_common_products.csv')
@@ -40,7 +28,7 @@ for category in rxelems.columns:
     results.loc[len(results), 'lang'] = 'any'
     data = rxelems[category]
     data.dropna(inplace=True)
-    regex = compile_regex(data)
+    regex = miscfuncs.build_regex_string(data)
     rx = re.compile(regex)
     tests = testterms.loc[testterms.product_category == category]
     for i in range(0, len(tests)):
