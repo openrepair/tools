@@ -17,18 +17,16 @@ logger = logfuncs.init_logger(__file__)
 
 """
 WORK IN PROGRESS!
-TO DO:
-    Translate Danish text
 
-** DeepL (validation)
+** Validation stats
 
-  prediction  agree  percent
-0      total  18137       96
-1         de  12152       97
-2         en   2582       89
-3         es      3      100
-4         fr    345       92
-5         nl   3055       97
+prediction  agree  percent
+    total   19552       98
+        de  12815      100
+        en   3335       91
+        es      3      100
+        fr    345       92
+        nl   3054       97
 
 * Comparisons:
 
@@ -109,9 +107,9 @@ def get_validation_data():
 
     df = pd.read_csv(pathfuncs.DATA_DIR +
                      '/ords_problem_translations.csv', dtype=str)
-    df['language_detected'] = df['language_detected'].str.lower()
-    df = df.reindex(columns=['id_ords', 'language_detected', 'problem'])
-    df.rename(columns={'language_detected': 'deepl'}, inplace=True)
+    df['language_known'] = df['language_known'].str.lower()
+    df = df.reindex(columns=['id_ords', 'language_known', 'problem'])
+    df.rename(columns={'language_known': 'deepl'}, inplace=True)
     df = clean_text(df, dedupe=False, dropna=False)
     return df
 
@@ -154,6 +152,7 @@ def get_training_data(sample=1, min=2, max=255):
         "fr": "french",
         "it": "italian",
         "es": "spanish",
+        "da": "danish"
     }
     # Read input DataFrame.
     df_in = pd.read_csv(pathfuncs.DATA_DIR + '/ords_problem_translations.csv')
