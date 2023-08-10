@@ -34,16 +34,16 @@ Total predictions	69,082
 
 ** Google
 [Sheets 'DETECTLANGUAGE' function](https://support.google.com/docs/answer/3093278?hl=en-GB)
-Agree	    67,955	98.37%
-Disagree	1,126	1.63%
+Agree	    66,901	98.37%
+Disagree	1,111	1.63%
 Don't know	10	    0.01%
 
 ** Python
 [Nakatani Shuyo's language-detection library](https://github.com/Mimino666/langdetect)
 'This library is a direct port of Google's language-detection library from Java to Python. All the classes and methods are unchanged, so for more information see the project's website or wiki.'
 [Detect an Unknown Language using Python](https://www.geeksforgeeks.org/detect-an-unknown-language-using-python/)
-Agree	    55,305	80.06%
-Disagree	13,775	19.94%
+Agree	    54,326	79.88%
+Disagree	13,685	20.12%
 Don't know	5	    0.01%
 
 ** OpenRefine
@@ -51,9 +51,9 @@ Don't know	5	    0.01%
 'This software does not work as well when the input text to analyze is short, or unclean.'
 'If you are looking for a language detector / language guesser library in Java, this seems to be the best open source library you can get at this time.'
 Note: Takes hours to run!
-Agree	    43,075	62.35%
-Disagree	2,209	3.20%
-Don't know	23,798	34.45%
+Agree	    42,171	62.00%
+Disagree	2,200	3.23%
+Don't know	23,642	34.76%
 
 ** OpenNLP
 [Documentation](https://opennlp.apache.org/docs/2.2.0/manual/opennlp.html)
