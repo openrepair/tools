@@ -83,7 +83,6 @@ def translate_empty_only(data, langdict):
                                     text = result.text
                                 except deepl.DeepLException as error:
                                     print("exception: {}".format(error))
-                                    data.at[i, 'language_detected'] = ''
                                     return data
 
                             data.at[i, column] = text
