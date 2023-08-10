@@ -22,6 +22,21 @@ Step 4: ords_deepl_4backfill.py
 """
 
 
+def find_existing_translation_for_col(problem, column):
+    sql = """
+    SELECT problem, {0}, COUNT(*) as records
+    FROM ords_problem_translations
+    WHERE problem = %(problem)s
+    AND {0} IS NOT NULL
+    GROUP BY problem, {0}
+    HAVING records > 1
+    ORDER BY records DESC
+    LIMIT 1;
+    """.format(column)
+    work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var('ORDS_DATA')), { 'problem': problem}))
+    return work
+
+
 # Fetch problem text that has not yet been translated.
 # Ignore the more useless values.
 # Arg 'cols' is a list of columns to check.
@@ -43,31 +58,39 @@ def translate_empty_only(data, langdict):
     try:
         # For each record fetch a translation for each target language where empty.
         for i, row in data.iterrows():
-            # The "detected" language is the known language
-            d_lang = row.language_known
-            for column in langdict.keys():
-                t_lang = langdict[column]
-                if row[column] == None:
-                    print('{} : {} : {}'.format(i, row.id_ords, t_lang))
-                    # Has a language been detected for this problem?
-                    # Is the target language the same as the detected language?
-                    if d_lang == t_lang:
-                        # Don't use up API credits.
-                        text = row.problem
-                    else:
+                d_lang = row.language_known
+                for column in langdict.keys():
+                    # Is there already a translation for this text?
+                    found = find_existing_translation_for_col(row.problem, column)
+                    if found.empty:
                         # No existing translation so fetch from API.
-                        logger.debug(
-                            '{} is new... translating'.format(row.id_ords))
-                        try:
-                            result = translator.translate_text(
-                                row.problem, target_lang=t_lang, source_lang=row.language_known)
-                            text = result.text
-                        except deepl.DeepLException as error:
-                            print("exception: {}".format(error))
-                            data.at[i, 'language_detected'] = ''
-                            return data
+                        # The "detected" language is the known language
+                        if row[column] == None:
+                            t_lang = langdict[column]
+                            print('{} : {} : {}'.format(i, row.id_ords, t_lang))
+                            # Has a language been detected for this problem?
+                            # Is the target language the same as the detected language?
+                            if d_lang == t_lang:
+                                # Don't use up API credits.
+                                text = row.problem
+                            else:
+                                # No existing translation so fetch from API.
+                                logger.debug(
+                                    '{} is new... translating'.format(row.id_ords))
+                                try:
+                                    result = translator.translate_text(
+                                        row.problem, target_lang=t_lang, source_lang=row.language_known)
+                                    text = result.text
+                                except deepl.DeepLException as error:
+                                    print("exception: {}".format(error))
+                                    data.at[i, 'language_detected'] = ''
+                                    return data
 
-                    data.at[i, column] = text
+                            data.at[i, column] = text
+                    else:
+                        # Translation exists so copy from existing.
+                        logger.debug('{} exists... copying'.format(row.id_ords))
+                        data.at[i, column] = found[column].values[0]
 
     except Exception as error:
         print("Exception: {}".format(error))
@@ -76,22 +99,21 @@ def translate_empty_only(data, langdict):
         return data
 
 
-def insert_data(data, columns):
+# Default: replace entire row.
+# Or single element list e.g.: ['fr'], replace one column only.
+def insert_data(data, columns=[]):
 
     if data.empty:
         print('No data to write.')
         return False
 
-    # Assumption:
-    # If single column only, don't update whole row.
-    # Else, update whole row.
     if len(columns) == 1:
         column = columns.pop()
         cfile = pathfuncs.OUT_DIR + \
             '/deepl_backfilled_lang_{}.csv'.format(column)
         vals = list(zip(data[column], data['id_ords']))
         sql = """UPDATE `ords_problem_translations` SET `{}`=%s WHERE id_ords=%s"""
-        rows = dbfuncs.executemany(sql.format(column), vals)
+        result = dbfuncs.executemany(sql.format(column), vals)
     else:
         cfile = pathfuncs.OUT_DIR + '/deepl_backfilled_lang_all.csv'
         vals = list(zip(*[data[col] for col in data]))
@@ -99,10 +121,10 @@ def insert_data(data, columns):
         sql = """REPLACE INTO `ords_problem_translations` (`{}`) VALUES ({})""".format(
             "`,`".join(data.columns), ",".join(["%s"] * len(data.columns)))
         logger.debug(sql)
-        rows = dbfuncs.executemany(sql, vals)
+        result = dbfuncs.executemany(sql, vals)
 
-    logger.debug('{} rows written to table {}'.format(
-        rows, 'ords_problem_translations'))
+    logger.debug('{} updated in {}'.format(
+        result, 'ords_problem_translations'))
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
     print('New data written to {}'.format(cfile))
@@ -119,26 +141,32 @@ translator = deeplfuncs.deeplWrapper(mock)
 """
 Get the columns to check for NULL values. Examples:
 Just one column.
-filter = ['da']
+columns = ['da']
 Selection of columns.
-filter = ['it','es']
+columns = ['it','es']
 All columns.
-filter = deeplfuncs.deeplWrapper.get_columns()
+columns = deeplfuncs.deeplWrapper.get_columns()
 All but the last column.
-filter = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
+columns = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
 """
-filter = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
-# Currently backfilling for all but Danish
-# Then will backfill only Danish
-work = get_work_for_null_lang_vals(filter, 1)
+# Backfilling for all
+# columns = deeplfuncs.deeplWrapper.get_columns()
+# Backfill Danish only
+columns = ['da']
+work = get_work_for_null_lang_vals(columns, 100)
+print(work.count())
+logger.debug(work.count())
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_work.csv', index=False)
 
 if translator.api_limit_reached():
     exit()
 else:
-    data = translate_empty_only(work, deeplfuncs.deeplWrapper.langdict)
+    # Backfilling any empty columns: deeplfuncs.deeplWrapper.langdict
+    # Backfilling one column only, e.g. Danish: {'da':'da'}
+    data = translate_empty_only(work, {'da':'da'})
+    data.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_latest.csv', index=False)
     if not mock:
-        insert_data(data)
+        insert_data(data, columns)
         dbfuncs.dump_table_to_csv(
             'ords_problem_translations', pathfuncs.DATA_DIR)
     else:

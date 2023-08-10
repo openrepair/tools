@@ -4,6 +4,14 @@ import random
 import string
 
 
+def get_columns():
+    return deeplWrapper.get_columns()
+
+
+def get_languages():
+    return deeplWrapper.get_languages()
+
+
 # Wrap/mock DeepL calls.
 class deeplWrapper:
 
@@ -11,7 +19,7 @@ class deeplWrapper:
     # Fixit Clinic is only US English, too few to make a case for 'en-us' just yet.
     # There are a few Danish (DNK) records in the dataset, so will need 'da' before long.
     langdict = {'en': 'en-gb', 'de': 'de', 'nl': 'nl',
-                'fr': 'fr', 'it': 'it', 'es': 'es'}
+                'fr': 'fr', 'it': 'it', 'es': 'es', 'da': 'da'}
 
     def __init__(self, mock=False):
         if mock:
