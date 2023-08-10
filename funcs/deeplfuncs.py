@@ -17,11 +17,13 @@ class deeplWrapper:
         if mock:
             self.translator = mockDeepLTranslator()
         else:
-            if auth_key := self.get_key():
+            if 'DEEPL_KEY' in os.environ:
+                auth_key = os.environ['DEEPL_KEY']
                 self.translator = deepl.Translator(auth_key)
             else:
-                self.translator = False
+                print('ERROR! DEEPL_KEY NOT FOUND!')
                 print('Add your DeepL API key to the .env file.')
+                self.translator = False
 
     def translate_text(self, text, target_lang, source_lang=''):
         return self.translator.translate_text(text, target_lang=target_lang, source_lang=source_lang)
@@ -41,13 +43,6 @@ class deeplWrapper:
 
     def get_columns():
         return list(deeplWrapper.langdict.keys())
-
-    def get_api_key():
-        if 'DEEPL_KEY' in os.environ:
-            return os.environ['DEEPL_KEY']
-        else:
-            print('ERROR! DEEPL_KEY NOT FOUND!')
-            return False
 
 
 # To Do: mock exception
