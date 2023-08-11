@@ -10,27 +10,26 @@ The bottom is out of the Universe.
 
 Not so much a project as a mixed bag of tools, queries, data and code snippets for use with Open Repair Data (ORDS).
 
-For anyone who fancies tinkering with Python, SQL, NLP and lots of messy but interesting Open Data. Many challenges lie ahead!
+For anyone who fancies tinkering with Python, NLP, SQL and lots of messy but interesting Open Data. Many challenges lie ahead!
 
 Some of the things you can do:
 
 * Get familiar with ORDS data.
-* Set up a MySQL database for ORDS data.
-* Slice the data up in various ways.
+* Slice the data up in various ways using Python DataFrames and/or MySQL.
 * Investigate devices against the timeline of consumer electronics.
 * Calculate how much waste was prevented from going to landfill.
 * Detect languages in the text and translate using the DeepL API.
 * Muck about with regular expressions.
-* Try out some Natural Language Processing and even a little (very basic) machine learning.
+* Try out some Natural Language Processing and even a little basic machine learning.
 * Generate Open Repair Data poetry.
 
 There is also an [installer and ORDS configuration](solr/README.md) for an Apache Solr search platform that demonstrates indexing and querying multi-lingual text with international (ICU) characters.
 
 ## About the data
 
-The dataset contains over 100k records representing over 10 years worth of electronic repairs at events by community repair groups all over the world. See the Setup section for how to get hold of the data.
+The dataset contains over 100k records representing over 10 years worth of electronic repairs at events by community repair groups all over the world. See the Setup section below for how to get hold of the data.
 
-It is compiled and published by the [Open Repair Alliance](https://openrepair.org/) (ORA) which was founded by [The Restart Project](https://therestartproject.org/), a UK based charity.
+It is compiled and published by the [Open Repair Alliance (ORA)](https://openrepair.org/) an organisation founded by [The Restart Project](https://therestartproject.org/), a UK based charity.
 
 * Enabling thousands of UK-based community repair events.
 * Formulating the [Open Repair Data Standard](https://openrepair.org/open-data/open-standard/).
@@ -40,10 +39,10 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 
 ## Lots of things yet to do
 
-* Investigate use-cases.
-* Write a few tests.
-* Data visualisation.
-* Document all the things.
+* Use-cases
+* Tests
+* Data visualisation
+* Document all the things
 
 ## Licences & acknowledgments
 
@@ -58,9 +57,8 @@ It is compiled and published by the [Open Repair Alliance](https://openrepair.or
 
 ### Requirements
 
-* Venv module.
-* Database is used in some scripts, will need libmysqlclient-dev
-* MySQL version 8.x assumed but other MySQL versions should work with installation of compatible connector.
+* Python with venv module.
+* Optional MySQL 8.x and libmysqlclient-dev.
 
 ### Working copy
 
@@ -84,7 +82,7 @@ To upgrade to the newest requirements.
 
 ### Data
 
-Grab the [Aggregated Open Repair Data files](https://openrepair.org/open-data/downloads/), unzip the files into the [data](./dat) directory.
+Grab the [Aggregated Open Repair Data files](https://openrepair.org/open-data/downloads/), unzip the files into the [dat/ords](./dat/ords) directory.
 
 ### Environment variables
 
