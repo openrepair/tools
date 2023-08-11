@@ -76,9 +76,9 @@ for i, row in data.iterrows():
         elif row.year_of_manufacture >= d['year_recent']:
             d['is_recent'] = True
         elif row.year_of_manufacture <= d['year_vintage']:
-            d['is_vintage'] = True
-        elif (row.year_of_manufacture >= d['year_vintage']) & (row.year_of_manufacture <= d['year_recent']):
             d['is_antique'] = True
+        elif (row.year_of_manufacture >= d['year_vintage']) & (row.year_of_manufacture <= d['year_recent']):
+            d['is_vintage'] = True
         else:
             logger.debug('???????')
             logger.debug(d)
