@@ -4,6 +4,7 @@ from funcs import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
 from sklearn import metrics
 from sklearn import model_selection
 from nltk import tokenize
@@ -18,7 +19,7 @@ logger = logfuncs.init_logger(__file__)
 """
 WORK IN PROGRESS!
 
-** Validation stats
+** Validation stats (MultinomialNB)
 
 prediction  agree  percent
     total   19552       98
@@ -73,14 +74,13 @@ def annotate_results(dfv, dfx):
     dfx = dfx.merge(dfv, how='outer', left_on='id', right_on='id_ords')
     dfx.dropna(subset=['id'], inplace=True)
     dfx.fillna({"result_type": 'untrained'}, inplace=True)
-    dfx['agree'] = dfx.deepl == dfx.prediction
+    dfx['agree'] = dfx.language_known == dfx.prediction
     dfx.rename(columns={'problem_x': 'problem',
                'problem_y': 'cleaned', }, inplace=True)
     dfx.drop(['id_ords'], axis=1, inplace=True)
-    dfx.to_csv(pathfuncs.OUT_DIR +
-               '/ords_lang_checks_detection.csv', index=False)
-    print("Annotated results written to {}".format(
-        pathfuncs.OUT_DIR + '/ords_lang_checks_detection.csv'))
+    outfile = format_path('ords_lang_checks_detection')
+    dfx.to_csv(outfile, index=False)
+    print("Annotated results written to {}".format(outfile))
 
     # stats
 
@@ -107,9 +107,9 @@ def get_validation_data():
 
     df = pd.read_csv(pathfuncs.DATA_DIR +
                      '/ords_problem_translations.csv', dtype=str)
-    df['language_known'] = df['language_known'].str.lower()
+    # df['language_known'] = df['language_known'].str.lower()
     df = df.reindex(columns=['id_ords', 'language_known', 'problem'])
-    df.rename(columns={'language_known': 'deepl'}, inplace=True)
+    # df.rename(columns={'language_known': 'deepl'}, inplace=True)
     df = clean_text(df, dedupe=False, dropna=False)
     return df
 
@@ -139,7 +139,8 @@ def clean_text(data, dedupe=True, dropna=True):
     return data
 
 
-# Merge the language columns from the translations table into a single `problem` text field and label each row with the known language.
+# Merge the language columns from the translations table into a single `problem` text field
+# and label each row with the known language.
 # Then clean and split the `problem` text into sentences.
 # This is used for training.
 def get_training_data(sample=1, min=2, max=255):
@@ -195,7 +196,7 @@ def get_training_data(sample=1, min=2, max=255):
 
 # Use this to check for best value and set it as default
 # Don't use every time, it slows down execution considerably.
-def get_alpha(data, labels, vects, search=False, refit=False):
+def get_alpha(data, labels, vects, search=False):
     if search:
         # Try out some alpha values to find the best one for this data.
         params = {'alpha': [0, 0.001, 0.01, 0.1, 5, 10], }
@@ -235,12 +236,25 @@ def do_training(data, stopwords=False):
 
     feature_vects = vectorizer.fit_transform(column)
 
-    # Get the alpha value. Use search=True to find a good value, or False for default.
+    # Get the alpha value.
+    # Use search=True to find a good value, or False for default.
+    # If a better value than default is found, replace default with it.
     alpha = get_alpha(column, labels, feature_vects, search=False)
 
     # Other classifiers are available!
-    nb_classifier = MultinomialNB(
+    # https://scikit-learn.org/stable/modules/naive_bayes.html
+    # Tuning different classifiers could sway results.
+
+    # Validation test  MultinomialNB' F1 SCORE: 0.6970076612719212
+    # Classed '??' as English.
+    classifier = MultinomialNB(
         force_alpha=True, alpha=alpha)
+
+    # Validation test  ComplementNB' F1 SCORE: 0.5480281790194357
+    # Classed '??' as Danish.
+    # from sklearn.naive_bayes import ComplementNB
+    # classifier = ComplementNB(
+    #     force_alpha=True, alpha=alpha)
 
     logger.debug('** TRAIN : vectorizer ~ shape **')
     logger.debug(feature_vects.shape)
@@ -248,22 +262,29 @@ def do_training(data, stopwords=False):
     logger.debug(vectorizer.get_feature_names_out())
 
     # Fit the data.
-    nb_classifier.fit(feature_vects, labels)
-    logger.debug('** TRAIN : nb_classifier: params **')
-    logger.debug(nb_classifier.get_params())
+    classifier.fit(feature_vects, labels)
+    logger.debug('** TRAIN : classifier: params **')
+    logger.debug(classifier.get_params())
 
-    # Get predictions.
-    preds = nb_classifier.predict(feature_vects)
-    logger.debug('** TRAIN : nb_classifier: F1 SCORE: {}'.format(
-        metrics.f1_score(labels, preds, average='macro')))
-    logger.debug(preds)
+    # Get predictions on own features.
+    predictions = classifier.predict(feature_vects)
+    logger.debug('** TRAIN : classifier: F1 SCORE: {}'.format(
+        metrics.f1_score(labels, predictions, average='macro')))
+    logger.debug(predictions)
 
-    # Save the classifier and vectoriser objects for use later.
-    dump(nb_classifier, clsfile)
+    # Save the classifier and vectoriser objects for re-use.
+    dump(classifier, clsfile)
     dump(vectorizer, tdffile)
+    # Create and save a pipeline for re-use.
+    pipe = Pipeline([
+        ('tfidf', vectorizer),
+        ('clf', classifier),
+    ])
+    pipe.fit(column, labels)
+    dump(pipe, pipefile)
 
     # Save predictions to 'out' directory in csv format.
-    data.loc[:, 'prediction'] = preds
+    data.loc[:, 'prediction'] = predictions
     data.to_csv(format_path('ords_lang_results_training'), index=False)
 
     # Save prediction misses.
@@ -272,54 +293,61 @@ def do_training(data, stopwords=False):
     misses.to_csv(format_path('ords_lang_misses_training'), index=False)
 
 
-def do_validation(data):
+# Validate the model with either pipeline or vect/class objects.
+# Try each to ensure object integrity.
+def do_validation(data, pipeline=False):
 
+    data.dropna(axis='rows', subset=[
+        'problem'], inplace=True, ignore_index=True)
     column = data.problem
-    labels = data.deepl
+    labels = data.language_known
+    logger.debug('** VALIDATE : using pipeline - {}'.format(pipeline))
+    if pipeline:
+        # Use the pipeline that was fitted for this task.
+        pipe = load(pipefile)
+        predictions = pipe.predict(data.problem)
+    else:
+        # Use the classifier and vectoriser that were fitted for this task.
+        classifier = load(clsfile)
+        vectorizer = load(tdffile)
+        feature_vects = vectorizer.transform(column)
+        predictions = classifier.predict(feature_vects)
 
-    # Get the classifier and vectoriser that were fitted for this task.
-    nb_classifier = load(clsfile)
-    logger.debug('** VAL : classifier {}'.format(type(nb_classifier)))
-    vectorizer = load(tdffile)
-    logger.debug('** VAL : vectorizer {}'.format(type(vectorizer)))
-
-    # Get the predictions
-    feature_vects = vectorizer.transform(column)
-    preds = nb_classifier.predict(feature_vects)
-    logger.debug('** VAL : nb_classifier: F1 SCORE: {}'.format(
-        metrics.f1_score(labels, preds, average='macro')))
+    logger.debug('** VALIDATE : classifier: F1 SCORE: {}'.format(
+        metrics.f1_score(labels, predictions, average='macro')))
     logger.debug(metrics.classification_report(
-        labels, preds))
+        labels, predictions))
 
     # Predictions output for inspection.
-    data.loc[:, 'prediction'] = preds
+    data.loc[:, 'prediction'] = predictions
     data.to_csv(format_path('ords_lang_results_validation'), index=False)
 
     # Prediction misses for inspection.
-    misses = data[(data['deepl'] != data['prediction'])]
+    misses = data[(data.language_known != data['prediction'])]
     logger.debug(misses)
     misses.to_csv(format_path('ords_lang_misses_validation'), index=False)
 
 
-def do_detection(data):
+# Use model on untrained data, with either pipeline or vect/class objects.
+def do_detection(data, pipeline=False):
 
     data.dropna(axis='rows', subset=[
         'problem'], inplace=True, ignore_index=True)
-
     column = data.problem
-
-    # Get the classifier and vectoriser that were fitted for this task.
-    nb_classifier = load(clsfile)
-    logger.debug('** TEST : classifier {}'.format(type(nb_classifier)))
-    vectorizer = load(tdffile)
-    logger.debug('** TEST : vectorizer {}'.format(type(vectorizer)))
-
-    # Get the predictions.
-    feature_vects = vectorizer.transform(column)
-    preds = nb_classifier.predict(feature_vects)
+    logger.debug('** DETECT : using pipeline - {}'.format(pipeline))
+    if pipeline:
+        # Use the pipeline that was fitted for this task.
+        pipe = load(pipefile)
+        predictions = pipe.predict(data.problem)
+    else:
+        # Use the classifier and vectoriser that were fitted for this task.
+        classifier = load(clsfile)
+        vectorizer = load(tdffile)
+        feature_vects = vectorizer.transform(column)
+        predictions = classifier.predict(feature_vects)
 
     # Predictions output.
-    data.loc[:, 'prediction'] = preds
+    data.loc[:, 'prediction'] = predictions
     data = data.reindex(columns=['id', 'problem', 'prediction'])
     data.to_csv(format_path('ords_lang_results_detection'), index=False)
     return data
@@ -331,28 +359,27 @@ def format_path(filename, ext='csv'):
 
 # START
 
-# Path to the classifier and vectoriser objects for dump/load.
-clsfile = format_path('ords_lang_obj_nbcl', 'joblib')
+# Path to the model objects for dump/load.
+clsfile = format_path('ords_lang_obj_cls', 'joblib')
 tdffile = format_path('ords_lang_obj_tdif', 'joblib')
+pipefile = format_path('ords_lang_obj_tfidf_cls', 'joblib')
 
 training_data = get_training_data(sample=1, min=5, max=255)
 logger.debug('*** TRAINING DATA ***')
 logger.debug(training_data)
-training_data.to_csv(pathfuncs.OUT_DIR +
-                     '/ords_lang_data_training.csv', index=False)
+training_data.to_csv(format_path('ords_lang_data_training'), index=False)
 do_training(data=training_data,
             stopwords=get_stopwords())
 
 validation_data = get_validation_data()
 logger.debug('*** VALIDATION DATA ***')
 logger.debug(validation_data)
-validation_data.to_csv(pathfuncs.OUT_DIR +
-                       '/ords_lang_data_validation.csv', index=False)
-do_validation(data=validation_data)
+validation_data.to_csv(format_path('ords_lang_data_validation'), index=False)
+do_validation(data=validation_data, pipeline=True)
 
 # Read the entire ORDS export.
 all_data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
-predictions = do_detection(data=all_data)
+predictions = do_detection(data=all_data, pipeline=True)
 
-# For checking validation results
+# Check and summarise results.
 annotate_results(dfv=validation_data, dfx=predictions)
