@@ -87,7 +87,8 @@ sql = """
     AND `nl` = `problem`
     AND `fr` = `problem`
     AND `it` = `problem`
-    AND `es` = `problem`)
+    AND `es` = `problem`
+    AND `da` = `problem`)
     """
 df = pd.DataFrame(dbfuncs.query_fetchall(sql))
 df.to_csv(path, index=False)
@@ -103,7 +104,7 @@ sql = """
     SELECT id_ords, language_known, language_detected,
     en, de, nl, fr, it, es, da
     FROM `ords_problem_translations`
-    WHERE CONCAT(`en`,`de`, `nl`, `fr`, `it`, `es`) IS NULL;
+    WHERE CONCAT(`en`,`de`,`nl`,`fr`,`it`,`es`,`da`) IS NULL;
     """
 df = pd.DataFrame(dbfuncs.query_fetchall(sql))
 df.to_csv(path, index=False)
