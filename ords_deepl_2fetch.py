@@ -41,46 +41,61 @@ def get_work(max=10000, minlen=16):
     ) t3
     WHERE t3.id_ords IS NULL
     AND LENGTH(TRIM(t3.problem)) >= {chars}
+    ORDER BY t3.country
     LIMIT {limit}
     """
     work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
         tablename=envfuncs.get_var('ORDS_DATA'), limit=max, chars=minlen)))
 
+    # "Nonsense" strings with only punctuation or weights/codes dropped.
     # Assumptions!
     # 99% of the time certain data_providers/countries use a known language.
-    # Subject to change, e.g. new Canadian events might use French.
-    # "Nonsense" strings with only punctuation or weights/codes dropped.
+    # Some countries return multiple language texts:
+    # Belgium: French and Dutch.
+    # Canada: French and English.
+    # Italy: Italian and English.
     work['language_known'] = ''
+    work['language_expected'] = ''
     filters = {
-        0: work['country'].isin(['GBR', 'USA', 'CAN', 'AUS']),
-        1: work['country'].isin(['BEL', 'FRA']),
-        2: work['country'].isin(['DEU']),
-        3: work['country'].isin(['DNK']),
-        4: work['country'].isin(['NLD']),
-        5: work['problem'].str.fullmatch(
-            r'([\W\dkg]+)', flags=re.IGNORECASE+re.UNICODE),
+        1: work['country'].isin(['GBR', 'USA', 'AUS', 'NZL', 'IRL', 'ISR', 'ZAF', 'SWE', 'NOR', 'HKG', 'JEY', 'TUN', 'ISL']),
+        2: work['country'].isin(['FRA']),
+        3: work['country'].isin(['DEU']),
+        4: work['country'].isin(['DNK']),
+        5: work['country'].isin(['NLD']),
+        6: work['country'].isin(['ESP']),
     }
     filterlangs = {
-        0: 'en',
-        1: 'fr',
-        2: 'de',
-        3: 'da',
-        4: 'nl',
-        5: '??',
+        1: 'en',
+        2: 'fr',
+        3: 'de',
+        4: 'da',
+        5: 'nl',
+        6: 'es',
     }
     logger.debug('*** BEFORE FILTERS ***')
     logger.debug(work)
-    for i in range(0, len(filters.keys())):
+    for i in range(1, len(filters.keys())):
         print('Applying filter {}'.format(i))
         flt = filters[i]
         dff = work.where(flt)
         dff.dropna(inplace=True)
-        dff.language_known = filterlangs[i]
+        dff.language_expected = filterlangs[i]
         work.update(dff)
+
+    logger.debug('*** FILTERING PUNCT/WEIGHTS/CODES ***')
+    # Filter for punctuation/weights/codes.
+    flt = work['problem'].str.fullmatch(
+        r'([\W\dkg]+)', flags=re.IGNORECASE+re.UNICODE)
+    dff = work.where(flt)
+    dff.dropna(inplace=True)
+    dff.language_expected = '??'
+    logger.debug(dff)
+    work.update(dff)
+
     logger.debug('*** AFTER FILTERS ***')
     logger.debug(work)
     logger.debug('*** AFTER DROPPING ?? ***')
-    work.drop(work[work.language_known == '??'].index, inplace=True)
+    work.drop(work[work.language_expected == '??'].index, inplace=True)
     logger.debug(work)
     return work
 
@@ -101,9 +116,16 @@ def translate(data, langdict):
             if found.empty:
                 # No existing translation so fetch from API.
                 d_lang = False
+                # Use the known language as source else let DeepL detect.
+                if row.language_known > '':
+                    k_lang = row.language_known
+                else:
+                    k_lang = None
+
                 for column in langdict.keys():
                     t_lang = langdict[column]
-                    print('{} : {} : {}'.format(i, row.id_ords, t_lang))
+                    print('{} : {} : {} : {}'.format(
+                        i, row.id_ords, k_lang, t_lang))
                     # Has a language been detected for this problem?
                     # Is the target language the same as the detected language?
                     if d_lang == t_lang:
@@ -115,7 +137,7 @@ def translate(data, langdict):
                             '{} is new... translating'.format(row.id_ords))
                         try:
                             result = translator.translate_text(
-                                row.problem, target_lang=t_lang)
+                                row.problem, target_lang=t_lang, source_lang=k_lang)
                             d_lang = result.detected_source_lang.lower()
                             text = result.text
                         except deepl.DeepLException as error:
@@ -167,7 +189,38 @@ def insert_data(data):
     return True
 
 
+# Use a pre-trained model to detect and set the 'known language'.
+# This should be more accurate than DeepL's language detection, though model still being refined.
+# Requires that `ords_lang_training.py` has created the model object.
+def detect_language(data):
+
+    from joblib import load
+    path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
+    if not pathfuncs.check_path(path):
+        print('Model object not found at {}'.format(path))
+    else:
+        model = load(path)
+        # Use `language_known` as source lang for DeepL translations.
+        # Use `language_expected` for checking DeepL language detection.
+        # Adjust filters in get_work() and retrain model as appropriate.
+        data.loc[:, 'language_known'] = model.predict(data.problem)
+
+    data.loc[:, 'mismatch'] = data['language_expected'] != data['language_known']
+
+    # Log the mismatches.
+    miss = data.loc[work['mismatch'] == True]
+    miss.to_csv(pathfuncs.OUT_DIR +
+                '/deepl_work_lang_mismatch.csv', index=False)
+    # Count the mismatches.
+    grp = miss.groupby('country').agg({'mismatch': ['count']}).pipe(lambda x: x.set_axis(
+        x.columns.map('_'.join), axis=1)).sort_values(by='mismatch_count', ascending=False)
+    logger.debug(grp)
+
+    return data
+
+
 # START
+
 
 # Allows for trial and error without using up API credits.
 # Should create a test and use mock there, ideally.
@@ -175,7 +228,8 @@ mock = True
 translator = deeplfuncs.deeplWrapper(mock)
 
 # 5-10k recommended for live run.
-work = get_work(1000)
+work = get_work(10)
+work = detect_language(data=work)
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
 
 if translator.api_limit_reached():
