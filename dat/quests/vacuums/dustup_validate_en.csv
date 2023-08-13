@@ -1,0 +1,729 @@
+id,problem,fault_type
+rcint_47386,Not working Motor burnt out.  Unable to repair.,Motor
+rcint_44137,Unsafe power cable   New part needed,Cable/cord
+rcint_47424,not working loose cable stripped down and reassembled,Cable/cord
+rcint_37942,Loose contact,Internal damage
+rcint_47431,makes a lot of noise but doesn't suck! Blocked filter Cleaner filters,Filter
+rcint_47434,Doesn't clean anything Filter blocked Cleaner filter,Filter
+rcint_47440,"intermittent power loss broken mains lead shortened cable, advised better care of cable",Cable/cord
+rcint_37832,"Works on kow suction, whirs only on high suction Motor overheating slowing down",Motor
+rcint_37772,"Unable to switch on Jam switch mechanism actuator Stripped down, found button cap had broken off, reassembled and re-glued button cap.",Button/switch
+rcint_37879,Doesn't switch on Broken cable Cut back  cable and replaced mains plug,Cable/cord
+rcint_47473,No suction - blockage? Tube blocked with dust Unblocked tube,Blockage
+rcint_43537,"Not working Faulty switch and broken conductor (live) Cut off faulty cable and reconnected, bypassed faulty switch.",Cable/cord
+rcint_37906,Doesn't switch on Bad cable Removed cable break by shortening cable.,Cable/cord
+rcint_47480,Not sucking through extension hose but OK upright No suction through extension hose or attachments No idea what I did but it worked!,Blockage
+rcint_47490,Poor suction Filter old and clogged up Advised customer to put in a new filter.  Otherwise working fine.,Filter
+rcint_47493,Not working Requires new motor brush. Repairer will source part and replace next time.,Motor
+rcint_43766,Not working Needed new brushes for motor.  Ordered. They were adapted to fit.,Motor
+rcint_37739,No suction Emptied waste container and 'knocked out' filters.,Filter
+rcint_37875,Erratic motor Filter clogged  Found filter clogged. Advised how to clean filter,Filter
+rcint_47516,Ran out of time. Hose and other parts need replacing  Come back next time.  Not enough time. Can't delete this entry on iPad.,Poor data
+rcint_44141,Not sucking up properly,Blockage
+rcint_44223,Doesn't work Front bar wiring Repaired front bar wiring.,Internal damage
+rcint_47519,Stuck on high mode.,Poor data
+rcint_38055,"Motor surges Fully checked, no defect found. Sucxtion level and motor checked - all seems OK.  No fault found.",Other
+rcint_43820,won't switch on  Probably duff mains controller - owner to investigate,Other
+rcint_38247,Split hose split hise,Hose/tube/pipe
+rcint_37850,Sparkes when switched on Motor sparking,Motor
+rcint_38278,Wont switch on Yes Loose connections on the switch,Button/switch
+rcint_47554,Spindal not turning Contacts tarnished,Internal damage
+rcint_37791,Not sucking as well as it used to Not directly!  Gave it a good clean - working better than it was,Filter
+rcint_37918,brush head doesn't rotate brush head doesn't rotate Disassembled and replaced two broken wires in the brush head joint.,Brush
+rcint_47555,"Rollers not turning. Neutral wire disconnected from main board.  Unfortunately, in soldering the neutral wire back I inadvertently caused a short on the main board, so new board needed.  In the end, we decided to buy a new cleaner from cafe funds for the customer as it was my fault.",Internal damage
+rcint_37784,"Won't charge Charger tested and ok, insufficient time to progress further.",Power/battery
+rcint_38267,Not sucking properly Almost no suction Cleaned out (hidden!) filter.,Filter
+rcint_44065,Not charging None  Advised how to plug it in properly,Other
+rcint_44062,Handle broken--extender mechanism broken Mechanism within handle broken Parts glued,External damage
+rcint_44296,"Not charging No sign of charging or operation No obvious fault, no customer removable components, checked to see if produce could still be under warranty, GTech site said product had 2 year warranty - suggested No obvious fault, no customer removable components, checked to see if produce could still be under warranty, GTech site said product had 2 year warranty - suggested customer check with GTech and return to Repair Cafe if not under warranty.",Power/battery
+rcint_47574,brush nozzle wires for power have come unattached pivot arrangement distorted by heat caused by cables arcing,Internal damage
+rcint_47575,Not working even though battery is fully charged No fault found - worked OK for me. No fault found.  Worked OK for me - possible customer had not connected the battery fully.,Other
+rcint_43752,Wiring or charger. (I guess it's not charging) Broken wires. Soldered broken wires,Internal damage
+rcint_37924,"Dust bin doesn't 'click' into place Dust bin doesn't 'click' into place Cleaned narrow recess to allow dust bin to sit correctly.,",Dustbag/canister
+rcint_37952,won't switch on yes fixed cable,Cable/cord
+rcint_43952,Doesn't suck water. None Suspect something was jammed.  Gave advice.,Internal damage
+rcint_37813,"Will not charge Mains adapter dead, advice given to contact manufacturers.",Power/battery
+rcint_47595,Says it's blocked Blocked ducts Unblocked with long nose'd pliers...,Blockage
+rcint_47598,"won't charge charger plug broken, not repairable",Power/battery
+rcint_44454,Battery won't hold charge Battaet  Keep it charged at all times. Claim fault under warranty - it's 6 months old,Power/battery
+rcint_47624,Doesn't charge properly. Doesn't work. Faulty battery  Advised to replace battery.,Power/battery
+rcint_47630,Starts and stops after few seconds. Dirt and debris Opened and cleaned and removed debris.,Blockage
+rcint_47669,Hose and latch need replacing Hose and latch need replacing Replaced hose and latch with parts provided,Hose/tube/pipe
+rcint_43819,Floor beaters don't rotate Resoldered wire to selector switch,Brush
+rcint_47707,Cuts off after a few minutes Clogged,Blockage
+rcint_43949,Blows out when empty as well as sucking up. Possibly worn out battery,Power/battery
+rcint_43905,Not attaching to charger No fault No fault. User shown why the problem occurs,Power/battery
+rcint_43982,Not working  New battery needed. Owner to buy replacement,Power/battery
+rcint_43966,Stopped working.  fuse is OK  Removed broken section of mains cable and fitted new mains plug,Cable/cord
+rcint_43957,Short circuit motor winding,Motor
+rcint_43955,Main pcb blown & burnt,Internal damage
+rcint_44039,Not charging Frayed cable causing short circuit,Cable/cord
+rcint_44027,"Not switching off / not working Advised charge before use, to help diagnosis,  Needs sufficient charge to determine whether it holds charge",Power/battery
+rcint_44006,Wheel not turning Wheel sticking Refitted wheel,Wheels/rollers
+rcint_44053,Working intermittently Filter cleaned,Filter
+rcint_44047,Keeps stopping Faulty battery  Get new battery,Power/battery
+rcint_44139,Not sucking,Blockage
+rcint_44166,Blocked pipe Blocked Pipe Dislodged the stuck item & blew air through it to completely clean it,Blockage
+rcint_44165,Noisy Broken brush bearing,Motor
+rcint_44247,"Blowing out dust, not collecting it Cleaned filter, removed blockage in tubing",Blockage
+rcint_44245,Filter stuck released filter,Filter
+rcint_44230,"Battery only last 5 minutes.  Can battery be removed? Battery not removable, charger not brought in - need to buy a new battery pack from Dyson e.g. ¬£67.49",Power/battery
+rcint_44200,not turning on No defect found - could not reproduce fault. no defect found,Poor data
+rcint_44336,Brush not working. Motor not turning.,Motor
+rcint_44334,Brush not working. Motor not turning.,Motor
+rcint_44391,Brushes l no longer turning Filthy dirty! Removed jammed hairs in roller. Suggest new roller.,Brush
+rcint_44381,Cable pulled and it stopped working Cable connectors broken Dismantled and Resoldered cable.,Cable/cord
+rcint_44378,Unable to charge Not charging,Power/battery
+rcint_44426,none nff,Poor data
+rcint_44465,"Doesn't switch on Doesn't work! Replaced power switch, cyclone cover and mains lead",Cable/cord
+rcint_44464,lack of suction Blocked filters Cleaner filters,Filter
+rcint_44450,Stopped working.  fuse is OK not working Resoldered moving contact on extension tube,Other
+rcint_44448,doesn't work for long   Replace battery and keep charged,Power/battery
+rcint_44443,Very noisy It whistles! Cleaned filters and check tubing was clear,Blockage
+rcint_44433,lack of suction blocked suction tube Unblocked suction hose,Blockage
+rcint_44469,floor wheel on head not turning hair tangled round inside  removed some hair from around wheel but still stiff.,Wheels/rollers
+rcint_47803,Plastic hose has been ripped off body Plastic hose has been ripped off body Glued hose back on with epoxy,Hose/tube/pipe
+rcint_47836,Blocked Blockage in tube Cleared blockage in tube.,Blockage
+rcint_43504,won't turn on break in neutral power cable  found discontinuity somewhere in power cable - visitor to bring back next time for replacement.,Cable/cord
+rcint_43576,Mains cable outer sleeve broken Mains cable outer sleeve broken Disassembled to shorten mains able.,Cable/cord
+rcint_43559,screeching noise dirty fileter cleaned filters,Filter
+rcint_43554,intermittent  replaced intermittent mains cable,Cable/cord
+rcint_43535,Not working None Nothing,Poor data
+rcint_43606,Lead will not stay out. Broken (What is broken? ),Cable/cord
+rcint_43648,intermittant Bad connection Replaced broken wire,Internal damage
+rcint_43778,Brush bath has come off (attached to handle) rechargeable vacuum cleaner Plastic part missing,External damage
+rcint_43757,Cuts out after short period of use. Battery needs replacing.  Battery needed,Power/battery
+rcint_47921,Superpower function not working belt needed replacing New belt,Motor
+rcint_38333,blocked Blocked with debris Unblocked,Blockage
+rcint_38305,Roller not rotating Roller not rotating  Needs ne roller and belt - customer to obtain if economic,Brush
+rcint_38303,Not sucking properly No suction Cleaned vents & filter. Taped washer to make a better seal,Filter
+rcint_47942,Vacuum cleaner not working and not charging. Battery dead.  Only measures 5v.  New battery too expensive.,Power/battery
+rcint_47952,Cleaner head stuck in pole Head stuck Head pulled off and tube unit marked with tape.,Hose/tube/pipe
+rcint_37766,Carpet beaters don't work Broken wire Rewired cable to carpet beater motor,Internal damage
+rcint_37759,Carpet brush / roller not rotating Broken wire feeding brush/roller motor Replaced wire,Internal damage
+rcint_37743,Flash of light and it stopped Shorted cable Fitted new mains cable,Cable/cord
+rcint_37899,Lid not closing Lid not closing Reseated filter,Filter
+rcint_37982,Suction intermittent Suction intermittent Replaced part,Internal damage
+rcint_38041,Powers up but no suction No suction,Blockage
+rcint_38036,Doesn't charge Battery no longer holds charge.  7 years old so needs replacing,Power/battery
+rcint_38034,Stopped working.  fuse is OK Exhausted battery - 5+ years old.  Buy new battery.  Keep it charged and leave 20% in battery at all times,Power/battery
+rcint_38028,Suddenly stopped working.  Fuse OK No power Cleaned terminals,Power/battery
+rcint_38015,Stopped working.  fuse is OK Dead battery pack,Power/battery
+rcint_38007,Dust blowing out of the pies Blocked pipes  Clean out thoroughly.  Replace filters regularly,Blockage
+rcint_38061,Doesn't switch on Motor failed.  Needs new motor.,Motor
+rcint_38087,Doesn't charge No fault seen  Keep it charged when not in use,Power/battery
+rcint_38079,Almost no suction  Unblocked hose and used a tir-wrap to repair a hole in the hose,Blockage
+rcint_38074,Fails to pick things up. Wrong filter - and it was very dirty Cut filet to size and cleaned,Filter
+rcint_38073,Not sucking things up Filter filthy Cleaner filter,Filter
+rcint_38117,Not charging Not charging,Power/battery
+rcint_38252,"Cuts off after a few minutes cuts out unblocked various pipes, cleaned battery contacts.  Maybe battery failing",Power/battery
+rcint_38135,"Filter removed, cleaned and reassembled",Filter
+rcint_48067,Drive belt broken Drive belt needs replacement - customer brought one in to fit. New drive belt fitted - supplied by customer.,Motor
+rcint_48073,Charger is working but machine is not - battery faulty? Problem is in the circuit board and not repairable.,Internal damage
+rcint_48076,Brush not turning properly. Customer unable to wait so item not seen.  Customer could not wait - long wait as short of repairers this month.,Brush
+rcint_48231,Not working Motor terminal broken Soldered and re-fitted,Motor
+rcint_16718,?? ??,Poor data
+rcint_8697,?? ??,Poor data
+rcint_48272,Doesn't switch on  Cut back broken cable and reattached,Cable/cord
+rcint_48275,"High pitched 'scream' when running Old, dirty filter  Filter needs replacing",Filter
+rcint_48282,Defective mains cable  Replaced mains cable,Cable/cord
+rcint_48283,Mains cable is intermittant Mains cable is intermittant Cut back mains cable and re-attached,Cable/cord
+rcint_48288,Motor cuts out cable broken repaired cable,Cable/cord
+rcint_48344,Noisy Noisy operation Replace brush missing from roller end - supplied by owner,Brush
+rcint_48347,Not sucking up dirt Needs new secondary belt  Found fault where 2nd belt was slack.  Order new belt online.,Motor
+rcint_48383,Test,Poor data
+rcint_48390,button stuck button stuck took apart and reassembled,Button/switch
+rcint_48391,boost not working blocked internal filter cleaned out filter,Filter
+rcint_48392,"not sucking, brush not turning old battery replaced battery",Power/battery
+rcint_48420,"Won't pick up from floor, only from nozzle. Possible blockage. Blocked. Unblocked.",Blockage
+rcint_48425,Cannot remove screws Split pipe.  Cleaned and temporary repair effected,Hose/tube/pipe
+rcint_48488,"Doesn't work Fuse missing, no fuse cradle Fitted fuse, device working",Motor
+rcint_48510,Hose broken where it enters vacuum,Hose/tube/pipe
+rcint_48520,Broken belt Brush not turning,Motor
+rcint_48522,Motor arcing,Motor
+rcint_48561,won't charge up battery pack faulty  buy new battery pack,Power/battery
+rcint_48568,intermittent broken cable Shortened mains cable and re-attached.,Cable/cord
+rcint_48573,Brushes / roller doesn't rotate Electronic pcb fault.,Internal damage
+rcint_48581,Cable jammed in body of cleaner Cut cable and extracted cable,Cable/cord
+rcint_48582,Poor Suction Suction  No fault seen but suggested a new filter,Filter
+rcint_48590,intermittent Battery faulty  Battery needs replacing and advised on battery care,Power/battery
+rcint_48591,Little suction Blocked hoses Removed blockages from hoses.,Blockage
+rcint_48597,intermittent intermittent  Tape cable into a position that works,Cable/cord
+rcint_48651,Brushes wont go round   Broken hose but rest of hoover works,Brush
+rcint_48709,Does not work Faulty power connection Cleaned contact and charged,Power/battery
+rcint_48744,Doesn't work Capacitor found loose Resoldered capacitor,Internal damage
+rcint_48753,"Fractured handle Plastic fractured Wooden dowel made and glued back in position, advised not to use for 24 hours",External damage
+rcint_48815,Won't work. Tried changing plug. Broken brush contact,Power/battery
+rcint_48817,Roller motor doesn't turn Loose spade connector Spade connector,Internal damage
+rcint_48849,"floor head not working properly faulty floor head  replacement head ordered, rebooked for fitting",Accessories/attachments
+rcint_48850,jammed spigot jammed gear stripped  stripped gear not replaceable but spare head can be sourced for  ¬£28,Accessories/attachments
+rcint_48853,not working hose blocked and small tear cleared blockage and advised to use gorilla tape to repair tear,Blockage
+rcint_48897,"Not working Dry switch contacts Opened cleaner, cleaned switch contacts, checked charger - all OK",Power/battery
+rcint_48913,Not working.  Fuse checked and OK so it's not that. Break found in cable close to the plug. Cable shortened by 150mm and rewired to plug.  All now OK.,Cable/cord
+rcint_48915,"Won't charge up Battery in poor condition, so needs new battery.  Charger tested and OK.",Power/battery
+rcint_48963,Doesn't pick up dirt hose unclipped Reattached inner hose.,Hose/tube/pipe
+rcint_48971,Only works by pulsing Pulses  Possibly a failing battery.  Maybe borrow one to find out?,Internal damage
+rcint_48987,Doesn't hold a charge Battery at end of life  Buy a new battery,Power/battery
+rcint_48994,Loud noise and burning smell Ran out of time,Overheating
+rcint_49016,Making a funny noise,Other
+rcint_49024,Wire comes out Broken mains cable Stripped back cable and recrimped,Cable/cord
+rcint_49029,Trigger does not stay on Switch not making good contact Cleaned switch,Button/switch
+rcint_49060,Not picking up.  Brushes don't spin. Belt driving brush came off motor shaft.,Motor
+rcint_49075,not working broken neutral wire at plug rewired,Cable/cord
+rcint_49078,cable damaged Mains cable frayed exposing live wire Cable insulated with electrical tape plus heat-shrink plug replaced,Cable/cord
+rcint_49091,Light comes on but charging unit doesn't charge Website advises to call manufacturer. Possibly still in warranty.  Contact company and check warranty. Website advice on their website,Power/battery
+rcint_49096,Vacuum cleaner working but bag or filter has been put in wrong place Filter catch on one side appears faulty. Refer to manufacturer.  Refer to manufacturer.,Filter
+rcint_49113,Motor won't run but lights work Motor not working,Motor
+rcint_49129,Pushing down on left button.  Sometimes doesn't work Checked switch and bo fault found.,Button/switch
+rcint_49148,Power supply fault Broken wire - live  Advised to replace two core cable & plug.  User happy to do this himself.,Cable/cord
+rcint_49158,No suction - blockage? Sock found in the suction hose! Sock removed from hose - hoover now works.,Blockage
+rcint_49170,Motor is smoking Burnt out wire  Wire resoldered but did not solve the problem - unable to diagnose other fault.,Motor
+rcint_49181,Insufficient suction New air filter needed  Advised filter needs replacing.,Filter
+rcint_49183,Stops and starts when lead is moved. Broken connection inside the cable near where it enters the hoover. Broken cable cut off and rewired.,Cable/cord
+rcint_55382,Doesn't suck dust,Blockage
+rcint_55399,Low vacuming strenght The vacuum cleaner's tube needed cleaning,Brush
+restart_9419,Wet Dry Cleaner - doesn't suck water,Blockage
+restart_1885,customer shown what needs to be done,Other
+restart_9457,won't power on,Power/battery
+restart_18111,Water shampoo stopped flowing,Other
+restart_23746,"Not working.Checked all wiring, parts, switches and brush motors...all OK.  Motor showed no continuity.Owner to purchase and fit a new motor.",Motor
+restart_23747,Keeps cutting out.Item shuts down under load.Cable showed intermittent voltages so replaced cable. Source new battery and charger.,Power/battery
+restart_23748,Powers on but motor not working.Switch has failed.  Need to purchase switch and install,Button/switch
+restart_23749,"Owner purchased spare part to fix, but can't work out how to reassemble.Worked with owner to work out reassembly....one screw left at the end, but all working fine.",Other
+restart_23750,o ring fitted & mechanism freed up,External damage
+restart_23751,green power button levered out to gain access to hidden screw allowing cover to be removed  & access circuit board with the tactile switch,Button/switch
+restart_23752,diode replaced n joints re soldered,Internal damage
+restart_23754,triac replaced,Internal damage
+restart_23755,no data. no data,Poor data
+restart_23756,Cracked fan.  Glued back together but if breaks again will buy new part - owner told what this is.,Internal damage
+restart_23757,owner claimed its under 4 year warranty after asking for it to be examined,Poor data
+restart_23758,"Sticky ball. Took apart, cleaned and put it back together again. Replacement filters recommended",Accessories/attachments
+restart_23759,new battery fitted,Power/battery
+restart_23760,hose replaced,Hose/tube/pipe
+restart_23762,"Not working, and red light on and brush not turning.Needed filters and brushes to be cleaned, and explained that light on when the brush is set to 'off' for wood floors etc.",Filter
+restart_23763,Won't pick up dirtPressure valve kept releasing due to blockage in auxillary suction pipe. Removed blockage and now working fine.,Blockage
+restart_23764,Won't pick up dirtPressure valve kept releasing due to blockage in auxillary suction pipe. Removed blockage and now working fine.,Blockage
+restart_23765,Suction minimal and motor is overworking and smell burning.Removed lint from outlet filter and motor inlet. PAT tested OK. Heavy arcing from motor. Unable to get to motor due to multiple glue in plug.,Motor
+restart_23766,brush head connectors replaced & now working fine,Brush
+restart_23767,roller cleaned,Wheels/rollers
+restart_23768,Filter and suction pipe blocked.  Showing bag full but is empty.,Filter
+restart_23769,Filter blocked - spare filters advised.,Filter
+restart_23770,Hose keeps detaching from cuff.Adhesive gone.Cleaned up and reglued into place.,Hose/tube/pipe
+restart_23771,on/off switch dismantled & cleaned now works ok,Button/switch
+restart_23772,"Cable pulled resulting in loose connection behind motor (on live). Once motor unscrewed/removed, easy to reconnect",Cable/cord
+restart_23773,"No power, and not fuse.Unable to get into the machine with hidden screws and limited time.  Checking out online and will send links through later.",Poor data
+restart_23774,Not powering up. Mains cable had a break in the live wire.,Cable/cord
+restart_23775,New filter required,Filter
+restart_23776,Not switching on.  Took apart and working.  Re-assembled and not working.  Owner to try re-assembling at home.,Poor data
+restart_23777,On button not staying on.  New part needed.  Owner to order and fix.,Button/switch
+restart_23778,Pin is broken so machine cannot be charged. Difficult to dismantle. Owner suggested to purchase new lead and transformer,Cable/cord
+restart_23779,new battery needed,Power/battery
+restart_23780,beta bar belt replaced,Motor
+restart_23781,cleaned in switch,Button/switch
+restart_23782,new battery needed & fitted,Power/battery
+restart_23783,new brushes fitted,Brush
+restart_23784,drive belt replaced,Motor
+restart_23785,Powers on but doesn't work. Motor not turning. Very corroded and would need to be replaced professionally .,Motor
+restart_23786,"After disassembly and cleaning of filters, one part of the jug had become mis-aligned by the user resulting in suction not reaching the hose. Checking methodically through the assembly, we found this step and fitted it correctly. Pay attention to where arrows are painted on dust-buckets/jugs, as these show where a part could be installed the wrong way round (Murphy's law).",Dustbag/canister
+restart_23787,Turns off immediately after turning on. Opportunity to return in warranty period missed.,Other
+restart_23788,charge issue,Power/battery
+restart_23789,suction fixed,Blockage
+restart_23794,Loss of suction.Checked over machine and discovered too many filters in the machine and also lots of dirt in them.   Cleaned and removed the surplus and now works.,Filter
+restart_23795,new battery needed,Power/battery
+restart_23796,belt for rotary head slipped. part was opened up and belt replaced,Motor
+restart_23797,needed cleaning,Filter
+restart_29281,Not charging.  Thought to be battery problem.,Power/battery
+restart_29282,"Flex return not working - unable to fix. Nevertheless, it still vacuums.",Cable/cord
+restart_29283,"Stopped working.PAT tested, cleaned out and looked over...all working.",Filter
+restart_23799,Brushes not working. Drive belt broken. Advised owner which part was required and where to order. Possible she will be able to fit herself now that she's seen what to do.,Motor
+restart_23800,Carpet cleaner is leaking at bottom of machine. A part had come loose. Fixed with glue and re-assembled.,External damage
+restart_29284,Doesn't keep its charge. Verified that battery is at end of life. Showed owner where to obtain a replacement online. 2 screws need to be removed to fit the replacement - owner might try this herself. Difficulty removing / refitting the canister. Blew out with compressed air to give it a good clean and seems to work a bit better - terrible design though.,Dustbag/canister
+restart_29285,blocked inlet tube with hairs,Blockage
+restart_23801,Special tools required,Poor data
+restart_29286,"The rotor was not working properly, catching and lagging. The Restarter diagnosed that connection pins had been oxidised over time. After cleaning the pins, it works again. The pins were accessible from the outside of the casing, even though set in deeper, but not out of reach. If the owner would know what to look for, they could properly clean and recover the vacuum to full working order themselves.",Other
+restart_29287,"Case clip broken. Temporally fixed with a cable tie, found replacement part on ebay.",External damage
+restart_29288,Control board fault.,Internal damage
+restart_29289,"Solenoid valve not working, need replacement",Internal damage
+restart_29290,Dead motor.,Motor
+restart_29291,Dead motor.,Motor
+restart_29292,Totally clogged through having been used without a bag!,Blockage
+restart_29293,Kept stopping. Hairs interfering with the brushes removed.,Blockage
+restart_29295,Parts needed,Poor data
+restart_29297,"Potentially repairable, however we did not have the very long torx security screwdriver required to open it.",Poor data
+restart_29298,Blocked and disconnected hose,Blockage
+restart_29299,Frayed hose - shortened and reattached.,Hose/tube/pipe
+restart_29300,Not spraying water; pump broken - needs replacing?,Motor
+restart_29301,Part fixed then signposted to spare part,Poor data
+restart_29302,Switch not pushing to connect.  Unable to access to repair properly but glued handle back in place and working when left Repair Cafe.,Button/switch
+restart_29303,Not sucking.  Filter cleaned and owner shown how to do it themselves in future.,Filter
+restart_24221,Checking OK to use.,Poor data
+restart_24222,Fault with battery identified.,Power/battery
+restart_24224,Filters needed cleaning,Filter
+restart_29304,"Needs specialised overhaul/service, repairer advised what is required.",Other
+restart_29305,Power plug problem. Need to contact manufacturer,Power/battery
+restart_29306,Tubes blocked but could be cleared out at home.,Blockage
+restart_29307,Turns on for a few seconds and then turns off again.All works fine and issue can't be replicated.,Other
+restart_29308,Miele Vacum - there is a problem with a cord. I thinks it might be broken/disconnected right where it connects to the engine. Could not find any issue or discover the cause of the fault.,Internal damage
+restart_29309,Makes and awful noise and doesn't suck.Metal shelf bracket found in the hose...removed and now works fine.,Blockage
+restart_29310,No power.Loose fuse connection in plug - fixed.And looks like a faulty switch - buy replacement and install to get it working again.,Button/switch
+restart_29311,"When it kicks into high mode it cuts out.  Not a battery problem and no blockage anywhere, so can only assume it's a motor problem?. Wiring, motor, microswitches, LED headlights in the floor head and PCB are OK. No mechanical seizure.May be a fault in the battery/control unit, but no way to test. Suggested contacting manufacturer.",Motor
+restart_24225,"Hoover wheels,plu and motor fixed.",Motor
+restart_29312,We had 2 of these and they were all blocked up with dirt!. The unit was disassembled and cleaned thoroughly with an Air Duster,Blockage
+restart_29313,We had 2 of these and they were all blocked up with dirt!. The unit was disassembled and cleaned thoroughly with an Air Duster,Blockage
+restart_29314,"Thorough electrical testing revealed a problem with the brushes/commutator. Unit best repaired by replacing the motor, about £40",Motor
+restart_29315,cable pulled out too far,Cable/cord
+restart_24334,It won't switch on,Power/battery
+restart_24227,Had a split in the tube. Solution: Soldered the plastic and fixed the tube,Hose/tube/pipe
+restart_24228,Robo hoover going around in circles. Solution: Allen took the hoover apart and mended an internal wheel.,Wheels/rollers
+restart_24229,Loose connector. Repairing to keep it going,Internal damage
+restart_24230,Not switching on. Not repaired - will come back next time,Poor data
+restart_24231,The vacuum's hoover was broken. Needed repair.,Poor data
+restart_24232,"Brush on button, stopped working. But on test it worked out fine - not broken.",Poor data
+restart_24233,The vacuum doesn't turn on. Michael tried everything but really the vacuum cleaner couldn't be repaired,Poor data
+restart_22867,Small piece of plastic on clasp has broken thereby disabling the whole machine,External damage
+restart_24234,Machine not spraying. Referred to Repairer 'Ian' in Share and Repair shop,Poor data
+restart_24235,Loose connection/circuit. Didn't have correct screwdriver,Motor
+restart_24236,It doesn't work.,Poor data
+restart_29316,"Stopped working, might be the coil or the motor.Opened up and discovered water damage had caused a lot of corrosion to several internal parts and contacts.  Only way to salvage would be to strip back and get lots of parts of another machine.  Owner decided it was the end of it's life.",Internal damage
+restart_29317,"No powerGeneral strip down, cleaned the rotating contacts. I think the problem was that it is one of the older ones with a power switch and a hi lo switch. The lo circuit is not connected to anything and I think it had been accidentally knocked into lo mode. Also put a fuse in. Now works",Internal damage
+restart_29318,"When start button pressed, it starts, but when released it stops.On/Off switch would not latch. Stripped down, cleaned machine. Put plastic packing under switch. All working now.",Button/switch
+restart_29319,Won't suck up or spin.Drive belt is broken. Shown owner how to replace once she has sourced one.,Motor
+restart_29320,Base wont fit together poperly. screwed on loose clip,External damage
+restart_29321,"Car Vacuum,. power cord damaged, cut out damaged section and re-terminated.",Cable/cord
+restart_29322,"Bruss not spinning. Found replacement belt on ebay, cust will fit",Brush
+restart_29323,Broken belt - visitor had spare parts with them - repaired,Motor
+restart_29324,needs new battery,Power/battery
+restart_29325,Cutting out due to dust accumulation on the moter casing. Recommended a a reverse vaccum and regular cleaning.,Blockage
+restart_29326,"Pedal that releases handle not working properly. Cleaned the dust collection system and carpet brushes using compressed air. The pedal mechanism is worn and would need replacing. Owner is happy because now it's been cleaned out the hoover is still usable, they will attempt to source the spare part we've identified.",External damage
+restart_29327,Fault found and new part required,Poor data
+restart_29328,Brush does not work. Advised guest what part of purchase and return to another session,Brush
+restart_29329,Kept cutting out. Removed compacted debris from inside and worked afterwards,Blockage
+restart_29330,Hose broken. Advised guest to use either gaffer tape to repair and also showed where a spare can be purchased from.,Hose/tube/pipe
+restart_29331,Cut out very quickly. Unable to find instructions to dismantle,Poor data
+restart_29332,"Water damaged.  Motor cleaned up.  Motor coil and switch are ok, but electronics damaged.",Internal damage
+restart_29333,Loud noise - possibly motor fault?,Motor
+restart_29334,Work intermittentlyFilters needed cleaning and emptying as very full of dust.  Explained how to clean for future use.,Filter
+restart_29335,Very noisy. It was used without the filter in and wondering if dust stuck in parts where it shouldn't be.Very hard to get open until found video (link below) on how someone else got into one of these.  Managed to clear out all the dust and visitor confident to be able to do it again if happens again.,Blockage
+restart_29336,Power picked up but fault not detected.....Signpost to specilaist,Poor data
+restart_29340,Max suction setting keeps cutting out the device after 5 seconds of use. Diagnosed - faulty battery has to be sourced from the manufacturer.,Power/battery
+restart_29342,Not charging/workingCharger working but not charging. No power in battery pack. No obvious other issues after stripping it down.Suggest purchasing a new battery and seeing if that works.Has had very little use.,Power/battery
+restart_29343,"Hasn't worked properly since filter was removed and cleaned.It had stopped charging. Checked all the easy bits like switch, wiring and so on, but without success. Concluded that the fault must lie in the micro-electronics, which are beyond our powers to repair.  Frustrating, since it was about £100 new!She said that it won't go to waste - she'll give it to her children's nursery school to go in the 'role play' corner, being the ideal size for little hands.",Internal damage
+restart_29344,"Not working.  Re-soldered brush motor, gave good clean and now working.Filters may need washing.",Motor
+restart_29346,"Tube connection not working. Missing O ring, found replacement part customer will fix",Hose/tube/pipe
+restart_29347,Broken switch. Not repairable,Button/switch
+restart_29348,new battery & head too expensive,Power/battery
+restart_29349,blockage removed & cleaned,Blockage
+restart_29350,broken internal wire re soldered & fitted,Internal damage
+restart_29351,under warranty & will be returned to mfr after inspection,Poor data
+restart_29352,Batteries need replacing.  Model number supplied for owner to purchase.  To return next month if can get parts/batteries.,Power/battery
+restart_29353,Taken apart.  Motor found to be not working.  Irrepairable.,Motor
+restart_29354,Brush was not turning round.,Brush
+restart_29355,Motor was broken.,Motor
+restart_29356,Does not turn on. Identified that the power button is not clicking/latching when pressed at top or middle; needs to be pressed firms at the lower part (potentially the plastic has worn a bit making it stiff).  Owner delighted!,Button/switch
+restart_29357,start button & internally cleaned sorted.....,Button/switch
+restart_29358,new battery needed,Power/battery
+restart_29359,Power adapter broken,Power/battery
+restart_29360,Battery connection and sensorcleaning.,Power/battery
+restart_29361,New battery needed. Guidance given.,Power/battery
+restart_29362,Temporary fix - owner adbised to obtain new wall cube charger.,Power/battery
+restart_29363,Open circuit motor - replacement needed.,Motor
+restart_29365,"Won't turn onOn/Off switch broken, and no spare part available to purchase.",Button/switch
+restart_29366,Not sucking and stops working when in upright position. No blockages and fuse checked.Motor beyond repair (overheated and seized)Visitor will buy a new motor and fit.,Motor
+restart_29367,Poor suction. Check continuity break multiple times - break near plug,Cable/cord
+restart_29368,Not working. Clean filter then try again,Filter
+restart_29369,Battery wont hold charge. Needed new battery,Power/battery
+restart_29370,"snapped cable inside, bought new connector from last event.",Internal damage
+restart_29371,Parts on order for next time.,Poor data
+restart_29373,No turning on. New battery required,Power/battery
+restart_29374,Owner had replaced a spare part but still not working.  Item re-assembled and carefully checked that all re-seated.  Now working.,Poor data
+restart_29375,Being worked on for customer,Poor data
+restart_36591,Brush was not turning. Gear probably broken but not accessible,Brush
+restart_36592,No way to open product,Poor data
+restart_36593,Wasn't charging,Power/battery
+restart_29376,no suction.,Poor data
+restart_29379,missing charger. buy a charger £17.99 https://www.amazon.co.uk/Charger-Switching-Adapter-VBB2ASV1-Cleaner/dp/B08G8VS3W2 . .,Power/battery
+restart_36603,Brush wasn't rotating. Couldn't work out how to dismantle the casing to investigate,Brush
+restart_36604,Intermittent operation. Unable to find the fault,Poor data
+restart_29380,Blocked filter needed cleaning,Filter
+restart_29381,Doesn't switch on,Poor data
+restart_29382,Tube broken,Hose/tube/pipe
+restart_30073,New belt for the motor,Motor
+restart_36608,"Switch not working & Bag clip snappedCleaned switch, repaired clip",Button/switch
+restart_36609,Blocked. Taken apart and unblocked,Blockage
+restart_29384,"Battery faulty, owner to source replacement.",Power/battery
+restart_36615,Motor labouring--dismantled found cracked fan. Parts required--advice given.,Motor
+restart_29385,Faulty Electronic Circuit,Internal damage
+restart_30087,Not functioning--needs professional attention,Poor data
+restart_29386,Not working. Requires parts. Advice given.,Poor data
+restart_36616,Blocked and not suckingHoover filter cleaned and surrounding area emptied to allow suction.,Filter
+restart_36621,Plug needs to be replaced. Ordered new.,Cable/cord
+restart_29389,Not chargingAdvised how to plug it in properly,Power/battery
+restart_29390,Mechanism within handle brokenHandle broken--extender mechanism brokenParts glued,External damage
+restart_36634,Plug bent.  Straightened it.,Cable/cord
+restart_36635,Not sucking from main head but has power.  Needs a new seal/gasket internally.  Found the part available for £1.39 and practised taking it out and replacing the part so it  can be done at home.,Internal damage
+restart_29393,2 new plastic wheels fitted to the head,Wheels/rollers
+restart_36652,Still under warranty.  Owner advised to contact manufacturer.,Poor data
+restart_29394,"pipe badly blocked, freed up & problem resolved",Blockage
+restart_36655,Doesn't start up - dusty motor. Replacement brush attachment needed - can't be fixed after dusting,Motor
+restart_36662,Not working,Poor data
+restart_36663,Does not turn on.  Field winding of motor burnt out,Motor
+restart_36664,Circuit board damaged,Internal damage
+restart_36675,"Water jets not working, so fear a blockage but can't find with online suggestions.Advised to fill with descaler for 24 hrs, see if that helps.  If not, come back.",Other
+restart_29397,new battery needed owner to fit,Power/battery
+restart_29398,Will not start.,Poor data
+restart_29399,Surpressor burning out. Pending,Internal damage
+restart_29400,"The power goes on and off when turned on, feels like there is loose wire maybe.",Internal damage
+restart_29401,Pending,Poor data
+restart_29402,Roller won't work,Wheels/rollers
+restart_29403,Brush head does not rotate,Brush
+restart_29404,Switches on but turns off after a few seconds,Poor data
+restart_29405,Top handle does not stay in place making it unusable. Brass bracket added to secure it.  Also given a full service,External damage
+restart_29406,Does not switch on.,Poor data
+restart_29408,Handle broken. Brilliant,External damage
+restart_29409,Intermittent power/not holding charge. Returning with part next month,Power/battery
+restart_29410,"Doesn't hold charge. Great, thank you. Will test it out and return if needed.",Power/battery
+restart_29411,High pitched noise and burning smell within one minute of starting,Overheating
+restart_29412,Not charging,Power/battery
+restart_36696,Rollers don't turn. Robin was very helpful and successfully identified the issue. Part Required,Wheels/rollers
+restart_29413,Doesn't suck when brush head is attached. Simple and helpful advice - thank you,Blockage
+restart_29414,unsure how to assemble. Advice given.,Poor data
+restart_29415,Faulty lead,Cable/cord
+restart_29416,Engine burnt out,Motor
+restart_29417,Stop/start. Very friendly and helpful,Poor data
+restart_29418,Just stopped working whilst using. Great service. Thank you - can recycle now with clear conscience,Poor data
+restart_29419,Cable won't go back inside. Very good service,Cable/cord
+restart_29420,Rotator brush does not rotate. Thank you for having a look and identifying the problem.,Brush
+restart_36697,Water in pump caused circuit board to fail.,Other
+restart_29421,Works perfectly but switch will not keep machine running. Thrilled with repair.  Have solved sending a vacuum cleaner to landfill.,Button/switch
+restart_29422,Will not rotate,Brush
+restart_29423,Just stopped working,Poor data
+restart_36710,Clean rotating connections,Brush
+restart_36711,Broom has separated from tube. Pushed parts together,Accessories/attachments
+restart_36712,"Not switching on. Broken wire in plug, Replaced",Cable/cord
+restart_36718,Whistling noise,Poor data
+restart_36719,Switch broken,Button/switch
+restart_36720,Wire pulled out.,Internal damage
+restart_36721,No power.  Loose cable resoldered.,Cable/cord
+restart_36732,Brushed not picking dirt up properly.,Brush
+restart_36733,Doesn't stay switched on,Poor data
+restart_36734,Repaired but needs further parts,Poor data
+restart_36739,Part snapped off.  Unable to make upright.  owner will  manage this.,External damage
+restart_36740,"Problem: Dodgy switch.Solution: Replaced power switch (brought by the visitor). The problem was diagnosed at last month's event, and owner came back this month with spare part.",Button/switch
+restart_36746,Loose connection,Internal damage
+restart_36747,Battery not working but unit was repaired,Power/battery
+restart_36753,Battery issue (handheld vac),Power/battery
+restart_36754,"Otherwise working fine, but the cord-winder had stopped working. The owner had brought in a spare part from the manufacturer and had tried 3x to open the hoover, getting to the point of no-go on the casing. As this was one of the first items on the day, we decided to take our time to figure out how to pry open the casing without damaging it. The Restarter fixing it had the patience for the job and did figure it out in the end and the cord-winder was replaced.",Cable/cord
+restart_36767,Brush not fitted correctly and warning light showing - was  refitted,Motor
+restart_36774,"Loud noise when used.Couldn't replicate the fault on the day (motor 'screaming'), but most likely dry bearings. Oil applied.",Motor
+restart_36777,"Broken brushes. Client bought wrong part, coming back next month with correct part",Motor
+restart_36778,Motor not working. Unable to get access to motor connections to test,Motor
+restart_36779,Brush bearing seized. Required new brush as brush fused to the shaft,Motor
+restart_36780,New switch needed.,Button/switch
+restart_36802,Brushes Jammed. Cleaned them/Freed,Brush
+restart_36803,Debris caught in belt of motor causing overheating.,Motor
+restart_36818,Filters Blocked,Filter
+restart_36819,Would not charge. Adjusted connectors,Power/battery
+restart_36820,Broken part glued,External damage
+restart_36821,Doesnt Run - Cleaned and Unblocked,Blockage
+restart_36825,New belt and cleaned,Motor
+restart_36826,Not sweeping or picking up Motor issue,Motor
+restart_36827,Lid won’t close - new bag fitted,Dustbag/canister
+restart_36829,"Not working.Cleaned, emptied, tested, all works fine.",Filter
+restart_36832,charges ok - does not power on.  Cracked circuit board - new parts needed.,Internal damage
+restart_36833,Battery/Motor issue. User to purchase new battery.,Power/battery
+restart_36837,Doesn't suck.Needs new filter,Filter
+restart_36838,Motor potentially burnt out. Opened up but was not fixable - too old and fried out.,Motor
+restart_36839,Interior clogged up tube.,Blockage
+restart_36840,"Blocked filter cleaned. However, new filter required or further cleaning",Filter
+restart_36843,Motorised head not working - not fixable.,Motor
+restart_36844,Owner to source spare part.,Poor data
+restart_36855,Checked over and battery not a problem.  Concluded a motherboard issue.  Owner to purchase new part.,Internal damage
+restart_36856,Battery connector was loose.  Now tightened and working.  Advised may need new batteries.,Power/battery
+restart_36857,Unable to PAT test as lead not brought in.  Owner advised brush and bearings needed replacing.  Owner to purchase and return next month.,Motor
+restart_36863,No power on. Unrepaired,Poor data
+restart_36864,"Faulty motor switch. Unable to locate instrument, electrical fault . Need to contact ''Shark'' dealer.",Internal damage
+restart_36865,"Replacement switch fault. Seems to be the braking power cord, but couldn't isolate it.",Internal damage
+restart_36870,Needs rewind mechanism. Maybe too expensive,Cable/cord
+restart_36872,Not working on high suck - just needed clogged filter cleaned,Filter
+restart_36873,Suction channel heavily bloced with impacted dust and fluff - easy fix,Blockage
+restart_36895,"Battery issue, seems ok now",Power/battery
+restart_36896,Sticking water release. Complete filter clean,Other
+restart_36897,Needed descaling,Other
+restart_36898,Centre pin of charger cable tightened,Power/battery
+restart_36913,Motor issue (very bad smell!),Motor
+restart_36914,The vacuum wasn't turning on. The fuse had already been changed but still not working. The fixer tried with a new plug and that solved the problem. The owner was happy because they didn't have to buy a new vacuum,Cable/cord
+restart_36915,Intermittent fault. Difficult to diagnose,Poor data
+restart_36932,"The owner tried to fix it themself. They managed to clear a blockage, but now the vacuum only blows air",Blockage
+restart_36933,It was not possible to identify the fault of the item,Poor data
+restart_36936,Hose cleared.,Blockage
+restart_36937,Needed hose unclogging.,Blockage
+restart_36938,Dirty battery contacts,Internal damage
+restart_36940,The motorhead brush was not rotating.  Opened it and removed a lot of fluff.  The motor is fine and rotates when the belt is removed.  The issue is friction in the brush drive bearing.  Cleaned this and the friction is now ok.  Unfortunately the drive wheel broke off from the shaft.  The wheel was glued with epoxy and after time for setting it was reassembled.  Tested at home by the user and now working.,Motor
+restart_36947,Rubber seal missing/replaced,Other
+restart_36954,Sucked up glasses cloth and cant' retrieve it.Located and removed.,Blockage
+restart_36958,needed filter cleaning only,Filter
+restart_36962,Owner wanted to learn how to clean item. Accomplished.,Filter
+restart_36963,Charger is not charging battery. Charger not working. Owner will decide whether or not to purchase new charger,Power/battery
+restart_36964,Does Not switch on,Poor data
+restart_36971,Unblocked,Blockage
+restart_36972,Resoldered broken wire,Internal damage
+restart_36974,head broken/needs reconnecting,Accessories/attachments
+restart_36975,connection/motor problem,Motor
+restart_36982,"Non charging battery. Originally bought refurbished - fine for 1 year. Then battery said it wasn't charging so replacement bought which worked twice and now dies. Could be fixable by giving it a ""kick start"" with 12V external charger",Power/battery
+restart_36983,requires new drive belt,Motor
+restart_36986,cleaned parts,Filter
+restart_36991,Cuts out after a few seconds.  Found PCB heavily corroded. Apparently owners dog had peed into the machine. Replacement PCB found on internet.,Internal damage
+restart_36998,Repeatedly cuts out when in use. Took apart to test battery voltage. Could not sustain 21.6 volts under load over a certain level - max setting causes cut out. Normal setting did run but low suction. Remedy - replace cheap (Chinese) battery bought from Amazon.,Power/battery
+restart_36999,"Needs cleaning, not picking up",Poor data
+restart_37001,Hair jammed in vacuum head.  Disassembled and cleaned.  Working.,Blockage
+restart_37004,Loose wire connection. Soldered the wire.,Internal damage
+restart_37005,No power. Switch needs to be replaced. Customer to return with a spare part.,Button/switch
+restart_37006,won't charge gets on. All checked and ensure safe.,Power/battery
+restart_37011,motor burned out,Motor
+restart_37014,Broken hinge bracket - doesn't stay upright anymore .Needs to be glued.,External damage
+restart_37015,"Not charging, needs replacement charger unit.",Power/battery
+restart_37016,"Only works for two minutes. No fault traced, realsitically not fixable.",Other
+restart_37017,Does not start. needs new motor - would be worth getting fixed.,Motor
+restart_37025,not working,Poor data
+restart_37043,Water doesn't come out. Problem with pump,Other
+restart_37052,Not working. Needs new battery,Power/battery
+restart_37053,Motor not running effectively.,Motor
+restart_37104,used web site to repair,Poor data
+restart_37112,Changed plug and cut off damaged cable,Cable/cord
+restart_37113,wheel axel shaft broken made new axel,Wheels/rollers
+fixitclinic_1048,We learned how to fix it with expert advice from Fix-It Clinic Austin,Poor data
+fixitclinic_1072,Learned how to Fix it at a Fix-It Clinic Austin,Poor data
+fixitclinic_1159,"Repaired the switch. Think it is fixed, but have to fully reassemble vacuum to know for sure",Button/switch
+fixitclinic_1188,Wheel would not stay on the leg,Wheels/rollers
+fixitclinic_1200,The vacuum doesn't work to draw the polishing dust/compound back to the filter,Blockage
+fixitclinic_1203,"the volunteer fixed the vacuum by opening up the bottom and cleaning out the dirt that had gotten stuck, not allowing the dirt to go through clean out the bottom",Blockage
+rcwales_4708,not working.,Poor data
+rcwales_4685,Motor stops running. Coean.,Power/battery
+rcwales_4712,Blows off motor cover.,Motor
+rcwales_4715,Hoover will not switch on. Brought a broken spare to hopefully take parts from.,Poor data
+rcwales_4717,Not sucking.,Blockage
+rcwales_4719,Belt on head won’t drive unit.,Motor
+rcwales_4726,Motor.,Motor
+rcwales_4730,It Henry truns on sometimes. Powrr supply reaching the motor but not engaging with brushes. Porbable worn out motor/brushes.,Motor
+rcwales_4732,Plastic clips have broken off.,Button/switch
+rcwales_4741,Doesn't suck and seems to overheat.,Blockage
+rcwales_4744,Smoking when I switch it on. Wash the vacuum filters.,Filter
+rcwales_4605,Blocked and unable to remove pipe.,Blockage
+rcwales_4779,"Smoking, broken motor.",Motor
+rcwales_4781,"doesn't function. customer failed to return to pick item up, currently in storage at the venue.",Poor data
+rcwales_4546,No steam coming out.,Other
+rcwales_4543,Dyson DC31. Max Button stuck (always on) and the motorized brush tool doesn't rotate.,Brush
+rcwales_4788,It doesn’t work when battery fully charged.,Poor data
+rcwales_4529,Won't turn on.,Poor data
+rcwales_4806,Fell off a bed onto floor. Stopped working after the bump.,Internal damage
+rcwales_4807,Doesn't work.,Poor data
+rcwales_4491,Need to be shown how to change the filter.,Filter
+rcwales_4475,Window vacuum cleaner doesn’t charge anymore.,Power/battery
+rcwales_4836,"Electrical wire cuttting out when it’s in a certain position, where the wire goes into the hoover.",Cable/cord
+rcwales_4837,Not working. Linked possibly to polystyrene beads!,Blockage
+rcwales_4842,Not picking up. There is some suction.,Blockage
+rcwales_4847,Blocked hose.,Blockage
+rcwales_4863,Stopped working.,Poor data
+rcwales_4878,Was making rattle noise while using it then stopped working. Power going to it but motor not working.,Motor
+rcwales_4901,Dose not hold charge.,Power/battery
+rcwales_4907,It stopped working while I was using it.,Poor data
+rcwales_4919,Just stopping working whilst cleaning.,Poor data
+rcwales_4933,Took too long to charge and doesn’t run for long.,Power/battery
+rcwales_4944,Main device no suction.,Blockage
+rcwales_4956,Motor screw/bolt loose. Anti tamper screws. Unsafe to patch fix.,Internal damage
+rcwales_4963,not working.,Poor data
+rcwales_4977,Fully charged but can't switch it on suddenly.,Poor data
+rcwales_4980,Not working properly.,Poor data
+rcwales_4991,Dyson Hoover. Dosen't work and a burning smell.,Overheating
+rcwales_4993,It was turning off all the time by itself and clogged up. Showed me to take it apart to clean it better.,Blockage
+rcwales_5009,Not working. Not working due to need attachments contact to workPhilip printed out instructions.,Accessories/attachments
+rcwales_5018,Cable broken.,Cable/cord
+rcwales_5025,Vacuum cleaner not working. Client advised part required.,Poor data
+rcwales_5026,Dyson doesn't suck. Cleaned and unblocked.,Blockage
+rcwales_5028,Making lowd noise. Motor was full of fluf.And filters needed cleening.,Blockage
+rcwales_5037,Rotating brush bearing broken.,Brush
+rcwales_5041,Couldn't be repaired. Not able to get into item.,Poor data
+rcwales_5059,Hoover.,Poor data
+rcwales_5075,Hand held vacuum cleaner not working.,Poor data
+rcwales_5145,It's only moving in reverse. This could be down to a faulty sensor.,Other
+rcwales_5154,Hoover turn itself off. The switch still seems to be working intermittantly.  It may need a new switch if it is available.,Button/switch
+rcwales_5170,Hose broken.,Hose/tube/pipe
+rcwales_5175,On/off switch not working.,Button/switch
+rcwales_5185,Motor problem?,Motor
+rcwales_5188,Brush bar not turning.,Brush
+rcwales_5203,Not picking up.,Blockage
+rcwales_5205,No suction.,Blockage
+rcwales_5726,Broken wire.,Internal damage
+rcwales_5738,Working  but a smell of burning Can't reconnect a hose. Filter needed cleening.,Filter
+rcwales_5749,Not sucking up.,Blockage
+rcwales_5788,Not powering on.,Power/battery
+rcwales_5808,Not running.,Poor data
+rcwales_5832,Stuck attachment. Yes additional advice about how to maintain my item in future.,Accessories/attachments
+rcwales_5864,On/off switch.,Button/switch
+rcwales_5868,Vacuum not sucking.,Blockage
+rcwales_5872,Oil fell into robot vacuum. One wheel is now locked and vacuum won't move.,Wheels/rollers
+rcwales_5877,Is tripping the electric.,Power/battery
+rcwales_5880,Broken belt.,Motor
+rcwales_5886,No suction possible blockage.,Blockage
+rcwales_5887,"loose connection. Has been repaired, but unsure how long it will last as it is near the end of its life.",Internal damage
+rcwales_5900,Starts & stops.,Power/battery
+rcwales_5903,Won’t suck.,Blockage
+rcwales_5911,Securing clip broken on head of vacuum cleaner. External toggle latches installed.,External damage
+rcwales_5921,Need new belt putting in.,Motor
+rcwales_5935,I was using it an it stop.,Poor data
+rcwales_5942,Lead coming  from the hoover is faulty. Stops and starts and now has stopped working!,Cable/cord
+rcwales_5945,Is not picking things up - no succsion. Have been before and the service I get is second to none and the advice given is great.,Blockage
+rcwales_5950,Plug wires came out.,Cable/cord
+rcwales_5968,Henry hoover to be fixed.,Poor data
+rcwales_5977,Not working.,Poor data
+rcwales_5985,Ecobot vaccum toy not working. Wire has become detached from motor.,Internal damage
+rcwales_5994,Won't suck.,Blockage
+rcwales_6006,When hoovering on a carpet the rotation brush stops but not in hard floor or when pushed.,Brush
+rcwales_6012,Broken pipe.,Hose/tube/pipe
+rcwales_6014,Wiring. Faulty.,Internal damage
+rcwales_6016,Battery possibly died.,Power/battery
+rcwales_6025,Ball gets stuck periodically. Replacement filter may be necessary. But vacuum was getting too hot possibly.,Filter
+rcwales_6027,Power button doesn't stick down.,Button/switch
+rcwales_6040,Main part not working. power toggle switch loose connection fixed.,Button/switch
+rcwales_6066,electrical issue Hepa victor vacuum.,Internal damage
+rcwales_6071,Hose replacement.,Hose/tube/pipe
+rcwales_6081,Replace pipe.,Hose/tube/pipe
+rcwales_6092,hand held vacumn.,Poor data
+rcwales_6096,Dyson hand held.,Poor data
+rcwales_6112,"vax airlift steerable, Not turning on, was cutting out while using.",Poor data
+rcwales_6113,"Makes strange noise. removed some debris, no permanent fix.",Other
+rcwales_6114,Nosuction cannot openitemtosee if there is a blockage.,Blockage
+rcwales_6122,Keeps cutting out. Advice given to customer.,Power/battery
+rcwales_6131,No suction.,Blockage
+rcwales_6132,Dyson vacuum cleaner is making a loud noise so we stopped using it.,Poor data
+rcwales_6166,Intermitent fault. sometimes works - then just stops. Rewired the plug.,Other
+rcwales_6172,Took apart to clean and couldn’t get it to work afterwards.,Other
+rcwales_6179,Shark hooverDoesn’t pick up.,Blockage
+rcwales_6181,Broken motor.,Motor
+rcwales_6184,No suction.,Blockage
+rcwales_6185,Wouldn't turn on.,Poor data
+rcwales_6194,Funny noise.,Poor data
+rcwales_6209,Missing filterCaged up fan.,Filter
+rcwales_6220,Brush roller not spinning.,Brush
+rcwales_6221,"Turns off as soon as I connect the two sections together, I believe the rotating brush is jammed.",Brush
+rcwales_6234,Not working.,Poor data
+rcwales_6261,Faulty connection when in motion it stops.,Internal damage
+rcwales_6265,not picking up.,Poor data
+rcwales_6268,Hand-held vacuum cleaner not working.,Power/battery
+rcwales_6280,Henry hoover not working.,Poor data
+rcwales_6284,Rat relief noise. The bearing are smashedItem is now smoking.,Internal damage
+rcwales_6302,Rotary head doesn't work.,External damage
+rcwales_6313,Dyson - runs out of charge quickly.,Power/battery
+rcwales_6320,Brush at end not rotating. Change belt.,Brush
+rcwales_6322,Pat testing.,Poor data
+rcwales_6333,Just not working.,Poor data
+rcwales_6339,Working but smell of burning.,Overheating
+rcwales_6340,Pat testing.,Poor data
+rcwales_6341,not working.,Poor data
+rcwales_6378,New rechargeable battery?,Power/battery
+rcwales_6394,broken hose.,Hose/tube/pipe
+rcwales_6411,"Spring/catch broken on filter latch. temporary repair made to latch, parts are required however.",External damage
+rcwales_6416,not working - attachment maybe incorrect.,Accessories/attachments
+rcwales_6421,Snapped during use.,Poor data
+rcwales_6425,Hand-held rechargeable vacuum - switch not operating.,Button/switch
+rcwales_6436,No longer sucking up anything - roller seems to be stuck.,Blockage
+rcwales_6448,It will not turn on.,Power/battery
+rcwales_6453,No power.  Overheating.,Overheating
+rcwales_6463,dyson hand cavac.,Poor data
+rcwales_6464,"Not picking up everything, stopping when taking hose to pick up things. Bristles have been worn.",Power/battery
+rcwales_6468,Not picking up. Worked today but doesnt work at home at times.,Blockage
+rcwales_6485,Not sucking properly and extremely loud.,Blockage
+rcwales_6496,Not working. Broken supply cable.,Cable/cord
+rcwales_6497,Not charging.,Power/battery
+rcwales_6506,There is something stuck in the vacuum part where the hose and main body connect.,Blockage
+rcwales_6522,Not sucking.,Blockage
+rcwales_6529,Faulty motor.,Motor
+rcwales_6532,Wouldn't suck.,Blockage
+rcwales_6534,Starts and goes off.,Power/battery
+rcwales_6539,It was working last time I used it but now no water coming out of main spray unit.,Other
+rcwales_6554,Motor running fast and loud after cleaning filter. Possible water ingress.,Motor
+rcwales_6577,"Query about the battery, does it need new batery? Advice on where to buy more efficient batteries.Avoid keeping it plugged 24/7.",Power/battery
+rcwales_6585,the dust compartment flap would not flip open.,Dustbag/canister
+rcwales_6587,Hoover not sucking properly and dirt not moving through system.,Blockage
+rcwales_6590,Roller not going round.,Wheels/rollers
+rcwales_6593,"Very little suction, and dust not going through system.",Blockage
+rcwales_6598,needed to be assembled following emptying of the cyclinder.,Other
+rcwales_6599,Hoover not sucking properly and dirt not moving through system.,Blockage
+rcwales_6639,Lower brush was not rotating.,Brush
+rcwales_6655,2 vacuum cleaners not working.,Poor data
+rcwales_6666,won't swithc on.,Poor data
+rcwales_6672,Brush not going around on the first one and on the second hover power but no movement on the brush i.,Brush
+rcwales_6678,Battery not charging.,Power/battery
+rcwales_6684,Automatic cutout coming on all the time. Main tube was blocked. Needs new air filter.,Filter
+rcwales_6698,shark hooverdoesn't suck.,Blockage
+rcwales_6699,cut out last week after 5 minutes use. thermal cut out reset.,Internal damage
+rcwales_6704,Battery not working.,Power/battery
+rcwales_6711,Hoover smart evoRetractable lead stuck.,Cable/cord
+rcwales_6728,Makes a terrible noise and doesn't pick up. The drive belt will allow the vacuum to pick up but the motor will remain noisy unless replaced.,Motor
+rcwales_6732,"Don't know, switched on one day and not working. Changed fuse, still didn't work.",Other
+rcwales_6745,Strange noise and smell. Looks like it had been taken apart before.,Other
+rcwales_6748,No suction and pumping out very hot air.,Blockage
+rcwales_6751,Making strange noise.,Poor data
+rcwales_6756,Not picking up properly.,Blockage
+rcwales_6774,"Cordless vacuum cleaner, Vax. Motor is working but brushes do not move. Will send a link for battery replacement.",Power/battery
+rcwales_6776,on/off switch not working. capacitor had come adrift on power board...tried resoldering but suspect controller damaged.,Internal damage
+rcwales_6777,on/off switch fault? Damaged power board. attempted resolder but suspect damage.,Internal damage
+rcwales_6783,On/off switch fault. Power board component fault - tried resolve but failed.,Internal damage
+rcwales_6785,Dyson V10 pulsing. The device would need more time to be strip down.,Poor data
+rcwales_6786,"Made weird sound - fan seemed to break, burning smell and some smoke. Cleaned filters - not working.",Motor
+rcwales_6798,Not working. fault poss caused by microswitches.,Internal damage
+rcwales_6804,Vacuum cleaner not turning on. We did get the item running briefly. Fault seems caused by microswitches - unable to I.d. further.,Internal damage
+rcwales_6810,Not picking up/suction issue.,Blockage
+rcwales_6819,no suction. Cannot see a blockage.,Other
+rcwales_6826,"Cordless hoover, not working, suspect problem with battery.",Power/battery
+rcwales_6833,Did start then stop but now doesn't start. If owners gets part he will install motor for him.,Motor
+rcwales_6838,"Cleaning not working correctly. Intermittent, perhaps fault with switch, just stops randomly .",Button/switch
+rcwales_6844,Blocked.,Blockage
+rcwales_6851,Just stopped.,Poor data
+rcwales_6854,Not holding by charge.,Power/battery
+rcwales_6862,Faulty connection on certain angles. Design fault.,Internal damage
+rcwales_6875,The item started to spark from the main body. The item can be donated to Wastesavers and parts of it will be recycled.,Motor
+rcwales_6900,on off switch not working. Switch housing broken causing switch to move.  It can be used permenantly switched on.,Button/switch
+rcwales_6902,no power when switched on.,Power/battery
+rcwales_6909,making a strange noise.,Poor data
+rcwales_6923,Problem with connection.,Poor data
+rcwales_6924,"Hoover Telios 1600Flex does not retracton off switch unreliable. Couldn't fix cable retraction. Switch casing is loose, but switch works OK.",Button/switch
+rcwales_6973,Doesn't have any power.,Power/battery
+rcwales_6975,Was unable to fix due to motor. Broken and new motor too expensive.,Motor
+rcwales_6976,Button not working.,Button/switch
+rcwales_7000,Possible problem with belt.,Motor
+rcwales_7002,It had smoke coming out and brush is stuck.,Motor
+rcwales_7005,"Filter blocked, potentially. Filter cleaned.",Filter
+rcwales_7024,vacum cleaner switch.,Button/switch
+rcwales_7030,Dyson vacum not working.,Poor data
+rcwales_7046,Dyson.Sweeping brush not rotating. Gentle when releasing.,Brush
+rcwales_7088,not working.,Poor data
+rcwales_7111,Just stopped working.,Poor data
+rcwales_7118,Brush head not spinning. Good homer just can't fix the old head.,Brush
+rcwales_7140,not sucking up water.,Blockage
+rcwales_7164,The dyson unit works fine but it's not sending a signal to the brush attachment.,Internal damage
+rcwales_7165,Stopped turning on altogether. There was a bit of water inside (garden vacuum cleaner) Motor parts no longer available.,Internal damage
+rcwales_7169,Interminently working.,Poor data
+rcwales_7176,one of the wheels not turning.,Wheels/rollers
+rcwales_7178,not charging.,Power/battery
+rcwales_7183,Rotar not moving.,Brush
+rcwales_7185,Problem with the starter. Doesn't stay on even when fully charged.,Button/switch
+rcwales_7210,Throat pipe split.,Hose/tube/pipe
+rcwales_7242,Hand vacuum. Intermittent. Cleaned. Fixed.,Filter
+rcwales_7260,Cuts out 5-30secs into use. Suspect switch? Discovered that the fault was caused by the beater bar being seized...customer to install new b/bar.,Brush
+rcwales_7293,Not working.,Poor data
+rcwales_7295,Didn't work.,Poor data
+rcwales_7296,Broken.,Poor data
+rcwales_7313,Didn't work.,Poor data
+rcwales_7326,Suspect the motor has blown.,Motor
+rcwales_7363,Intermintten switching on and of.,Power/battery
+rcwales_7368,not working.,Poor data
+rcwales_7376,Vax hand hoover.,Poor data
+rcwales_7383,Careless vacuum cleaner. Not workings. Smoke from circuit board. Do not use.,Internal damage
+rcwales_7394,Switches on and off.,Power/battery
+rcwales_7426,Shark stand up hoover power floor nozzle isn't spinning.,Accessories/attachments
+rcwales_7468,Needed a new motor.,Motor
+rcwales_7473,Beater bar not rotating.,Brush
+rcwales_7480,Not hoovering up anything.,Poor data
+rcwales_7494,Eithe the battery diesn’t work.,Power/battery
+rcwales_7503,It doesn’t turn on.,Power/battery
