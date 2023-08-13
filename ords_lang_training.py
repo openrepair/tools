@@ -224,22 +224,25 @@ def get_stopwords():
     return stoplist
 
 
-def do_training(data, stopwords=False):
+# Experiment with classifier/vectorizer.
+def do_training_tests(data, stopwords=False):
 
     column = data.sentence
     labels = data.language
 
     vectorizer = TfidfVectorizer()
-
     if stopwords != False:
         vectorizer.set_params(stop_words=stopwords)
-
     feature_vects = vectorizer.fit_transform(column)
 
     # Get the alpha value.
     # Use search=True to find a good value, or False for default.
     # If a better value than default is found, replace default with it.
     alpha = get_alpha(column, labels, feature_vects, search=False)
+    logger.debug('** TRAIN : vectorizer ~ shape **')
+    logger.debug(feature_vects.shape)
+    logger.debug('** TRAIN : vectorizer ~ feature names **')
+    logger.debug(vectorizer.get_feature_names_out())
 
     # Other classifiers are available!
     # https://scikit-learn.org/stable/modules/naive_bayes.html
@@ -275,13 +278,39 @@ def do_training(data, stopwords=False):
     # Save the classifier and vectoriser objects for re-use.
     dump(classifier, clsfile)
     dump(vectorizer, tdffile)
-    # Create and save a pipeline for re-use.
+
+    # Save predictions to 'out' directory in csv format.
+    data.loc[:, 'prediction'] = predictions
+    data.to_csv(format_path('ords_lang_results_training_tests'), index=False)
+
+    # Save prediction misses.
+    misses = data[(data['language'] != data['prediction'])]
+    logger.debug(misses)
+    misses.to_csv(format_path('ords_lang_misses_training_tests'), index=False)
+
+
+# Use a pipeline to train the model.
+def do_training(data, stopwords=False):
+
+    column = data.sentence
+    labels = data.language
+
+    vectorizer = TfidfVectorizer()
+    if stopwords != False:
+        vectorizer.set_params(stop_words=stopwords)
+
+    classifier = MultinomialNB(force_alpha=True, alpha=0.1)
+
     pipe = Pipeline([
         ('tfidf', vectorizer),
         ('clf', classifier),
     ])
     pipe.fit(column, labels)
     dump(pipe, pipefile)
+    predictions = pipe.predict(column)
+    logger.debug('** TRAIN : F1 SCORE: {}'.format(
+        metrics.f1_score(labels, predictions, average='macro')))
+    logger.debug(predictions)
 
     # Save predictions to 'out' directory in csv format.
     data.loc[:, 'prediction'] = predictions
@@ -293,7 +322,7 @@ def do_training(data, stopwords=False):
     misses.to_csv(format_path('ords_lang_misses_training'), index=False)
 
 
-# Validate the model with either pipeline or vect/class objects.
+# Validate the model with vect/class objects.
 # Try each to ensure object integrity.
 def do_validation(data, pipeline=False):
 
