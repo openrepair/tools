@@ -5,6 +5,7 @@ import json
 import pandas as pd
 logger = logfuncs.init_logger(__file__)
 
+# MYSQL database functions.
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
 
