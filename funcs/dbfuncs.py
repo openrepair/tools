@@ -1,6 +1,7 @@
 import mysql.connector
 import os
 
+# MYSQL database function wrappers.
 
 dbvars = {
     'host': '{ORDS_DB_HOST}'.format(**os.environ),
