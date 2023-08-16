@@ -62,6 +62,26 @@ def executemany(sql, params=None):
         return result
 
 
+def show_create_table(name):
+    result = False
+    try:
+        dbh = mysql_con()
+        cursor = dbh.cursor(dictionary=True)
+        sql = "SHOW CREATE TABLE `{}`".format(name)
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        for row in rows:
+            result = row['Create Table']
+    except Exception as error:
+        pass
+        # result = "Table not found: {}".format(name)
+    finally:
+        if dbh.is_connected():
+            cursor.close()
+            dbh.close()
+        return result
+
+
 def dump_table_to_csv(table, path):
     import pandas as pd
     sql = """
