@@ -15,7 +15,7 @@ For anyone who fancies tinkering with Python, NLP, SQL and lots of messy but int
 Some of the things you can do:
 
 * Get familiar with ORDS data.
-* Slice the data up in various ways using Python DataFrames and/or MySQL.
+* Slice the data up in various ways using Python DataFrames and/or MySQL/SQLite.
 * Investigate devices against the timeline of consumer electronics.
 * Calculate how much waste was prevented from going to landfill.
 * Detect languages in the text and translate using the DeepL API.

@@ -1,7 +1,9 @@
 import mysql.connector
+import sqlite3
 import os
 
 # MYSQL database function wrappers.
+# SQLITE3 connection.
 
 dbvars = {
     'host': '{ORDS_DB_HOST}'.format(**os.environ),
@@ -125,6 +127,22 @@ def alchemy_eng():
     from sqlalchemy import create_engine
     con = alchemy_con()
     return create_engine(con)
+
+
+def sqlite_dict_factory(cursor, row):
+    fields = [column[0] for column in cursor.description]
+    return {key: value for key, value in zip(fields, row)}
+
+
+def sqlite_connect():
+    con = False
+    try:
+        con = sqlite3.connect(dbvars['database'])
+        con.row_factory = sqlite_dict_factory
+    except sqlite3.Error as error:
+        print("Exception: {}".format(error))
+    finally:
+        return con
 
 
 def table_schemas():
