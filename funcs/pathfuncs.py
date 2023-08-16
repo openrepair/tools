@@ -32,6 +32,14 @@ def get_path(path_list):
     return Path(*path_list)
 
 
+def get_filename(path):
+    return Path(path).name
+
+
+def get_filestem(path):
+    return Path(path).stem
+
+
 def rm_file(path):
     if os.path.exists(path):
         os.remove(path)
