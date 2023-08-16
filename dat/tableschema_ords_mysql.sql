@@ -1,13 +1,11 @@
 DROP TABLE IF EXISTS `{0}`;
 CREATE TABLE `{0}` (
   `product_category_id` int NOT NULL,
-  `product_category` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `product_category` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE `{0}`
   ADD PRIMARY KEY (`product_category_id`),
   ADD KEY `product_category` (`product_category`);
-ALTER TABLE `{0}`
-  MODIFY `product_category_id` int NOT NULL AUTO_INCREMENT;
 DROP TABLE IF EXISTS `{1}`;
 CREATE TABLE `{1}` (
   `id` varchar(32) DEFAULT NULL,
