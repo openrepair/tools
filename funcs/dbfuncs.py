@@ -105,3 +105,25 @@ def alchemy_eng():
     from sqlalchemy import create_engine
     con = alchemy_con()
     return create_engine(con)
+
+
+def table_schemas():
+    from funcs import pathfuncs
+    import json
+
+    path = pathfuncs.get_path([pathfuncs.ORDS_DIR, 'tableschema.json'])
+    if not pathfuncs.check_path(path):
+        print('File not found! {}'.format(path))
+        return False
+    with open(path) as schema_file:
+        content = schema_file.read()
+
+    parsed = json.loads(content)
+    tables = parsed['resources']
+    result = {}
+    for table in tables:
+        result[pathfuncs.get_filestem(table['path'])] = {
+            'pkey': table['schema']['primaryKey'],
+            'fields':  table['schema']['fields']}
+
+    return result
