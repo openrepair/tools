@@ -152,19 +152,19 @@ def write_to_files(dfsub, suffix, index=False, sample=0):
     if sample:
         dfsub = dfsub.sample(frac=sample, replace=False, random_state=1)
 
+    file = '{}/{}_{}.'.format(pathfuncs.OUT_DIR, tablename, suffix)
+    #csv
+    dfsub.to_csv(file + 'csv', index=index)
+    logger.debug('CSV written to {}'.format(file + 'csv'))
     # json
     if not index:
         dict = dfsub.to_dict('records')
     else:
         dict = dfsub.groupby(level=0).apply(
             lambda x: x.to_dict('records')).to_dict()
-    with open(pathfuncs.OUT_DIR +
-              '/{}_{}.json'.format(tablename, suffix), 'w') as f:
+    with open(file + 'json', 'w') as f:
         json.dump(dict, f, indent=4, ensure_ascii=False)
-
-    # csv
-    dfsub.to_csv(pathfuncs.OUT_DIR +
-                 '/{}_{}.csv'.format(tablename, suffix), index=index)
+    logger.debug('JSON written to {}'.format(file + 'json'))
 
 
 slice_events()

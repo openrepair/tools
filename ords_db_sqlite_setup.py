@@ -70,7 +70,7 @@ def put_table_categories(schemas):
 
 
 def put_table_data(schemas):
-    table_data = envfuncs.get_var('ORDS_DATA')
+    table = envfuncs.get_var('ORDS_DATA')
     indices = ['product_category',
                'product_category_id',
                'data_provider',
@@ -78,7 +78,7 @@ def put_table_data(schemas):
                'repair_status',
                'repair_barrier_if_end_of_life',
                'event_date']
-    put_table(table_data, schemas[table_data]['sql'], indices, 'dat')
+    put_table(table, schemas[table]['sql'], indices, 'dat')
 
 
 def put_table(table, sql, indices, prefix):
