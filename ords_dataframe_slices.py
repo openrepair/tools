@@ -122,19 +122,10 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    # json
-    if not index:
-        dict = df.to_dict('records')
-    else:
-        dict = df.groupby(level=0).apply(
-            lambda x: x.to_dict('records')).to_dict()
-    with open(pathfuncs.OUT_DIR +
-              '/{}_{}.json'.format(tablename, suffix), 'w') as f:
-        json.dump(dict, f, indent=4, ensure_ascii=False)
-
-    # csv
-    df.to_csv(pathfuncs.OUT_DIR +
-              '/{}_{}.csv'.format(tablename, suffix), index=index)
+    path = '{}/{}_{}'.format(pathfuncs.OUT_DIR, tablename, suffix)
+    results = miscfuncs.write_data_to_files(df, path, index)
+    for result in results:
+        print(result)
 
 
 slice_events()

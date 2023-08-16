@@ -6,11 +6,13 @@ import json
 
 logger = logfuncs.init_logger(__file__)
 
-# MYSQL database functions.
+# SQLite database functions.
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
 
 tablename = envfuncs.get_var('ORDS_DATA')
+
+con = dbfuncs.sqlite_connect()
 
 
 # Events - date range is arbitrary, amend or omit.
@@ -27,8 +29,7 @@ def slice_events():
     WHERE event_date BETWEEN '{}' AND '{}'
     ORDER BY event_date, id
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(
-        sql.format(tablename, '2018', '2022')))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename, '2018', '2022')))
     write_to_files(dfsub, 'events', index=False)
 
 
@@ -39,14 +40,14 @@ def slice_repairs():
     SELECT
     id,
     product_age,
-    year_of_manufacture,
+    CAST("year_of_manufacture" AS int) AS year_of_manufacture,
     repair_status,
     repair_barrier_if_end_of_life
     FROM `{}`
     WHERE `product_age` > 0
     ORDER BY product_age, id
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     # Empty repair_barrier_if_end_of_life values
     dfsub.fillna('', inplace=True)
     write_to_files(dfsub, 'repairs', index=False)
@@ -57,15 +58,15 @@ def slice_year_of_manufacture():
     sql = """
     SELECT
     product_category,
-    MIN(year_of_manufacture) AS 'earliest',
-    MAX(year_of_manufacture) AS 'latest',
-    ROUND(AVG(year_of_manufacture),0) AS 'average'
+    CAST(MIN(year_of_manufacture) AS int) AS 'earliest',
+    CAST(MAX(year_of_manufacture) AS int) AS 'latest',
+    CAST(ROUND(AVG(year_of_manufacture),0) AS int) AS 'average'
     FROM `{}`
     WHERE year_of_manufacture > ''
     GROUP BY product_category
     ORDER BY product_category
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     dfsub['average'] = dfsub['average'].astype(int)
     write_to_files(dfsub, 'year_of_manufacture', index=False, sample=0)
 
@@ -85,7 +86,7 @@ def slice_product_age():
     GROUP BY product_category
     ORDER BY product_category
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     write_to_files(dfsub, 'product_age', index=False, sample=0)
 
 
@@ -101,7 +102,7 @@ def slice_categories():
     FROM `{}`
     ORDER BY product_category, id
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     write_to_files(dfsub, 'categories', index=False)
 
 
@@ -115,15 +116,15 @@ def slice_item_types():
     FROM (
     SELECT
     product_category,
-    TRIM(IF(INSTR(partner_product_category, '~'),
-    SUBSTRING_INDEX(partner_product_category, '~', -1),
-    partner_product_category)) as item_type
+    TRIM(SUBSTR(partner_product_category,
+    INSTR(partner_product_category, '~')+IIF(INSTR(partner_product_category, '~')=0,0,2))
+    ) as item_type
     FROM `{}`
     ) t1
     GROUP BY product_category, item_type
     ORDER BY records DESC
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     write_to_files(dfsub, 'item_types', index=False)
 
 
@@ -142,7 +143,7 @@ def slice_countries():
     GROUP BY country, group_identifier
     ORDER BY country, group_identifier
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename))).set_index(
+    dfsub = pd.DataFrame(con.execute(sql.format(tablename))).set_index(
         'iso').join(countries.set_index('iso'))
     write_to_files(dfsub, 'countries', index=True)
 
@@ -150,9 +151,6 @@ def slice_countries():
 # Set sample to a fraction to return a subset of results.
 # Can be useful for testing, e.g. data visualisation.
 def write_to_files(dfsub, suffix, index=False, sample=0):
-
-    if sample:
-        dfsub = dfsub.sample(frac=sample, replace=False, random_state=1)
 
     path = '{}/{}_{}'.format(pathfuncs.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(dfsub, path, index)
