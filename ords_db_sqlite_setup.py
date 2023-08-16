@@ -9,16 +9,10 @@ logger = logfuncs.init_logger(__file__)
 # Creates and populates SQLITE3 tables with ORDS data.
 
 
-def dict_factory(cursor, row):
-    fields = [column[0] for column in cursor.description]
-    return {key: value for key, value in zip(fields, row)}
-
-
 def sqlite_connect():
     con = False
     try:
-        con = sqlite3.connect('ords_test')
-        con.row_factory = dict_factory
+        con = dbfuncs.sqlite_connect()
     except sqlite3.Error as error:
         print("Exception: {}".format(error))
     finally:
