@@ -19,24 +19,25 @@ rxelems = pd.read_csv(pathfuncs.DATA_DIR +
                       '/product_category_regex_elements.csv')
 # Create a structure to hold compiled regexes.
 results = pd.DataFrame(columns=['product_category', 'lang', 'regex'])
+results['product_category'] = rxelems.columns
+results['lang'] = 'any'
+results['regex'] = ''
 
 # Main loop.
-for category in rxelems.columns:
+for i, row in results.iterrows():
+    category = row['product_category']
     print(category)
     logger.debug(category)
-    results.loc[len(results)+1, 'product_category'] = category
-    results.loc[len(results), 'lang'] = 'any'
     data = rxelems[category]
     data.dropna(inplace=True)
     regex = miscfuncs.build_regex_string(data)
     rx = re.compile(regex)
     tests = testterms.loc[testterms.product_category == category]
-    for i in range(0, len(tests)):
-        test = tests.iloc[i]
-        logger.debug(test.values[1])
-        matches = rx.search(test.values[1])
+    for n, test in tests.iterrows():
+        logger.debug(test['product'])
+        matches = rx.search(test['product'])
         logger.debug(matches)
-    results.loc[len(results), 'regex'] = regex
+    results.loc[i, 'regex'] = regex
 
 # Write regex strings to csv format file.
 results.to_csv(pathfuncs.OUT_DIR +
