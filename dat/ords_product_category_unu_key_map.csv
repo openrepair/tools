@@ -15,8 +15,8 @@ product_category_id,product_category,unu_key,unu_desc,unu_1995,unu_2000,unu_2005
 14,Kettle,203,"Hot Water (f.i. coffee, tea, water cookers)",1.80,2.70,1.30,2.80,2.90,2.80
 15,Lamp,506,Household Luminaires (incl. household incandescent fittings),0.60,0.50,0.50,0.50,0.50,0.50
 16,Laptop,303,Laptops (incl. tablets),4.90,4.30,3.70,3.20,3.20,3.00
-17,Large home electrical,,,,,,,,
-18,Misc,,,,,,,,
+17,Large home electrical,601,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",16.70,15.90,15.20,15.20,15.20,14.40
+18,Misc,601,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",16.70,15.90,15.20,15.20,15.20,14.40
 19,Mobile,306,"Mobile Phones (incl. smartphones, pagers)",0.60,0.20,0.10,0.10,0.10,0.10
 20,Musical instrument,403,"Music Instruments, Radio, HiFi (incl. audio sets)",3.30,3.30,2.30,3.40,3.50,3.40
 21,Paper shredder,601,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",16.70,15.90,15.20,15.20,15.20,14.40
