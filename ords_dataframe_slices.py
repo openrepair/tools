@@ -109,10 +109,12 @@ def slice_countries():
                                                                  'group_identifier': 'group'})
     dfsub = dfsub.groupby(
         ['iso', 'group']).size().reset_index(name='records')
-    dfsub = dfsub.set_index(
-        'iso').join(countries.set_index('iso'))
 
-    write_to_files(dfsub, 'countries', index=True)
+    dfsub = pd.merge(dfsub.reset_index(), countries,  how='inner',
+                         left_on=['iso'],
+                         right_on=['iso']).set_index('index')
+
+    write_to_files(dfsub, 'countries', index=False)
 
 
 # Set sample to a fraction to return a subset of results.

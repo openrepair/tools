@@ -143,14 +143,20 @@ def slice_countries():
     GROUP BY country, group_identifier
     ORDER BY country, group_identifier
     """
-    dfsub = pd.DataFrame(con.execute(sql.format(tablename))).set_index(
-        'iso').join(countries.set_index('iso'))
-    write_to_files(dfsub, 'countries', index=True)
+
+    dfsub = pd.merge(pd.DataFrame(con.execute(sql.format(tablename))).reset_index(),
+                     countries,  how='inner',
+                     left_on=['iso'],
+                     right_on=['iso']).set_index('index')
+    write_to_files(dfsub, 'countries', index=False)
 
 
 # Set sample to a fraction to return a subset of results.
 # Can be useful for testing, e.g. data visualisation.
 def write_to_files(dfsub, suffix, index=False, sample=0):
+
+    if sample:
+        dfsub = dfsub.sample(frac=sample, replace=False, random_state=1)
 
     path = '{}/{}_{}'.format(pathfuncs.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(dfsub, path, index)

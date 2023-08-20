@@ -142,9 +142,12 @@ def slice_countries():
     GROUP BY country, group_identifier
     ORDER BY country, group_identifier
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename))).set_index(
-        'iso').join(countries.set_index('iso'))
-    write_to_files(dfsub, 'countries', index=True)
+
+    dfsub = pd.merge(pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename))).reset_index(),
+                     countries,  how='inner',
+                     left_on=['iso'],
+                     right_on=['iso']).set_index('index')
+    write_to_files(dfsub, 'countries', index=False)
 
 
 # Set sample to a fraction to return a subset of results.
