@@ -92,9 +92,15 @@ def slice_categories():
 # Item types.
 # Split the partner_product_category string.
 def slice_item_types():
-    dfsub = df['partner_product_category'].reset_index(drop=True).squeeze()
-    np_res = dfsub.str.split('~').str.get(1).str.strip().dropna().unique()
-    dfsub = pd.DataFrame(np_res, columns=['item_type'])
+
+    dfsub = df.reindex(
+        columns=['product_category', 'partner_product_category'])
+    dfsub.rename(
+        columns={'partner_product_category': 'item_type'}, inplace=True)
+    dfsub.item_type = dfsub.item_type.apply(
+        lambda s: s.split('~').pop().strip())
+    dfsub = dfsub.groupby(['product_category', 'item_type']).size().reset_index(
+        name='records').sort_values(['product_category', 'records'], ascending=[True, False])
     write_to_files(dfsub, 'item_types', index=False)
 
 
@@ -111,8 +117,8 @@ def slice_countries():
         ['iso', 'group']).size().reset_index(name='records')
 
     dfsub = pd.merge(dfsub.reset_index(), countries,  how='inner',
-                         left_on=['iso'],
-                         right_on=['iso']).set_index('index')
+                     left_on=['iso'],
+                     right_on=['iso']).set_index('index')
 
     write_to_files(dfsub, 'countries', index=False)
 
@@ -130,10 +136,10 @@ def write_to_files(df, suffix, index=False, sample=0):
         print(result)
 
 
-slice_events()
-slice_repairs()
-slice_product_age()
-slice_year_of_manufacture()
-slice_categories()
+# slice_events()
+# slice_repairs()
+# slice_product_age()
+# slice_year_of_manufacture()
+# slice_categories()
 slice_item_types()
-slice_countries()
+# slice_countries()

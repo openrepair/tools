@@ -122,7 +122,7 @@ def slice_item_types():
     FROM `{}`
     ) t1
     GROUP BY product_category, item_type
-    ORDER BY records DESC
+    ORDER BY product_category, records DESC
     """
     dfsub = pd.DataFrame(con.execute(sql.format(tablename)))
     write_to_files(dfsub, 'item_types', index=False)
