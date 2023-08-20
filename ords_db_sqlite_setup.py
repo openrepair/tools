@@ -21,20 +21,30 @@ def sqlite_connect():
 
 def log_tables():
     try:
-        table_cats = envfuncs.get_var('ORDS_CATS')
-        table_data = envfuncs.get_var('ORDS_DATA')
         con = sqlite_connect()
+        sql_count = """SELECT COUNT(*) as records FROM sqlite_master WHERE type='table' AND name='{}' ORDER BY name"""
         sql_tbl = """SELECT name, sql FROM sqlite_master WHERE type='table' AND name='{}' ORDER BY name"""
         sql_idx = """SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND tbl_name='{}' ORDER BY tbl_name"""
-        for row in con.execute(sql_tbl.format(table_cats)):
-            logger.debug(row['sql'])
-        for row in con.execute(sql_idx.format(table_cats)):
-            logger.debug(row['sql'])
-        for row in con.execute(sql_tbl.format(table_data)):
-            logger.debug(row['sql'])
-        for row in con.execute(sql_idx.format(table_data)):
-            logger.debug(row['sql'])
-        print('See logfile for table structures')
+        count = con.execute(sql_count.format(table_cats)).fetchone()
+        if count['records'] > 0:
+            for row in con.execute(sql_tbl.format(table_cats)):
+                logger.debug(row['sql'])
+            for row in con.execute(sql_idx.format(table_cats)):
+                logger.debug(row['sql'])
+            print('See logfile for table structure: {}'.format(table_cats))
+        else:
+            print("Table not found: {}".format(table_cats))
+
+        count = con.execute(sql_count.format(table_data)).fetchone()
+        if count['records'] > 0:
+            for row in con.execute(sql_idx.format(table_data)):
+                logger.debug(row['sql'])
+            for row in con.execute(sql_idx.format(table_data)):
+                logger.debug(row['sql'])
+            print('See logfile for table structure: {}'.format(table_data))
+        else:
+            print("Table not found: {}".format(table_data))
+
     except sqlite3.Error as error:
         print("Exception: {}".format(error))
     finally:
@@ -42,37 +52,16 @@ def log_tables():
             con.close()
 
 
-def drop_tables():
+def drop_table(table):
     try:
         con = sqlite_connect()
-        con.execute("DROP TABLE IF EXISTS `{}`".format(
-            envfuncs.get_var('ORDS_CATS')))
-        con.execute("DROP TABLE IF EXISTS `{}`".format(
-            envfuncs.get_var('ORDS_DATA')))
+        con.execute("DROP TABLE IF EXISTS `{}`".format(table))
         con.commit()
     except sqlite3.Error as error:
         print("Exception: {}".format(error))
     finally:
         if (con):
             con.close()
-
-
-def put_table_categories(schemas):
-    table = envfuncs.get_var('ORDS_CATS')
-    indices = ['product_category']
-    put_table(table, schemas[table]['sql'], indices, 'cat')
-
-
-def put_table_data(schemas):
-    table = envfuncs.get_var('ORDS_DATA')
-    indices = ['product_category',
-               'product_category_id',
-               'data_provider',
-               'product_age',
-               'repair_status',
-               'repair_barrier_if_end_of_life',
-               'event_date']
-    put_table(table, schemas[table]['sql'], indices, 'dat')
 
 
 def put_table(table, sql, indices, prefix):
@@ -83,9 +72,21 @@ def put_table(table, sql, indices, prefix):
             con.execute(
                 "CREATE INDEX `{2}_{1}` ON `{0}` (`{1}`)".format(table, idx, prefix))
         con.commit()
+    except sqlite3.Error as error:
+        print("Exception: {}".format(table))
+        print(error)
+    finally:
+        if (con):
+            con.close()
+
+
+def import_data(table):
+    try:
+        con = sqlite_connect()
         path = pathfuncs.get_path([pathfuncs.ORDS_DIR, table + '.csv'])
         logger.debug('Reading file "{}"'.format(path))
         df = pd.read_csv(path)
+        logger.debug('{} rows to write to table "{}"'.format(len(df), table))
         vals = list(zip(*[df[col] for col in df]))
         sql = "INSERT INTO `{}`({}) VALUES({})".format(table, ", ".join(
             df.columns), ",".join(["?"] * len(df.columns)))
@@ -125,9 +126,40 @@ def get_schemas():
     return schemas
 
 
-schemas = get_schemas()
-drop_tables()
-log_tables()
-put_table_categories(schemas)
-put_table_data(schemas)
-log_tables()
+def create_from_schema(schema='json'):
+    import time
+    try:
+        time.sleep(3)
+        log_tables()
+        if schema == 'json':
+            schemas = get_schemas()
+            # Categories table
+            logger.debug(schemas[table_cats]['sql'])
+            put_table(table_cats, schemas[table_cats]['sql'], [
+                      'product_category'], 'cat')
+            # Data table
+            indices = ['product_category',
+                       'product_category_id',
+                       'data_provider',
+                       'product_age',
+                       'repair_status',
+                       'repair_barrier_if_end_of_life',
+                       'event_date']
+            logger.debug(schemas[table_data]['sql'])
+            put_table(table_data, schemas[table_data]['sql'], indices, 'dat')
+        elif schema == 'sql':
+            pass
+        time.sleep(3)
+        log_tables()
+    except Exception as error:
+        print("Exception: {}".format(error))
+
+
+table_cats = envfuncs.get_var('ORDS_CATS')
+table_data = envfuncs.get_var('ORDS_DATA')
+
+drop_table(table_cats)
+drop_table(table_data)
+create_from_schema()
+import_data(table_cats)
+import_data(table_data)
