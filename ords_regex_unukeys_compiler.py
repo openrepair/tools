@@ -64,7 +64,8 @@ def get_test_data(sample=0.25, categories=[]):
                          'unu_2010', 'unu_2011', 'unu_2012'], inplace=True)
     unumap.rename(columns={'unu_key': 'map_key',
                            'unu_desc': 'map_desc'}, inplace=True)
-
+    logger.debug(unumap.groupby(['map_key', 'map_desc', 'product_category']).size(
+    ).reset_index(name='records').sort_values(['map_key'], ascending=[True]))
     testterms = slice_item_types()
     testterms['matched'] = ''
     testterms['keys'] = ''
@@ -154,6 +155,7 @@ def test_one2one(testterms, regex):
             testterms.at[n, 'matched'] = matches.group()
             testterms.at[n, 'keys'] = term['map_key']
     testterms['correct'] = testterms['map_key'] == testterms['keys']
+    testterms.sort_values(by='correct', ascending=True, inplace=True)
     testterms.to_csv(pathfuncs.OUT_DIR +
                      '/unukey_regex_matches_one2one.csv', index=False)
     log_stats(testterms, 'test_one2one')
@@ -169,12 +171,15 @@ def log_stats(df, type):
                                   fill_value=0,
                                   margins=True,
                                   margins_name='total'), 2)
-    dfg.reset_index()
-    dfg = pd.DataFrame(data=dfg.values, columns=[
-                       'false', 'true', 'total'], index=dfg.index)
-    logger.debug(dfg)
-    dfg.to_csv(pathfuncs.OUT_DIR +
-               '/unukey_regex_matches_stats_{}.csv'.format(type), index=True)
+    if not dfg.empty:
+        dfg.reset_index()
+        dfg = pd.DataFrame(data=dfg.values, columns=[
+                        'false', 'true', 'total'], index=dfg.index)
+        logger.debug(dfg)
+        dfg.to_csv(pathfuncs.OUT_DIR +
+                '/unukey_regex_matches_stats_{}.csv'.format(type), index=True)
+    else:
+        print('No stats to log')
 
 
 """
@@ -194,12 +199,20 @@ misc = [
     "Misc"
 ]
 
-# data = get_test_data(sample=0.1, categories=['Headphones'])
-data = get_test_data(sample=1, categories=[])
+foo = [
+    "Laptop",
+    "Tablet"
+]
+
+regexes = precompile_regexes(build_regexes())
+
+# data = get_test_data(sample=1, categories=foo)
+# data = get_test_data(sample=1, categories=[])
 # data = get_test_data(sample=0.5, categories=umbrellas)
 # data = get_test_data(sample=1, categories=misc)
-regexes = precompile_regexes(build_regexes())
-# test_one2one(data, regexes.loc['401'])
-test_mapkey(data, regexes)
+
+# test_mapkey(data, regexes)
 # test_other(data, regexes)
-# test_all(data, regexes)
+
+# look for satnavs etc in tablets, should match unu key portable audio/video...
+test_one2one(get_test_data(sample=1, categories=['Tablet']), regexes.loc['402'])
