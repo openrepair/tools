@@ -3,13 +3,11 @@
 from funcs import *
 import pandas as pd
 import re
+
 logger = logfuncs.init_logger(__file__)
 
 
 # Given a list of "terms" (actually mini-regexes), return a whole regular expression string for each category.
-# The "terms" reside in dat/product_category_regex_elements.csv.
-# They come from a Google sheet for ease of editing and testing. Free to copy for own use.
-# https://docs.google.com/spreadsheets/d/1LVQrLXPupufRhh1aNR33R6ea3f57dcvz_QA3mumbJfQ/edit?usp=sharing
 
 
 def build_regexes():
@@ -67,9 +65,6 @@ def get_test_data(sample=0.25, categories=[]):
     unumap.rename(columns={'unu_key': 'map_key',
                            'unu_desc': 'map_desc'}, inplace=True)
 
-    # testterms = pd.read_csv(pathfuncs.DATA_DIR +
-    #                         '/ords_testdata_common_products.csv')
-    # testterms.rename(columns={'product': 'item_type'}, inplace=True)
     testterms = slice_item_types()
     testterms['matched'] = ''
     testterms['keys'] = ''
