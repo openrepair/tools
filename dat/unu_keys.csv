@@ -1,0 +1,55 @@
+key,description,parent
+1,Central Heating (household installed),Large equipment
+2,Photovoltaic Panels (incl. converters),Large equipment
+101,Professional Heating & Ventilation (excl. cooling equipment),Large equipment
+102,Dishwashers,Large equipment
+103,"Kitchen (f.i. large furnaces, ovens, cooking equipment)",Large equipment
+104,Washing Machines (incl. combined dryers),Large equipment
+105,"Dryers (wash dryers, centrifuges)",Large equipment
+106,"Household Heating & Ventilation (f.i. hoods, ventilators, space heaters)",Large equipment
+108,Fridges (incl. combi-fridges),Cooling and Freezing
+109,Freezers,Cooling and Freezing
+111,Air Conditioners (household installed and portable),Cooling and Freezing
+112,"Other Cooling (f.i. dehumidifiers, heat pump dryers)",Cooling and Freezing
+113,"Professional Cooling (f.i. large air conditioners, cooling displays)",Cooling and Freezing
+114,"Microwaves (incl. combined, excl. grills)",Small equipment
+201,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",Small equipment
+202,"Food (f.i. toaster, grills, food processing, frying pans)",Small equipment
+203,"Hot Water (f.i. coffee, tea, water cookers)",Small equipment
+204,Vacuum Cleaners (excl. professional),Small equipment
+205,"Personal Care (f.i. tooth brushes, hair dryers, razors)",Small equipment
+301,"Small IT (f.i. routers, mice, keyboards, external drives & accessories)",Small IT
+302,"Desktop PCs (excl. monitors, accessories)",Small IT
+303,Laptops (incl. tablets),Screens
+304,"Printers (f.i. scanners, multifunctionals, faxes)",Small IT
+305,"Telecom (f.i. (cordless) phones, answering machines)",Small IT
+306,"Mobile Phones (incl. smartphones, pagers)",Small IT
+307,"Professional IT (f.i. servers, routers, data storage, copiers)",Large equipment
+308,Cathode Ray Tube Monitors,Screens
+309,"Flat Display Panel Monitors (LCD, LED)",Screens
+401,"Small Consumer Electronics (f.i. headphones, remote controls)",Small equipment
+402,"Portable Audio & Video (f.i. MP3, e-readers, car navigation)",Small equipment
+403,"Music Instruments, Radio, HiFi (incl. audio sets)",Small equipment
+404,"Video (f.i. Video recorders, DVD, Blue Ray, set-top boxes)",Small equipment
+405,Speakers,Small equipment
+406,"Cameras (f.i. camcorders, photo & digital still cameras)",Small equipment
+407,Cathode Ray Tube TVs,Screens
+408,"Flat Display Panel TVs (LCD, LED, Plasma)",Screens
+501,"Lamps (f.i. pocket, Christmas, excl. LED & incandescent)",Lamps
+502,Compact Fluorescent Lamps (incl. retrofit & non-retrofit),Lamps
+503,Straight Tube Fluorescent Lamps,Lamps
+504,"Special Lamps (f.i. professional mercury, high & low pressure sodium)",Lamps
+505,LED Lamps (incl. retrofit LED lamps & household LED luminaires),Lamps
+506,Household Luminaires (incl. household incandescent fittings),Small equipment
+507,"Professional Luminaires (offices, public space, industry)",Small equipment
+601,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",Small equipment
+602,"Professional Tools (f.i. for welding, soldering, milling)",Large equipment
+701,"Toys (f.i. car racing sets, electric trains, music toys, biking computers)",Small equipment
+702,Game Consoles,Small IT
+703,"Leisure (f.i. large exercise, sports equipment)",Large equipment
+801,"Household Medical (f.i. thermometers, blood pressure meters)",Small equipment
+802,"Professional Medical (f.i. hospital, dentist, diagnostics)",Large equipment
+901,"Household Monitoring & Control (alarm, heat, smoke, excl. screens)",Small equipment
+902,"Professional Monitoring & Control (f.i. laboratory, control panels)",Large equipment
+1001,"Non Cooled Dispensers (f.i. for vending, hot drinks, tickets, money)",Large equipment
+1002,"Cooled Dispensers (f.i. for vending, cold drinks)",Cooling and Freezing
