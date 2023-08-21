@@ -145,7 +145,7 @@ def test_mapkey(testterms, regexes):
     log_stats(testterms, 'test_mapkey')
 
 
-# test each term with the regex for its own mapped unu key.
+# test each term in a range of categories with the regex for for a single unu key.
 def test_one2one(testterms, regex):
     for n, term in testterms.iterrows():
         rx = regex['rx']
@@ -195,24 +195,23 @@ umbrellas = [
     "Power tool",
     "Small home electrical"
 ]
-misc = [
-    "Misc"
-]
-
-foo = [
-    "Laptop",
-    "Tablet"
-]
 
 regexes = precompile_regexes(build_regexes())
 
-# data = get_test_data(sample=1, categories=foo)
 # data = get_test_data(sample=1, categories=[])
 # data = get_test_data(sample=0.5, categories=umbrellas)
-# data = get_test_data(sample=1, categories=misc)
+# data = get_test_data(sample=1, categories=["Misc"])
 
 # test_mapkey(data, regexes)
 # test_other(data, regexes)
 
 # look for satnavs etc in tablets, should match unu key portable audio/video...
-test_one2one(get_test_data(sample=1, categories=['Tablet']), regexes.loc['402'])
+# test_one2one(get_test_data(sample=1, categories=['Tablet']), regexes.loc['402'])
+# look for small audio/video, should match unu key portable audio/video...
+test_one2one(get_test_data(sample=1, categories=['Handheld entertainment device']), regexes.loc['402'])
+# look for small games consoles, should match unu key games console...
+# test_one2one(get_test_data(sample=1, categories=['Handheld entertainment device']), regexes.loc['702'])
+# # look for remote controls, should match unu key portable audio/video...
+# test_one2one(get_test_data(sample=1, categories=['TV and gaming-related accessories']), regexes.loc['401'])
+# # look for set-top boxes, should match unu key video...
+# test_one2one(get_test_data(sample=1, categories=['TV and gaming-related accessories']), regexes.loc['404'])

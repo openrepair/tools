@@ -1,0 +1,78 @@
+coffee-machine,kettle,dishwasher,washing-machine,clothes-dryer,fridge,freezer,air-conditioner,microwave,vacuum-cleaner,tablet,desktop,laptop,printer,telecom,mobile,remote-control,headphone,portable-audio-video,small-tablet,set-top-box,speaker,camera,flatpanel-screen,lighting,power-tool,lawnmower,garden-machine,shredder,gaming-console,sport-exercise,personal-electronic,gaming-portable,sewing-machine,projector,toaster,watch-clock,hairdryer,food-processor,charger-adapter,iron
+c[àa][f]+[eéè]ti[eéè]re,\burn,spülmaschine,washing,dryer,refrigerator,freez,humidi([a-zß-ÿœ]+),mi[ck]ro[- ]?(wave|ondes?|golf(oven)?|welle|bølgeovn|oven|goloven),va[cx](uum)?,i[- ]?pad,desktop,lap[ -]?top,printer,t[eé]l[eé](ph|f)oo?ne?,mobile,afstandsbediening,air[ -]?pods?,radio,sat[ -]?nav,[ck]ontro[l]+(ed?u?r?)?,speakers?,[ck]amera,\btv,lampe?,[ck]ompressor,mower,blattgebläse,papi?er,x[- ]?box,bi(ke|cy),thermom[eè](er|tre),game[ -]?boy,s[eo]wing,proje[ck]tor,to[oa]ster,watch,dr[yi]er,blender,a[ck]+u,\biron
+[ck][oaà]+[f]+i?[eéè]+([a-zß-ÿœ]+)?,boiler,dishwasher,wasmachine,tumble,kühlschrank,ice,[ck]lima([a-zß-ÿœ]+),magnetron,aspirateur,tablet,\bpc,book|livre,sc[aá][n]+er,answer,([a-zß-ÿœ]+[ -]?)?(phone|fon),fernbedienung,casque,transistor,gps|gsm|pda|nuvi,vhs,spi?eler,[pf]h?oto,t[eé]l[eé]vision,leuchte,blazer,grasmaaier,blower,sc?hredder(er)?,play[- ]?station,exercise,blood,nintendo,n[äa][äah]i?ma[cs]+hine,viewer,([aà] )?pain,[ck]loc?k,föh?n,proce[s]+(o|eu?)r,adapt[eo]u?r,([àa] )?vapeur
+mas?chine (d?[àa]? ?)c[àa][f]+[eéè],bouilloire,vaatwasser,waschmaschine,wasdroger,fridge,ijsblokjes?,purifi([a-zß-ÿœ]+),,kruimeldief,hudl,computer,bærbar,[pf]h?oto,landline,fon[a-zß-ÿœ]+,télécommande,ear[ -]?(buds?|plugs?),cd|dvd,satellite,bioscoop,spre[kc]h?ers?,[ck]am[ -]?[ck]order,monitor,\bled\b,bohren,rasenmäher,clipper,aktenvernichter,sp[e]+l[- ]?station,fiets,ultrasound,sega,machine ([àa] )?coudre,slide,broodrooster,timer?,ha[ai]r,mix(eu?r)?,batter(y|ie|ij),([àa] )?repasser
+per[ck]olat[a-zß-ÿœ]+,chaudière,afwasmachine,lave[- ]?linge,wäschetrockner,koelkast,eiswürfel,conditioner,,carpet,kindle,to[wu]e?r\b,(note|think|idea)pad,jet\b,,handy,remote,head[- ]?phones?,dis[ck][ -]?man,navigat[oei]+,blue?[ -]?ray,woofer,re[ck]order,screen,blitz,boor,tondeuse( [aà] gazon)?,(hæk|kant)klipper,,wii\b,fitness,hearing,switch,de cucire,carouss?el,,montre,droger,ménager?,brancher,bügeleisen
+n?e[sx]+pre[s]+o,ke(tt|ss)(le|el),geschirrspüler,machine à laver,sèche[- ]?linge,frigo,glaçons,aircon,,i?robot,e[ -]?(book|reader),,computer,fax,,,control,head[- ]?set,i[ -]?pod,tom[ -]?tom,boîte,sound[ -?]bar,video,display,candle,brecher,flymo,cutter,,nintendo,golf[- ]?(cart|buggy|vogn),,video[- ]?game,da coser,beamer,,minute[a-zß-ÿœ]+,,liquidiser,c[aâ]ble,plätteisen
+senseo,samovar,lave[- ]?vaisselle,,tørretumpler,,,(be|ont?)vochtiger,,roomba,\bfire,,,drucker,,,,høre[- ]?(telefoner|bøffer),mp[- ]?3,dash[- ]?cam,chrome[ -]?cast,barre de son,,fernseher,chandelier,broyeur,plæneklipper,débrousailleuse,,sega,laufband,,video[- ]?sp[ie]+l,overlock(er|ing)?,,,horloge,,maker,chargeu?r,strij?kijzer
+mo[ch]+ona,teasmade,,,,,,l[uü](ch|f)t([a-zß-ÿœ]+),,tapis,amazon,,,[ck]opier(er)?,,,,kopfhörer,walk[ -]?man,autodisplay,cin[eé]ma,,,sch[ei]rm,christmas,cloueuse,,garten[a-zß-ÿœ]+,,video[- ]?game,rowing,,,tagliacuci,,,we[ck]+er,,mixer,extension,a? vapore
+,wasserkocher,,,,,,ventilat([a-zß-ÿœ]+),,hoover,,,,,,,,ohrstöpsel,diabetrachter,,d[eé]codeu?r,,,écran,éclair[a-zß-ÿœ]+,coupe,,haie,,video[- ]?sp[ie]+l,scooter,,,remalladora,,,orologio,,mas?chine,kabel,fer(ro)?
+,,,,,,,extract([a-zß-ÿœ]+),,h(enr(y|ietta)),,,,,,,,,[ck]assette,,doos,,,,fakkel,drehbank,,s?trimmer,,[ck]onsol[ea],h(ome|eim)[- ]?trainer,,,surjet,,,reloj,,presse?,ladegerät,(de)? vapo
+,,,,,,,zuiveraar,,d(irt|ust)[ -]?buster,,,,,,,,,bluetooth,,vcr,,,,feu,dremel,,løvstøvsuger,,troosten,v[eé]lo,,,coudre,,,mirar,,blender,mehrfachsteckdose,plancha
+,,Plæneklipper strømforsyning,,,,,(d[ée]s?)?ionis([a-zß-ÿœ]+),,dirt[ -]?devil,,,,,,,,,,,dvd,,,,lampe?,drill,,leaf,,ps[- ]?[1-9] ,treadmill,,,,,,ch?rono[a-zß-ÿœ],,juicer?,netz[a-zß-ÿœ]+,stryge?
+,,,,,,,d[ée]s?humidi([a-zß-ÿœ]+),,vakumier,,,,,,,,,,,enregistreur,,,,lampes?( d[eé]s? )?,driver,,hedge,,,løbebånd,,,,,,sveglia,,grind(er|ing)?,oplader,vapeur
+,,,,,,,,,sauger,,,,,,,,,,,fernbedienung,,,,lant(aa|e)rn,druck,,,,,motionscykel,,,,,,uhr,,shre[d]+er,plug,(glatte|flad|goderåd)[- ]?jern
+,,,,,,,,,,,,,,,,,,,,video,,,,leucht(e|ung),fräse,,Motionscykel,,,,,,,,,r[eé]veil,,slic(er|ing),pouvoir,damp(er|station|stryg|jern)
+,,,,,,,,,,,,,,,,,,,,joueur,,,,li[cg]hts?,grind(er|ing),,,,,,,,,,,alarm,,handrührgerät,power,
+,,,,,,,,,,,,,,,,,,,,kino,,,,lueur,grubber,,,,,,,,,,,fit(bit|ness),,centrifuge,prise,
+,,,,,,,,,,,,,,,,,,,,magnétophone,,,,lumi[A-zÀ-ÿ]+,gun,,,,Tørretumpler,,,,,,,,,pürierstab,socket,
+,,,,,,,,,,,,,,,,,,,,manette,,,,lustrerie,ha[m]+er,,,,,,,,,,,,,mühle,steck,
+,,,,,,,,,,,,,,,,,,,,player,,,,phare,hecke,,,,,,,,,,,,,entsafter,stopcontact,
+,,,,,,,,,,,,,,,,,,,,pvr,,,,scheinwerfer,hefter,,,,,,,,,,,,,,stroom,
+,,,,,,,,,,,,,,,,,,,,re[ck]ord(er)?,,,,solar,hobel,,,,,,,,,,,,,,transform(er|ateur|ator),
+,,,,,,,,,,,,,,,,,,,,receiver,,,,stoorts,jet\b,,,,,,,,,,,,,,verl[eä]ng[i|eru]ng,
+,,,,,,,,,,,,,,,,,,,,speler,,,,torch,k[aä]rs?[sc]her,,,,,,,,,,,,,,strømforsyning,
+,,,,,,,,,,,,,,,,,,,,syst[èe]+me?,,,,,kante,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,th[eé][âa]t[er][re],,,,,laubbläser,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,laveuse,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,lötkolben,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,m[eé]u?l[aeusngr]+,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,marteau,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,mas?chine,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,mi(x|sch)er,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,molen,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,mühle,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,multi,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,nettoyeur,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,oefening,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,p[ou]mpe?,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,paint,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,perceuse,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,pinzette,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,pist[o]+le?t?,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,ponceuse,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,pressure,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,pulv[ée]risateur,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,rasentrimmer,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,reiniger,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,router,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,säge,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sah,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sander,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sauger,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,saw,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schaar,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schere,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schleif[a-zß-ÿœ]+,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schneide,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schraub[a-zß-ÿœ]+,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schroevendraaier,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,schweißer,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sci[eé],,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,shredder,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,slicer,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,slijpschijf,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,snijder,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,souffleur,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sprayer,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,sprüh,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,tampon,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,tournevis,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,transformator,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,tron[çc]o[n]+euse,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,wandler,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,washer,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,wechselrichter,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,werkzeug,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,zaag,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,zentrifuge,,,,,,,,,,,,,,,
