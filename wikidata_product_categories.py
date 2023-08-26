@@ -143,6 +143,23 @@ def fetch_from_file_subclasses(keys):
         logger.debug(keys)
         fetch_keys_fields(keys)
 
+
+def parse_items(keys):
+    for key, desc in keys.items():
+        subs = read_file_subclasses(key)
+        d = []
+        for subkey in subs:
+            data = read_file_item(subkey)
+            logger.debug(data)
+            print(data['label_en'])
+            d.append(data)
+
+        df = pd.DataFrame(data=d, columns=data.keys())
+        df.sort_values(by='label_en', inplace=True)
+        df.to_csv(pathfuncs.OUT_DIR + '/wikidata_{}_{}.csv'.format(key,
+                  desc.replace(' ', '-')), index=False)
+
+
 # START
 
 # QUICK API TESTS
@@ -153,48 +170,39 @@ def fetch_from_file_subclasses(keys):
 # keys = ['Q62927'] # digital camera (Q62927)
 # fetch_keys_fields(keys)
 
+# These returned no subclasses!
+# keys = {
+    # 'Q8946856' : 'Category:Electrical apparatus',
+    # 'Q9016839' : 'Category:Electrical equipment',
+    # 'Q9412449' : 'Category:Electrical appliances',
+    # 'Q8411527' : 'Category:Electronic toys',
+# }
 
-keys = {
-    'Q2858615': 'electronic machine',
-    'Q581105':  'consumer electronics'
-}
+# keys = {
+#     'Q2858615': 'electronic machine',
+#     'Q581105':  'consumer electronics',
+#     'Q3749263': 'electrical device',
+#     'Q2425052': 'electrical appliance',
+#     'Q116961643': 'electronic product',
+#     'Q65280844': 'electronic system',
+#     'Q107618851': 'Electrical device',
+#     'Q3749263': 'electrical device',
+#     'Q14859880': 'audio electronics',
+#     'Q212920': 'home appliance',
+#     'Q3966': 'computer hardware',
+#     'Q1327701' : 'power tool',
+#     'Q117710711' : 'electric power tool',
+#     'Q115922057' : 'health care or beauty item',
+#     'Q10528974' : 'personal hygiene item',
+#     'Q2249149' : 'electronic game',
+#     'Q15654425' : 'electronic toy',
+#     'Q5639584' : 'hairstyling tool',
+#     'Q12269769' : 'major appliance',
+#     'Q20076681' : 'electric household appliance',
+# }
 
-
-# Category:Electrical apparatus (Q8946856)
-# Category:Electrical equipment (Q9016839)
-# Category:Electrical appliances (Q9412449)
-
-# electrical device (Q3749263)
-# electrical appliance (Q2425052)
-# electronic product (Q116961643)
-# electronic system (Q65280844)
-# Electrical device (Q107618851)
-# electrical device (Q3749263)
-
-
-# audio electronics (Q14859880)
-# home appliance (Q212920)
-# manufactured good (Q1836700)
-# computer hardware (Q3966)
-
-
-# Make API requests.
-# fetch_to_file(keys.keys())
-# fetch_from_file_subclasses(keys.keys())
-
-
-# Parse downloaded JSON files.
-for key, desc in keys.items():
-    subs = read_file_subclasses(key)
-    d = []
-    for subkey in subs:
-        data = read_file_item(subkey)
-        logger.debug(data)
-        print(data['label_en'])
-        d.append(data)
-
-    df = pd.DataFrame(data=d, columns=data.keys())
-    df.sort_values(by='label_en', inplace=True)
-    df.to_csv(pathfuncs.OUT_DIR + '/wikidata_{}_{}.csv'.format(key, desc.replace(' ','-')), index=False)
-
-exit()
+# electronic waste (Q327400)
+keys = {}
+fetch_to_file(keys.keys())
+fetch_from_file_subclasses(keys.keys())
+parse_items(keys)
