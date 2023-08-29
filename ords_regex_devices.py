@@ -54,8 +54,8 @@ def slice_item_types():
 def get_test_data(sample=0.25, categories=[]):
 
     testterms = slice_item_types()
+    testterms['has-match'] = False
     testterms['matched'] = ''
-    testterms['keys'] = ''
     if len(categories) > 0:
         testterms = testterms.loc[testterms.product_category.isin(categories)]
     if sample < 1:
@@ -69,21 +69,20 @@ def test_one(testterms, key, regexes):
     rx = regexes.at[key, 'rx']
     for n, term in testterms.iterrows():
         matches = rx.search(term['item_type'])
+        matched = ''
         if matches != None:
             print("{}".format(term['item_type']))
-            testterms.at[n, 'matched'] = matches.group()
-            testterms.at[n, 'keys'] = key
-    testterms.sort_values(by=['keys', 'product_category', 'matched'], ascending=[
-                          False, True, True], inplace=True)
-    testterms.to_csv(pathfuncs.OUT_DIR +
-                     '/devices_regex_matches_{}.csv'.format(key), index=False)
+            testterms.at[n, 'has-match'] = True
+            matched = matches.group()
+        testterms.at[n, 'matched'] = "{} : {}".format(key, matched)
     total = len(testterms)
     if total > 0:
-        matched = len(testterms.loc[testterms['keys'] != ''])
+        matched = len(testterms.loc[testterms['has-match'] == True])
         logger.debug('{} of {} matched = {}%'.format(
             matched, total, round(matched/total*100)))
     else:
         logger.debug('0 of 0 matched = 0%')
+    return testterms
 
 
 regexes = precompile_regexes(build_regexes())
@@ -98,8 +97,6 @@ pairs = [
     ('garden-machine', ['Large home electrical']),
     ('sewing-machine', ['Sewing machine']),
     ('portable-audio-video', ['Handheld entertainment device']),
-    ('small-tablet', ['Tablet', 'Handheld entertainment device',
-     'PC accessory', 'TV and gaming-related accessories']),
     ('gaming-console', ['Handheld entertainment device']),
     ('gaming-portable', ['Handheld entertainment device']),
     ('speaker', ['Handheld entertainment device', 'TV and gaming-related accessories',
@@ -113,12 +110,15 @@ pairs = [
     ('freezer', ['Large home electrical']),
     ('air-conditioner', ['Aircon/dehumidifier']),
     ('vacuum-cleaner', ['Vacuum']),
-    ('tablet', ['Tablet']),
-    ('desktop',  ['Desktop computer']),
-    ('laptop', ['Laptop']),
+    ('computer-tablet', ['Tablet']),
+    ('computer-desktop',  ['Desktop computer']),
+    ('computer-laptop', ['Laptop']),
+    ('computer-accessory', ['PC accessory']),
+    ('computer-auto', ['Tablet', 'Handheld entertainment device',
+     'PC accessory', 'TV and gaming-related accessories']),
     ('printer', ['Printer/scanner']),
     ('telecom', ['Small home electrical', 'Misc']),
-    ('mobile', ['Mobile']),
+    ('telecom-mobile', ['Mobile']),
     ('headphone', ['Headphones']),
     ('set-top-box', ['TV and gaming-related accessories']),
     ('camera', ['Digital compact camera', 'DSLR/video camera']),
@@ -127,15 +127,33 @@ pairs = [
     ('power-tool', ['Power tool']),
     ('garden-machine', ['Power tool', 'Large home electrical']),
     ('shredder', ['Paper shredder']),
-    ('personal-electronic', ['Hair & beauty item',
-    'Small home electrical', 'Misc']),
     ('projector', ['Projector']),
     ('toaster', ['Toaster']),
     ('watch-clock', ['Watch/clock']),
     ('hairdryer', ['Hair dryer']),
     ('food-processor', ['Food processor']),
     ('charger-adapter', ['Battery/charger/adapter']),
+    ('musical-instrument',['Musical instrument']),
+    ('small-kitchen',['Small kitchen item']),
+    ('small-domestic',['Small home electrical']),
+    ('personal-medical', ['Hair & beauty item', 'Small home electrical', 'Misc']),
+    ('personal-grooming',['Hair & beauty item']),
+    ('personal-hygiene',['Hair & beauty item']),
+    ('heater',['Small home electrical', 'Misc']),
+    ('toy',['Toy']),
 ]
+
+
+dftest = pd.DataFrame()
 for i in range(0, len(pairs)):
     data = get_test_data(sample=1, categories=pairs[i][1])
-    test_one(data, pairs[i][0], regexes)
+    test = test_one(data, pairs[i][0], regexes)
+    dftest = pd.concat([dftest, test])
+
+
+testmatches = dftest.loc[dftest['has-match'] == True].sort_values(by=['product_category', 'matched'], ascending=[True, True])
+testmatches.to_csv(pathfuncs.OUT_DIR +
+                   '/devices_regex_matched.csv', index=False)
+testmisses = dftest.loc[dftest['has-match'] == False].sort_values(by=['product_category', 'matched'], ascending=[True, True])
+testmisses.to_csv(pathfuncs.OUT_DIR +
+                  '/devices_regex_missed.csv', index=False)
