@@ -44,7 +44,7 @@ topics = pd.DataFrame(data={
 for i, row in topics.iterrows():
     logger.debug(row.topic)
     logger.debug(row.rxstr)
-    topics.at[i, 'rxcmp'] = re.compile(row.rxstr)
+    topics.at[i, 'rxcmp'] = re.compile(row.rxstr, flags=re.IGNORECASE+re.UNICODE)
 
 itemtypes = get_item_types(df)
 for i, row in topics.iterrows():

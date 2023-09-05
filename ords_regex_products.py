@@ -10,7 +10,7 @@ logger = logfuncs.init_logger(__file__)
 def build_regexes():
 
     rxelems = pd.read_csv(pathfuncs.DATA_DIR +
-                          '/device_regex_elements.csv', dtype=str)
+                          '/product_regex_elements.csv', dtype=str)
     regexes = pd.DataFrame(columns=['key', 'regex'])
     logger.debug(rxelems.columns)
     regexes['key'] = rxelems.columns.values
@@ -22,39 +22,24 @@ def build_regexes():
         if (len(terms) > 0):
             regexes.loc[key, 'regex'] = miscfuncs.build_regex_string(terms)
     regexes.to_csv(pathfuncs.OUT_DIR +
-                   '/devices_regexes.csv', index=True)
+                   '/product_regexes.csv', index=True)
     return regexes
 
 
 def precompile_regexes(regexes):
     regexes.dropna(inplace=True)
     for i, row in regexes.iterrows():
-        regexes.at[i, 'rx'] = re.compile(row['regex'], re.I)
+        regexes.at[i, 'rx'] = re.compile(row['regex'], flags=re.IGNORECASE+re.UNICODE)
     return regexes
 
 
-def slice_item_typesX():
-
-    df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
-                     keep_default_na=False, na_values="")
-    df = df.reindex(
-        columns=['product_category', 'partner_product_category'])
-    df.rename(
-        columns={'partner_product_category': 'item_type'}, inplace=True)
-    df.item_type = df.item_type.apply(
-        lambda s: s.split('~').pop().strip())
-    df = df.groupby(['product_category', 'item_type']).size().reset_index(
-        name='records').sort_values(['product_category', 'records'], ascending=[True, False])
-    return df
-
-
-def get_item_types(columns):
+def get_products(columns):
 
     df = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str,
                      keep_default_na=False, na_values="")
     df.rename(
-        columns={'partner_product_category': 'item_type'}, inplace=True)
-    df.item_type = df.item_type.apply(
+        columns={'partner_product_category': 'product'}, inplace=True)
+    df['product']= df['product'].apply(
         lambda s: s.split('~').pop().strip())
     df = df.reindex(columns=columns)
     df = df.groupby(columns).size().reset_index(name='records').sort_values(
@@ -65,9 +50,9 @@ def get_item_types(columns):
 
 def get_test_data(sample=0.25, columns=[], categories=[]):
 
-    testterms = get_item_types(columns)
+    testterms = get_products(columns)
     if len(categories) > 0:
-        testterms = testterms.loc[testterms.product_category.isin(categories)]
+        testterms = testterms.loc[testterms['product_category'].isin(categories)]
     if sample < 1:
         testterms = testterms.sample(frac=sample)
     return testterms
@@ -77,10 +62,10 @@ def test_one(testterms, key, regexes):
     logger.debug('*** {} ***'.format(key))
     rx = regexes.at[key, 'rx']
     for n, term in testterms.iterrows():
-        matches = rx.search(term['item_type'])
+        matches = rx.search(term['product'])
         matched = ''
         if matches != None:
-            print("{}".format(term['item_type']))
+            print("{}".format(term['product']))
             testterms.at[n, 'has-match'] = True
             matched = matches.group()
         testterms.at[n, 'matched'] = "{} : {}".format(key, matched)
@@ -155,7 +140,7 @@ def test_pairs(regexes):
     dftest = pd.DataFrame()
     for i in range(0, len(pairs)):
         data = get_test_data(sample=1, columns=[
-                             'product_category', 'item_type'], categories=pairs[i][1])
+                             'product_category', 'product'], categories=pairs[i][1])
         data['has-match'] = False
         test = test_one(data, pairs[i][0], regexes)
         dftest = pd.concat([dftest, test])
@@ -163,33 +148,33 @@ def test_pairs(regexes):
     testmatches = dftest.loc[dftest['has-match'] == True].sort_values(
         by=['product_category', 'matched'], ascending=[True, True])
     testmatches.to_csv(pathfuncs.OUT_DIR +
-                       '/devices_regex_pairs_matched.csv', index=False)
+                       '/products_regex_pairs_matched.csv', index=False)
     testmisses = dftest.loc[dftest['has-match'] == False].sort_values(
         by=['product_category', 'matched'], ascending=[True, True])
     testmisses.to_csv(pathfuncs.OUT_DIR +
-                      '/devices_regex_pairs_missed.csv', index=False)
+                      '/products_regex_pairs_missed.csv', index=False)
 
 
 # Test each term against each regex.
 def test_all(regexes):
-    testterms = get_test_data(sample=1, columns=['item_type'])
+    testterms = get_test_data(sample=1, columns=['product'])
     for n, term in testterms.iterrows():
-        print("{}".format(term['item_type']))
+        print("{}".format(term['product']))
         matched = []
         for key, regex in regexes.iterrows():
-            matches = regex.rx.search(term['item_type'])
+            matches = regex.rx.search(term['product'])
             if matches != None:
                 matched.append("({}:{})".format(key, matches.group()))
         testterms.at[n, 'matched'] = "|".join(matched)
 
     testmatches = testterms.loc[testterms['matched'] > ''].sort_values(
-        by=['item_type', 'matched'], ascending=[True, True])
+        by=['product', 'matched'], ascending=[True, True])
     testmatches.to_csv(pathfuncs.OUT_DIR +
-                       '/devices_regex_all_matched.csv', index=False)
+                       '/products_regex_all_matched.csv', index=False)
     testmisses = testterms.loc[testterms['matched'] == ''].sort_values(
-        by=['item_type', 'matched'], ascending=[True, True])
+        by=['product', 'matched'], ascending=[True, True])
     testmisses.to_csv(pathfuncs.OUT_DIR +
-                      '/devices_regex_all_missed.csv', index=False)
+                      '/products_regex_all_missed.csv', index=False)
 
 
 regexes = precompile_regexes(build_regexes())

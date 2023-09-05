@@ -31,7 +31,7 @@ for i, row in results.iterrows():
     data = rxelems[category]
     data.dropna(inplace=True)
     regex = miscfuncs.build_regex_string(data)
-    rx = re.compile(regex)
+    rx = re.compile(regex, flags=re.IGNORECASE+re.UNICODE)
     tests = testterms.loc[testterms.product_category == category]
     for n, test in tests.iterrows():
         logger.debug(test['product'])

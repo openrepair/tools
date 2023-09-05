@@ -17,7 +17,7 @@ rexes.dropna(inplace=True)
 
 # Pre-compile the regexes
 for n in range(0, len(rexes)):
-    rexes.loc[n, 'obj'] = re.compile(rexes.iloc[n]['regex'], re.I)
+    rexes.loc[n, 'obj'] = re.compile(rexes.iloc[n]['regex'], flags=re.IGNORECASE+re.UNICODE)
 
 # Changes to the ORDS categories will require updates to the regexes.
 categories = pd.read_csv(pathfuncs.ORDS_DIR +

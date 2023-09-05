@@ -37,7 +37,7 @@ def build_regexes():
 def precompile_regexes(regexes):
     regexes.dropna(inplace=True)
     for i, row in regexes.iterrows():
-        regexes.at[i, 'rx'] = re.compile(row['regex'], re.I)
+        regexes.at[i, 'rx'] = re.compile(row['regex'], flags=re.IGNORECASE+re.UNICODE)
     return regexes
 
 
