@@ -28,7 +28,6 @@ Step 4: ords_deepl_4backfill.py
 # Guess the language for sanity checks later.
 def get_work(max=10000, minlen=16):
 
-    print('*** FETCHING WORK ***')
     sql = """
     SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
     SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
@@ -75,7 +74,6 @@ def get_work(max=10000, minlen=16):
     logger.debug('*** BEFORE FILTERS ***')
     logger.debug(work)
     for i in range(1, len(filters.keys())):
-        print('Applying filter {}'.format(i))
         flt = filters[i]
         dff = work.where(flt)
         dff.dropna(inplace=True)
@@ -100,7 +98,9 @@ def get_work(max=10000, minlen=16):
     return work
 
 
-def translate(data, langdict):
+def translate(data, mock=True):
+    translator = deeplfuncs.deeplWrapper(mock)
+    langdict = deeplfuncs.deeplWrapper.langdict
     sql = """
     SELECT *
     FROM ords_problem_translations
@@ -191,24 +191,24 @@ def insert_data(data):
 
 # Use a pre-trained model to detect and set the 'known language'.
 # This should be more accurate than DeepL's language detection, though model still being refined.
-# Requires that `ords_lang_training.py` has created the model object.
-def detect_language(data):
+def detect_language(data, path):
+
+    if (not pathfuncs.check_path(path)):
+        print('LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}'.format(lang_obj_path))
+        print("TO FIX THIS EXECUTE: ords_lang_training.py")
+        exit()
 
     from joblib import load
-    path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
-    if not pathfuncs.check_path(path):
-        print('Model object not found at {}'.format(path))
-    else:
-        model = load(path)
-        # Use `language_known` as source lang for DeepL translations.
-        # Use `language_expected` for checking DeepL language detection.
-        # Adjust filters in get_work() and retrain model as appropriate.
-        data.loc[:, 'language_known'] = model.predict(data.problem)
+    model = load(path)
+    # Use `language_known` as source lang for DeepL translations.
+    # Use `language_expected` for checking DeepL language detection.
+    # Adjust filters in get_work() and retrain model as appropriate.
+    data.loc[:, 'language_known'] = model.predict(data.problem)
 
     data.loc[:, 'mismatch'] = data['language_expected'] != data['language_known']
 
     # Log the mismatches.
-    miss = data.loc[work['mismatch'] == True]
+    miss = data.loc[data['mismatch'] == True]
     miss.to_csv(pathfuncs.OUT_DIR +
                 '/deepl_work_lang_mismatch.csv', index=False)
     # Count the mismatches.
@@ -219,26 +219,88 @@ def detect_language(data):
     return data
 
 
-# START
+def check_requirements():
+
+    sql = "SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
+    ok = dbfuncs.query_fetchall(sql.format(
+        tablename=envfuncs.get_var('ORDS_DATA')))
+    if (not ok):
+        print("DATABASE ERROR: {}".format(envfuncs.get_var('ORDS_DATA')))
+        print("TO FIX THIS EXECUTE: ords_db_mysql_setup.py")
+    else:
+        print("OK: table exists {}".format(envfuncs.get_var('ORDS_DATA')))
+
+    ok = dbfuncs.query_fetchall(sql.format(
+        tablename='ords_problem_translations'))
+    if (not ok):
+        print("DATABASE ERROR: {}".format('ords_problem_translations'))
+        print("TO FIX THIS EXECUTE: ords_deepl1_setup.py")
+    else:
+        print("OK: table exists {}".format('ords_problem_translations'))
+
+    ok = pathfuncs.check_path(lang_obj_path)
+    if (not ok):
+        print('LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}'.format(lang_obj_path))
+        print("TO FIX THIS EXECUTE: ords_lang_training.py")
+    else:
+        print("OK: language detector exists {}".format(lang_obj_path))
+
+    ok = deeplfuncs.check_api_key()
+    if (not ok):
+        print('DEEPL ERROR: API KEY NOT FOUND')
+        print("TO FIX THIS: add your DeepL API key to the .env file")
+    else:
+        print("OK: {}".format('DeepL API key found'))
 
 
-# Allows for trial and error without using up API credits.
-# Should create a test and use mock there, ideally.
-mock = True
-translator = deeplfuncs.deeplWrapper(mock)
+def check_api_creds(mock=False):
+    translator = deeplfuncs.deeplWrapper(mock)
+    translator.api_limit_reached()
 
-# 5-10k recommended for live run.
-work = get_work(10)
-work = detect_language(data=work)
-work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
 
-if translator.api_limit_reached():
-    exit()
-else:
-    data = translate(work, deeplfuncs.deeplWrapper.langdict)
+def do_deepl(mock=True, max=10, minlen=16):
+    work = get_work(max, minlen)
+    work = detect_language(data=work, path=lang_obj_path)
+    work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
+    data = translate(work, mock)
     if not mock:
         insert_data(data)
         dbfuncs.dump_table_to_csv(
             'ords_problem_translations', pathfuncs.DATA_DIR)
     else:
         logger.debug(data)
+    exit()
+
+
+def exec_opt(options):
+    while True:
+        for i, desc in options.items():
+            print("{} : {}".format(i, desc))
+        choice = input("Type a number: ")
+        try:
+            choice = int(choice)
+        except ValueError:
+            print("Invalid choice")
+        else:
+            if choice >= len(options):
+                print("Out of range")
+            else:
+                f = options[choice]
+                print(f)
+                eval(f)
+
+
+# START
+
+# Check requirements first!
+# "mock=True" allows for trial and error without using up API credits.
+# "max=10000" recommended for live run.
+
+lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
+options = {
+    0: "exit()",
+    1: "check_requirements()",
+    2: "check_api_creds()",
+    3: "do_deepl(mock=True, max=1, minlen=16)",
+}
+exec_opt(options)
