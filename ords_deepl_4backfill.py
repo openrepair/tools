@@ -152,10 +152,12 @@ columns = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
 # columns = deeplfuncs.deeplWrapper.get_columns()
 # Backfill Danish only
 columns = ['da']
-work = get_work_for_null_lang_vals(columns, 100)
+limit = 10000
+work = get_work_for_null_lang_vals(columns, limit)
 print(work.count())
 logger.debug(work.count())
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_work.csv', index=False)
+
 
 if translator.api_limit_reached():
     exit()
