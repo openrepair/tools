@@ -311,7 +311,6 @@ options = {
     0: "exit()",
     1: "check_requirements()",
     2: "check_api_creds(mock)",
-    3: "do_deepl(mock=mock, max=10000, minlen=16)",
-    4: "fixup()"
+    3: "do_deepl(mock=mock, max=10000, minlen=16)"
 }
 exec_opt(options)
