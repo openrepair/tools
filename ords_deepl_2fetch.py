@@ -73,12 +73,17 @@ def get_work(max=10000, minlen=16):
     }
     logger.debug('*** BEFORE FILTERS ***')
     logger.debug(work)
-    for i in range(1, len(filters.keys())):
-        flt = filters[i]
+    for i, flt in filters.items():
         dff = work.where(flt)
         dff.dropna(inplace=True)
-        dff.language_expected = filterlangs[i]
-        work.update(dff)
+        if dff.size > 0:
+            dff.language_expected = filterlangs[i]
+            work.update(dff)
+            dff.to_csv(pathfuncs.OUT_DIR +
+                    '/deepl_work_filter_{}.csv'.format(i), index=False)
+
+    logger.debug('*** AFTER FILTERS ***')
+    logger.debug(work)
 
     logger.debug('*** FILTERING PUNCT/WEIGHTS/CODES ***')
     # Filter for punctuation/weights/codes.
@@ -90,8 +95,6 @@ def get_work(max=10000, minlen=16):
     logger.debug(dff)
     work.update(dff)
 
-    logger.debug('*** AFTER FILTERS ***')
-    logger.debug(work)
     logger.debug('*** AFTER DROPPING ?? ***')
     work.drop(work[work.language_expected == '??'].index, inplace=True)
     logger.debug(work)
@@ -115,7 +118,7 @@ def translate(data, mock=True):
                 sql,  {'problem': row.problem}))
             if found.empty:
                 # No existing translation so fetch from API.
-                d_lang = False
+                d_lang = None
                 # Use the known language as source else let DeepL detect.
                 if row.language_known > '':
                     k_lang = row.language_known
@@ -123,12 +126,13 @@ def translate(data, mock=True):
                     k_lang = None
 
                 for column in langdict.keys():
+                    # Get the target language for Deepl.
                     t_lang = langdict[column]
                     print('{} : {} : {} : {}'.format(
                         i, row.id_ords, k_lang, t_lang))
                     # Has a language been detected for this problem?
-                    # Is the target language the same as the detected language?
-                    if d_lang == t_lang:
+                    # Is the target language the same as the known language?
+                    if column == k_lang:
                         # Don't use up API credits.
                         text = row.problem
                     else:
@@ -175,6 +179,12 @@ def insert_data(data):
     if data.empty:
         print('No data to write.')
         return False
+
+    # Drop redundant columns used for testing expectations.
+    if 'language_expected' in data.columns :
+        data.drop(['language_expected'], axis=1, inplace=True)
+    if 'mismatch' in data.columns :
+        data.drop(['mismatch'], axis=1, inplace=True)
 
     cfile = pathfuncs.OUT_DIR + '/deepl_latest.csv'
     pathfuncs.rm_file(cfile)
@@ -295,12 +305,13 @@ def exec_opt(options):
 # Check requirements first!
 # "mock=True" allows for trial and error without using up API credits.
 # "max=10000" recommended for live run.
-
+mock = True
 lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
 options = {
     0: "exit()",
     1: "check_requirements()",
-    2: "check_api_creds()",
-    3: "do_deepl(mock=True, max=1, minlen=16)",
+    2: "check_api_creds(mock)",
+    3: "do_deepl(mock=mock, max=10000, minlen=16)",
+    4: "fixup()"
 }
 exec_opt(options)
