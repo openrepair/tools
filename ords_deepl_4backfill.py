@@ -154,9 +154,9 @@ All but the last column.
 columns = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
 """
 # Backfilling for all
-# columns = deeplfuncs.deeplWrapper.get_columns()
-# Backfill Danish only
-columns = ['da']
+columns = deeplfuncs.deeplWrapper.get_columns()
+# # Backfill Danish only
+# columns = ['da']
 limit = 10000
 work = get_work_for_null_lang_vals(columns, limit)
 print(work.count())
@@ -169,7 +169,7 @@ if translator.api_limit_reached():
 else:
     # Backfilling any empty columns: deeplfuncs.deeplWrapper.langdict
     # Backfilling one column only, e.g. Danish: {'da':'da'}
-    data = translate_empty_only(work, {'da':'da'})
+    data = translate_empty_only(work, deeplfuncs.deeplWrapper.langdict)
     data.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_latest.csv', index=False)
     if not mock:
         insert_data(data, columns)
