@@ -22,20 +22,24 @@ Step 4: ords_deepl_4backfill.py
 
 
 def dbbackup():
-    sql = """
-    SELECT *
-    FROM ords_problem_translations
-    """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
-    path_to_csv = pathfuncs.DATA_DIR + \
-        '/backup_{}.csv'.format(datefuncs.format_curr_datetime())
-    pathfuncs.rm_file(path_to_csv)
-    df.to_csv(path_to_csv, index=False)
-    if pathfuncs.check_path(path_to_csv):
-        print('Backup written to {}'.format(path_to_csv))
-        return path_to_csv
-    else:
-        print('Failed to write data to {}'.format(path_to_csv))
+    try:
+        sql = """
+        SELECT *
+        FROM ords_problem_translations
+        """
+        df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+        path_to_csv = pathfuncs.DATA_DIR + \
+            '/backup_{}.csv'.format(datefuncs.format_curr_datetime())
+        pathfuncs.rm_file(path_to_csv)
+        df.to_csv(path_to_csv, index=False)
+        if pathfuncs.check_path(path_to_csv):
+            print('Backup written to {}'.format(path_to_csv))
+            return path_to_csv
+        else:
+            print('Failed to write data to {}'.format(path_to_csv))
+    except Exception as error:
+        print("Exception: {}".format(error))
+    finally:
         return False
 
 
@@ -80,12 +84,13 @@ def replace_csv_file(path_to_csv_new):
 
 path_to_csv = dbbackup()
 
-# Replace the csv file with the table dump file?
-replace = False
-if replace:
-    replace_csv_file(path_to_csv)
+if path_to_csv:
+    # Replace the csv file with the table dump file?
+    replace = False
+    if replace:
+        replace_csv_file(path_to_csv)
 
 # Drop and recreate table, import data from csv file.
-clean = False
+clean = True
 if clean:
     dbsetup()
