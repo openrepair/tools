@@ -140,7 +140,7 @@ def insert_data(data, columns=[]):
 
 # Allows for trial and error without using up API credits.
 # Should create a test and use mock there, ideally.
-mock = False
+mock = True
 translator = deeplfuncs.deeplWrapper(mock)
 """
 Get the columns to check for NULL values. Examples:

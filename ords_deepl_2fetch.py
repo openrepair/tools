@@ -306,6 +306,7 @@ def exec_opt(options):
 # "mock=True" allows for trial and error without using up API credits.
 # "max=10000" recommended for live run.
 mock = True
+print('Mock={}'.format(mock))
 lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
 options = {
     0: "exit()",
