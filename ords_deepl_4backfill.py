@@ -41,17 +41,22 @@ def find_existing_translation_for_col(problem, column):
 # Ignore the more useless values.
 # Arg 'cols' is a list of columns to check.
 def get_work_for_null_lang_vals(cols, max=100):
-    print('*** FETCHING WORK FOR EMPTY LANGUAGE VALUES ***')
-    sql = """
-    SELECT *
-    FROM ords_problem_translations
-    WHERE language_known <> '??'
-    AND CONCAT({}) IS NULL
-    LIMIT {}
-    """.format(','.join(cols), max)
-    work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
-        tablename=envfuncs.get_var('ORDS_DATA'))))
-    return work
+    try:
+        print('*** FETCHING WORK FOR EMPTY LANGUAGE VALUES ***')
+        sql = """
+        SELECT *
+        FROM ords_problem_translations
+        WHERE language_known <> '??'
+        AND CONCAT({}) IS NULL
+        LIMIT {}
+        """.format(','.join(cols), max)
+        work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
+            tablename=envfuncs.get_var('ORDS_DATA'))))
+    except Exception as error:
+        print("Exception: {}".format(error))
+        work = pd.DataFrame()
+    finally:
+        return work
 
 
 def translate_empty_only(data, langdict):
@@ -135,7 +140,7 @@ def insert_data(data, columns=[]):
 
 # Allows for trial and error without using up API credits.
 # Should create a test and use mock there, ideally.
-mock = True
+mock = False
 translator = deeplfuncs.deeplWrapper(mock)
 """
 Get the columns to check for NULL values. Examples:
