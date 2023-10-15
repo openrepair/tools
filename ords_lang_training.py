@@ -40,32 +40,31 @@ def dump_data(sample=0.3, min=12, max=65535):
         "da": "danish"
     }
     # Read input DataFrame.
-    df_in = pd.read_csv(pathfuncs.DATA_DIR + '/ords_problem_translations.csv')
+    df_in = pd.read_csv(pathfuncs.DATA_DIR + '/ords_problem_translations.csv', dtype=str, keep_default_na=False, na_values="")
     logger.debug('Total translation records: {}'.format(len(df_in)))
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
-    df_all = pd.DataFrame(columns=['sentence', 'language'])
-    df_valid = pd.DataFrame(columns=['sentence', 'language'])
-    df_train = pd.DataFrame(columns=['sentence', 'language'])
+    df_all = pd.DataFrame(columns=['problem', 'sentence', 'language'])
+    df_lang = pd.DataFrame(columns=['problem', 'sentence', 'language'])
+    df_valid = pd.DataFrame(columns=['problem', 'sentence', 'language'])
+    df_train = pd.DataFrame(columns=['problem', 'sentence', 'language'])
     for lang in langs.keys():
         logger.debug('*** LANGUAGE {} ***'.format(lang))
         # Filter for non-empty unique strings in the `problem` column.
-        df_tmp = pd.DataFrame(data=df_in[lang].unique(), columns=['problem']).dropna()
-        df_tmp = clean_text(df_tmp)
+        df_tmp = clean_text(pd.DataFrame(data=df_in[lang].unique(), columns=['problem']).dropna())
         print('Splitting sentences for lang {}'.format(lang))
-        # Create a new language-specific list for the sentences.
-        langlist = []
         for i, row in df_tmp.iterrows():
-            try:
-                # Split the `problem` string into sentences.
-                sentences = tokenize.sent_tokenize(row.problem, language=langs[lang])
-                # Add the sentences to the list for this language.
-                langlist.extend(sentences)
-            except Exception as error:
-                print(error)
-
+            if len(row.problem) > 0:
+                try:
+                    # Split the `problem` string into sentences.
+                    sentences = tokenize.sent_tokenize(row.problem, language=langs[lang])
+                    df_tmp.at[i, 'sentences'] = len(sentences)
+                    # Add the sentences to the list for this language.
+                    df_tmp.at[i, 'sentence'] = sentences
+                except Exception as error:
+                    print(error)
         print('Appending sentences for lang {}'.format(lang))
-        # Remove duplicates from the langlist and convert to DataFrame.
-        df_lang = pd.DataFrame(data=list(set(langlist)), columns=["sentence"])
+        # Expand the sentence lists and save to DataFrame.
+        df_lang = df_tmp.explode('sentence')
         # Remove multiple punctuation characters (???, --, ..., etc.)
         df_lang.replace({'sentence': r'(?i)([\W]{2,})'}, {'sentence': ' '}, regex=True, inplace=True)
         # Trim whitespace from `sentence` strings (again).
@@ -231,7 +230,7 @@ def do_training_tests():
 
 def do_training():
 
-    data = pd.read_csv(format_path('ords_lang_training_data')) # , dtype=str, keep_default_na=False, na_values="")
+    data = pd.read_csv(format_path('ords_lang_training_data'))
     column = data.sentence
     labels = data.language
 
@@ -267,7 +266,7 @@ def do_training():
 # Try each to ensure object integrity.
 def do_validation(pipeline=True):
 
-    data = pd.read_csv(format_path('ords_lang_validation_data')) #, dtype=str, keep_default_na=False, na_values="")
+    data = pd.read_csv(format_path('ords_lang_validation_data'))
     data.dropna(axis='rows', subset=['sentence'], inplace=True, ignore_index=True)
     column = data.sentence
     labels = data.language
