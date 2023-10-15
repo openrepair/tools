@@ -7,9 +7,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn import metrics
 from sklearn import model_selection
+from sklearn.model_selection import train_test_split
 from joblib import dump
 from joblib import load
-
 from nltk import tokenize
 import nltk
 nltk.download('punkt')
@@ -41,10 +41,9 @@ def dump_data(sample=0.3, min=12, max=65535):
     }
     # Read input DataFrame.
     df_in = pd.read_csv(pathfuncs.DATA_DIR + '/ords_problem_translations.csv', dtype=str, keep_default_na=False, na_values="")
-    logger.debug('Total translation records: {}'.format(len(df_in)))
+    logger.debug('Total translation records: {}'.format(df_in.index.size))
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
     df_all = pd.DataFrame(columns=['problem', 'sentence', 'language'])
-    df_lang = pd.DataFrame(columns=['problem', 'sentence', 'language'])
     df_valid = pd.DataFrame(columns=['problem', 'sentence', 'language'])
     df_train = pd.DataFrame(columns=['problem', 'sentence', 'language'])
     for lang in langs.keys():
@@ -63,43 +62,40 @@ def dump_data(sample=0.3, min=12, max=65535):
                 except Exception as error:
                     print(error)
         print('Appending sentences for lang {}'.format(lang))
-        # Expand the sentence lists and save to DataFrame.
-        df_lang = df_tmp.explode('sentence')
+        # Expand the sentence lists and save unique to DataFrame.
+        df_lang = df_tmp.explode('sentence').drop_duplicates()
         # Remove multiple punctuation characters (???, --, ..., etc.)
         df_lang.replace({'sentence': r'(?i)([\W]{2,})'}, {'sentence': ' '}, regex=True, inplace=True)
         # Trim whitespace from `sentence` strings (again).
         df_lang['sentence'].str.strip()
         # Add the ISO lang code to the DataFrame for this language.
         df_lang['language'] = lang
-        logger.debug('Total sentences for lang {} : {}'.format(lang, len(df_lang)))
+        logger.debug('Total sentences for lang {} : {}'.format(lang, df_lang.index.size))
         # Reduce the results to comply with min/max sentence length.
         df_lang = df_lang[(df_lang['sentence'].apply(lambda s: len(str(s)) in range(min, max+1)))]
-        logger.debug('Total usable sentences for lang {} : {}'.format(lang, len(df_lang)))
+        logger.debug('Total usable sentences for lang {} : {}'.format(lang, df_lang.index.size))
 
         # Take % of the data for validation.
-        df_valid_tmp = df_lang.sample(
-            frac=sample, replace=False, random_state=1)
-        logger.debug('Validation data for lang {}: {} ({})'.format(lang, len(df_valid_tmp), len(df_valid_tmp) / len(df_lang)))
-        # Remaining % of the data is for training.
-        df_train_tmp = df_lang.drop(df_valid_tmp.index)
-        logger.debug('Training data for lang {}: {} ({})'.format(lang, len(df_train_tmp), len(df_train_tmp) / len(df_lang)))
+        df_train_tmp, df_valid_tmp = train_test_split(df_lang, test_size=sample)
+        logger.debug('Validation data for lang {}: {} ({})'.format(lang, df_valid_tmp.index.size, df_valid_tmp.index.size / df_lang.index.size))
+        logger.debug('Training data for lang {}: {} ({})'.format(lang, df_train_tmp.index.size, df_train_tmp.index.size / df_lang.index.size))
 
-        df_valid = pd.concat([df_valid_tmp, df_valid])
-        df_train = pd.concat([df_train_tmp, df_train])
+        df_valid = pd.concat([df_valid, df_valid_tmp])
+        df_train = pd.concat([df_train, df_train_tmp])
 
         # Just for loggging.
         df_all = pd.concat([df_all, df_lang])
 
     logger.debug('*** ALL USEABLE DATA ***')
-    logger.debug(len(df_all))
+    logger.debug(df_all.index.size)
 
     logger.debug('*** TRAINING DATA ***')
-    logger.debug(len(df_train))
-    logger.debug(len(df_train) / len(df_all))
+    logger.debug(df_train.index.size)
+    logger.debug(df_train.index.size / df_all.index.size)
 
     logger.debug('*** VALIDATION DATA ***')
-    logger.debug(len(df_valid))
-    logger.debug(len(df_valid) / len(df_all))
+    logger.debug(df_valid.index.size)
+    logger.debug(df_valid.index.size / df_all.index.size)
 
     # Save the data to the 'out' directory in csv format for use later.
     df_train.to_csv(format_path('ords_lang_training_data'), index=False)
@@ -115,6 +111,7 @@ def clean_text(data, dedupe=True, dropna=True):
     # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
     data.replace({'problem': r'(?i)(([0-9]+)?\.?[0-9\s]+kg)'}, {'problem': ''}, regex=True, inplace=True)
     # Remove strange codes often found prefixing `problem` strings.
+
     data.replace({'problem': r'(?i)^(\W|\d+)([\d|\W]+)?'}, {'problem': ''}, regex=True, inplace=True)
     # Trim whitespace from `problem` strings.
     data['problem'].str.strip()
@@ -235,9 +232,7 @@ def do_training():
     labels = data.language
 
     vectorizer = TfidfVectorizer()
-    stopwords = get_stopwords()
-    if stopwords != False:
-        vectorizer.set_params(stop_words=stopwords)
+    vectorizer.set_params(stop_words=get_stopwords())
 
     classifier = MultinomialNB(force_alpha=True, alpha=0.1)
 
