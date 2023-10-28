@@ -26,7 +26,7 @@ Step 4: ords_deepl_4backfill.py
 # Fetch problem text that has not yet been translated.
 # Ignore the more useless values.
 # Guess the language for sanity checks later.
-def get_work(max=10000, minlen=16):
+def get_work(max=10000, minlen=16, clause=1):
 
     sql = """
     SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
@@ -39,12 +39,13 @@ def get_work(max=10000, minlen=16):
     RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
     ) t3
     WHERE t3.id_ords IS NULL
-    AND LENGTH(TRIM(t3.problem)) >= {chars}
+    AND LENGTH(TRIM(t3.problem)) >= %(chars)s
+    AND {clause}
     ORDER BY t3.country
-    LIMIT {limit}
+    LIMIT %(limit)s
     """
-    work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
-        tablename=envfuncs.get_var('ORDS_DATA'), limit=max, chars=minlen)))
+    args = { 'limit': max, 'chars' : minlen}
+    work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var('ORDS_DATA'), clause=clause), args))
 
     # "Nonsense" strings with only punctuation or weights/codes dropped.
     # Assumptions!
@@ -53,6 +54,7 @@ def get_work(max=10000, minlen=16):
     # Belgium: French and Dutch.
     # Canada: French and English.
     # Italy: Italian and English.
+    # Many countries have a little English sprinkled in.
     work['language_known'] = ''
     work['language_expected'] = ''
     filters = {
@@ -305,6 +307,8 @@ def exec_opt(options):
 # Check requirements first!
 # "mock=True" allows for trial and error without using up API credits.
 # "max=10000" recommended for live run.
+# NOTE!! Temporary halt on RCInt as old strings may change in upcoming export and require re-translating!
+clause = 'data_provider != "Repair Café International"'
 mock = True
 print('Mock={}'.format(mock))
 lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
@@ -312,6 +316,7 @@ options = {
     0: "exit()",
     1: "check_requirements()",
     2: "check_api_creds(mock)",
-    3: "do_deepl(mock=mock, max=10000, minlen=16)"
+    3: "do_deepl(mock=mock, max=10000, minlen=16)",
+    4: "get_work(max=10000, minlen=16, clause='{}')".format(clause)
 }
 exec_opt(options)
