@@ -211,7 +211,7 @@ def get_stopwords():
 
 
 # Experiment with classifier/vectorizer.
-def do_training_tests():
+def experiment():
     data = pd.read_csv(
         format_path("ords_lang_training_data"),
         dtype=str,
@@ -394,6 +394,7 @@ def validation_misses_report():
         '{1}' as trans_prediction
         FROM `ords_problem_translations`
         WHERE `{0}` = %(problem)s
+        ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
             sql.format(row["language"], row["prediction"]), {"problem": row["problem"]}
@@ -438,10 +439,10 @@ pipefile = format_path("ords_lang_obj_tfidf_cls", "joblib")
 options = {
     0: "exit()",
     1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
-    2: "do_training_tests()",
-    3: "do_training()",
-    4: "do_validation()",
-    5: "validation_misses_report()",
-    6: "do_detection()",
+    2: "do_training()",
+    3: "do_validation()",
+    4: "validation_misses_report()",
+    5: "do_detection()",
+    6: "experiment()",
 }
 exec_opt(options)
