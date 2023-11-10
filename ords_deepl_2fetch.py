@@ -100,6 +100,10 @@ def get_work(max=10000, minlen=16, clause=1):
     logger.debug('*** AFTER DROPPING ?? ***')
     work.drop(work[work.language_expected == '??'].index, inplace=True)
     logger.debug(work)
+
+    work = detect_language(data=work, path=lang_obj_path)
+    logger.debug(work)
+    work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
     return work
 
 
@@ -272,8 +276,6 @@ def check_api_creds(mock=False):
 
 def do_deepl(mock=True, max=10, minlen=16):
     work = get_work(max, minlen)
-    work = detect_language(data=work, path=lang_obj_path)
-    work.to_csv(pathfuncs.OUT_DIR + '/deepl_work.csv', index=False)
     data = translate(work, mock)
     if not mock:
         insert_data(data)
@@ -308,8 +310,9 @@ def exec_opt(options):
 # "mock=True" allows for trial and error without using up API credits.
 # "max=10000" recommended for live run.
 # NOTE!! Temporary halt on RCInt as old strings may change in upcoming export and require re-translating!
-clause = 'data_provider != "Repair Café International"'
-mock = True
+# clause = 'data_provider != "Repair Café International"'
+clause = 'data_provider = "The Restart Project"'
+mock = False
 print('Mock={}'.format(mock))
 lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
 options = {
