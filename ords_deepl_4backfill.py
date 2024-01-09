@@ -50,6 +50,7 @@ def get_work_for_null_lang_vals(cols, max=100):
         AND CONCAT({}) IS NULL
         LIMIT {}
         """.format(','.join(cols), max)
+        logger.debug(sql)
         work = pd.DataFrame(dbfuncs.query_fetchall(sql.format(
             tablename=envfuncs.get_var('ORDS_DATA'))))
     except Exception as error:
@@ -122,13 +123,11 @@ def insert_data(data, columns=[]):
         cfile = pathfuncs.OUT_DIR + '/deepl_backfilled_lang_all.csv'
         vals = list(zip(*[data[col] for col in data]))
         logger.debug(vals)
-        sql = """REPLACE INTO `ords_problem_translations` (`{}`) VALUES ({})""".format(
-            "`,`".join(data.columns), ",".join(["%s"] * len(data.columns)))
+        sql = """REPLACE INTO `ords_problem_translations` (`{}`) VALUES ({})""".format("`,`".join(data.columns), ",".join(["%s"] * len(data.columns)))
         logger.debug(sql)
         result = dbfuncs.executemany(sql, vals)
 
-    logger.debug('{} updated in {}'.format(
-        result, 'ords_problem_translations'))
+    logger.debug('{} updated in {}'.format(result, 'ords_problem_translations'))
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
     print('New data written to {}'.format(cfile))
@@ -140,8 +139,9 @@ def insert_data(data, columns=[]):
 
 # Allows for trial and error without using up API credits.
 # Should create a test and use mock there, ideally.
-mock = True
+mock = False
 translator = deeplfuncs.deeplWrapper(mock)
+limit_reached = translator.api_limit_reached()
 """
 Get the columns to check for NULL values. Examples:
 Just one column.
@@ -155,16 +155,13 @@ columns = [x for x in deeplfuncs.deeplWrapper.get_columns()[:-1]]
 """
 # Backfilling for all
 columns = deeplfuncs.deeplWrapper.get_columns()
-# # Backfill Danish only
-# columns = ['da']
 limit = 10000
 work = get_work_for_null_lang_vals(columns, limit)
 print(work.count())
 logger.debug(work.count())
 work.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_work.csv', index=False)
 
-
-if translator.api_limit_reached():
+if limit_reached:
     exit()
 else:
     # Backfilling any empty columns: deeplfuncs.deeplWrapper.langdict
@@ -173,7 +170,6 @@ else:
     data.to_csv(pathfuncs.OUT_DIR + '/deepl_backfill_latest.csv', index=False)
     if not mock:
         insert_data(data, columns)
-        dbfuncs.dump_table_to_csv(
-            'ords_problem_translations', pathfuncs.DATA_DIR)
+        dbfuncs.dump_table_to_csv('ords_problem_translations', pathfuncs.DATA_DIR)
     else:
         logger.debug(data)
