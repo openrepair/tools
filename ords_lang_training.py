@@ -48,17 +48,19 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         keep_default_na=False,
         na_values="",
     )
+    logger.debug(df_in.columns)
     logger.debug("Total translation records: {}".format(df_in.index.size))
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
-    df_all = pd.DataFrame(columns=["problem", "sentence", "language"])
-    df_valid = pd.DataFrame(columns=["problem", "sentence", "language"])
-    df_train = pd.DataFrame(columns=["problem", "sentence", "language"])
+    cols = ["problem", "sentence", "language", "country"]
+    df_all = pd.DataFrame(columns=cols)
+    df_valid = pd.DataFrame(columns=cols)
+    df_train = pd.DataFrame(columns=cols)
     for lang in langs.keys():
         logger.debug("*** LANGUAGE {} ***".format(lang))
-        # Filter for non-empty unique strings in the `problem` column.
-        df_tmp = clean_text(
-            pd.DataFrame(data=df_in[lang].unique(), columns=["problem"]).dropna()
+        df_tmp = (
+            df_in[[lang, "country"]].astype("str").rename(columns={lang: "problem"})
         )
+        df_tmp = clean_text(df_tmp)
         print("Splitting sentences for lang {}".format(lang))
         for i, row in df_tmp.iterrows():
             if len(row.problem) > 0:
@@ -88,7 +90,11 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         )
         # Reduce the results to comply with min/max sentence length.
         df_lang = df_lang[
-            (df_lang["sentence"].apply(lambda s: len(str(s)) in range(minchars, maxchars + 1)))
+            (
+                df_lang["sentence"].apply(
+                    lambda s: len(str(s)) in range(minchars, maxchars + 1)
+                )
+            )
         ]
         logger.debug(
             "Total usable sentences for lang {} : {}".format(lang, df_lang.index.size)
