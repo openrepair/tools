@@ -183,24 +183,14 @@ def experiment():
     logger.debug("** TRAIN : vectorizer ~ feature names **")
     logger.debug(vectorizer.get_feature_names_out())
 
+    classifier = MultinomialNB(force_alpha=True, alpha=alpha)
+
     # Other classifiers are available!
     # https://scikit-learn.org/stable/modules/naive_bayes.html
     # Tuning different classifiers could sway results.
-
-    # Validation test  MultinomialNB' F1 SCORE: 0.6970076612719212
-    # Classed '??' as English.
-    classifier = MultinomialNB(force_alpha=True, alpha=alpha)
-
-    # Validation test  ComplementNB' F1 SCORE: 0.5480281790194357
-    # Classed '??' as Danish.
     # from sklearn.naive_bayes import ComplementNB
     # classifier = ComplementNB(
     #     force_alpha=True, alpha=alpha)
-
-    logger.debug("** TRAIN : vectorizer ~ shape **")
-    logger.debug(feature_vects.shape)
-    logger.debug("** TRAIN : vectorizer ~ feature names **")
-    logger.debug(vectorizer.get_feature_names_out())
 
     # Fit the data.
     classifier.fit(feature_vects, labels)
@@ -222,16 +212,20 @@ def experiment():
 
     # Save predictions to 'out' directory in csv format.
     data.loc[:, "prediction"] = predictions
-    data.to_csv(format_path("ords_lang_results_training_tests"), index=False)
+    data.to_csv(format_path("ords_lang_results_training2_tests"), index=False)
 
     # Save prediction misses.
     misses = data[(data["language"] != data["prediction"])]
     logger.debug(misses)
-    misses.to_csv(format_path("ords_lang_misses_training_tests"), index=False)
+    misses.to_csv(format_path("ords_lang_misses_training2_tests"), index=False)
 
 
 def do_training():
-    data = pd.read_csv(format_path("ords_lang_training2_data"))
+    data = pd.read_csv(
+        format_path("ords_lang_training2_data"),
+        dtype=str
+    ).dropna()
+
     column = data.problem
     labels = data.language
 
@@ -266,15 +260,19 @@ def do_training():
 # Validate the model with vect/class objects.
 # Try each to ensure object integrity.
 def do_validation(pipeline=True):
-    data = pd.read_csv(format_path("ords_lang_validation2_data"))
-    data.dropna(axis="rows", subset=["sentence"], inplace=True, ignore_index=True)
-    column = data.sentence
+    data = pd.read_csv(
+        format_path("ords_lang_validation2_data"),
+        dtype=str
+    ).dropna()
+
+    column = data.problem
     labels = data.language
+
     logger.debug("** VALIDATE : using pipeline - {}".format(pipeline))
     if pipeline:
         # Use the pipeline that was fitted for this task.
         pipe = load(pipefile)
-        predictions = pipe.predict(data.sentence)
+        predictions = pipe.predict(data.problem)
     else:
         # Use the classifier and vectoriser that were fitted for this task.
         classifier = load(clsfile)

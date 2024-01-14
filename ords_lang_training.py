@@ -220,10 +220,8 @@ def get_stopwords():
 def experiment():
     data = pd.read_csv(
         format_path("ords_lang_training_data"),
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
-    )
+        dtype=str
+    ).dropna()
     stopwords = get_stopwords()
     column = data.sentence
     labels = data.language
@@ -290,7 +288,10 @@ def experiment():
 
 
 def do_training():
-    data = pd.read_csv(format_path("ords_lang_training_data"))
+    data = pd.read_csv(
+        format_path("ords_lang_training_data"),
+        dtype=str
+    ).dropna()
     column = data.sentence
     labels = data.language
 
@@ -325,8 +326,11 @@ def do_training():
 # Validate the model with vect/class objects.
 # Try each to ensure object integrity.
 def do_validation(pipeline=True):
-    data = pd.read_csv(format_path("ords_lang_validation_data"))
-    data.dropna(axis="rows", subset=["sentence"], inplace=True, ignore_index=True)
+    data = pd.read_csv(
+        format_path("ords_lang_validation_data"),
+        dtype=str
+    ).dropna()
+    # data.dropna(axis="rows", subset=["sentence"], inplace=True, ignore_index=True)
     column = data.sentence
     labels = data.language
     logger.debug("** VALIDATE : using pipeline - {}".format(pipeline))
