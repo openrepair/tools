@@ -51,14 +51,14 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
     logger.debug(df_in.columns)
     logger.debug("Total translation records: {}".format(df_in.index.size))
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
-    cols = ["problem", "sentence", "language", "country"]
+    cols = ["problem_orig", "problem", "sentence", "language", "country"]
     df_all = pd.DataFrame(columns=cols)
     df_valid = pd.DataFrame(columns=cols)
     df_train = pd.DataFrame(columns=cols)
     for lang in langs.keys():
         logger.debug("*** LANGUAGE {} ***".format(lang))
         df_tmp = (
-            df_in[[lang, "country"]].astype("str").rename(columns={lang: "problem"})
+            df_in[[lang, "country", "problem"]].astype("str").rename(columns={"problem": "problem_orig"}).rename(columns={lang: "problem"})
         )
         df_tmp = clean_text(df_tmp)
         print("Splitting sentences for lang {}".format(lang))
@@ -135,8 +135,8 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
     logger.debug(df_valid.index.size / df_all.index.size)
 
     # Save the data to the 'out' directory in csv format for use later.
-    df_train.to_csv(format_path("ords_lang_training_data"), index=False)
-    df_valid.to_csv(format_path("ords_lang_validation_data"), index=False)
+    df_train.to_csv(format_path("ords_lang_data_training"), index=False)
+    df_valid.to_csv(format_path("ords_lang_data_validation"), index=False)
 
 
 def clean_text(data, dedupe=True, dropna=True):
@@ -219,7 +219,7 @@ def get_stopwords():
 # Experiment with classifier/vectorizer.
 def experiment():
     data = pd.read_csv(
-        format_path("ords_lang_training_data"),
+        format_path("ords_lang_data_training"),
         dtype=str
     ).dropna()
     stopwords = get_stopwords()
@@ -254,11 +254,6 @@ def experiment():
     # classifier = ComplementNB(
     #     force_alpha=True, alpha=alpha)
 
-    logger.debug("** TRAIN : vectorizer ~ shape **")
-    logger.debug(feature_vects.shape)
-    logger.debug("** TRAIN : vectorizer ~ feature names **")
-    logger.debug(vectorizer.get_feature_names_out())
-
     # Fit the data.
     classifier.fit(feature_vects, labels)
     logger.debug("** TRAIN : classifier: params **")
@@ -289,7 +284,7 @@ def experiment():
 
 def do_training():
     data = pd.read_csv(
-        format_path("ords_lang_training_data"),
+        format_path("ords_lang_data_training"),
         dtype=str
     ).dropna()
     column = data.sentence
@@ -311,7 +306,6 @@ def do_training():
     predictions = pipe.predict(column)
     score = metrics.f1_score(labels, predictions, average="macro")
     logger.debug("** TRAIN : F1 SCORE: {}".format(score))
-    logger.debug(predictions)
 
     # Save predictions to 'out' directory in csv format.
     data.loc[:, "prediction"] = predictions
@@ -319,7 +313,6 @@ def do_training():
 
     # Save prediction misses.
     misses = data[(data["language"] != data["prediction"])]
-    logger.debug(misses)
     misses.to_csv(format_path("ords_lang_misses_training"), index=False)
 
 
@@ -327,7 +320,7 @@ def do_training():
 # Try each to ensure object integrity.
 def do_validation(pipeline=True):
     data = pd.read_csv(
-        format_path("ords_lang_validation_data"),
+        format_path("ords_lang_data_validation"),
         dtype=str
     ).dropna()
     # data.dropna(axis="rows", subset=["sentence"], inplace=True, ignore_index=True)
@@ -355,7 +348,6 @@ def do_validation(pipeline=True):
 
     # Prediction misses for inspection.
     misses = data[(data.language != data["prediction"])]
-    logger.debug(misses)
     misses.to_csv(format_path("ords_lang_misses_validation"), index=False)
 
 
@@ -386,6 +378,7 @@ def do_detection(pipeline=True):
 # Find records that were missed by the validator.
 # Can uncover issues with the source translation.
 def validation_misses_report():
+    logger.debug('validation_misses_report')
     df_in = pd.read_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_validation.csv",
         dtype=str,
@@ -407,16 +400,55 @@ def validation_misses_report():
         ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
-            sql.format(row["language"], row["prediction"]), {"problem": row["problem"]}
+            sql.format(row["language"], row["prediction"]), {"problem": row["problem_orig"]}
         )
         if (not db_res) or len(db_res) == 0:
-            logger.debug(row["problem"])
+            logger.debug('NOT FOUND: {}'.format(row["problem_orig"]))
         else:
             results.extend(db_res)
 
     df_out = pd.DataFrame(data=results)
     df_out.to_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_validation_ids.csv", index=False
+    )
+
+
+# Find records that were missed in training.
+# Can uncover issues with the source translation.
+def training_misses_report():
+    logger.debug('training_misses_report')
+    df_in = pd.read_csv(
+        pathfuncs.OUT_DIR + "/ords_lang_misses_training.csv",
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
+    )
+    results = []
+    for i, row in df_in.iterrows():
+        sql = """
+        SELECT
+        id_ords,
+        problem,
+        language_known,
+        '{0}' as trans_language,
+        `{0}` as trans_problem,
+        {0} as missed,
+        '{1}' as trans_prediction
+        FROM `ords_problem_translations`
+        WHERE `problem` = %(problem)s
+        ORDER BY id_ords
+        """
+        db_res = dbfuncs.query_fetchall(
+            sql.format(row["language"], row["prediction"]), {"problem": row["problem_orig"]}
+        )
+        if (not db_res) or len(db_res) == 0:
+            logger.debug('NOT FOUND: {}'.format(row["problem_orig"]))
+        else:
+            results.extend(db_res)
+
+    df_out = pd.DataFrame(data=results)
+    df_out.to_csv(
+        pathfuncs.OUT_DIR + "/ords_lang_misses_training_ids.csv", index=False
     )
 
 
@@ -450,9 +482,10 @@ options = {
     0: "exit()",
     1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
     2: "do_training()",
-    3: "do_validation()",
-    4: "validation_misses_report()",
-    5: "do_detection()",
-    6: "experiment()",
+    3: "training_misses_report()",
+    4: "do_validation()",
+    5: "validation_misses_report()",
+    6: "do_detection()",
+    7: "experiment()",
 }
 exec_opt(options)
