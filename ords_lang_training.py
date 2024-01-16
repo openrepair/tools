@@ -44,13 +44,17 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
     # Read input DataFrame.
     df_in = pd.read_csv(
         pathfuncs.DATA_DIR + "/ords_problem_translations.csv",
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
-    )
+        dtype=str
+    ).query('language_known != "??"')
+
     logger.debug(df_in.columns)
     logger.debug("Total translation records: {}".format(df_in.index.size))
-    # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
+    # Create output DataFrames:
+    # problem_orig = problem text before cleaning.
+    # problem = translated problem text.
+    # sentence = one of the sentences that make up the translated problem text.
+    # language = language_known.
+    # country = ISO country code.
     cols = ["problem_orig", "problem", "sentence", "language", "country"]
     df_all = pd.DataFrame(columns=cols)
     df_valid = pd.DataFrame(columns=cols)
@@ -140,16 +144,12 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
 
 
 def clean_text(data, dedupe=True, dropna=True):
-    # Make sure there is always a space after a period, else sentences won't be split.
-    data.replace(
-        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
-        {"problem": "\\2. \\3"},
-        regex=True,
-        inplace=True,
-    )
     # Remove HTML symbols (&gt; features a lot)
     data.replace(
-        {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""}, regex=True, inplace=True
+        {"problem": r"(?i)(&[\w\s]+;)"},
+        {"problem": ""},
+        regex=True,
+        inplace=True,
     )
     # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
     data.replace(
@@ -165,14 +165,30 @@ def clean_text(data, dedupe=True, dropna=True):
         regex=True,
         inplace=True,
     )
+    # Remove multiple punctuation characters.
+    data.replace(
+        {"problem": r"(?i)([\.\?\-*,;:]{2,})"},
+        {"problem": " "},
+        regex=True,
+        inplace=True,
+    )
+    # Make sure there is always a space after a period, else sentences won't be split.
+    data.replace(
+        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
+        {"problem": "\\2. \\3"},
+        regex=True,
+        inplace=True,
+    )
     # Trim whitespace from `problem` strings.
     data["problem"].str.strip()
     if dropna:
         # Drop `problem` values that may be empty after the replacements and trimming.
         data.dropna(subset=["problem"], inplace=True)
+        print(data.index.size)
     if dedupe:
         # Dedupe the `problem` values.
         data.drop_duplicates(subset=["problem"], inplace=True)
+        print(data.index.size)
     return data
 
 
@@ -316,8 +332,6 @@ def do_training():
     misses.to_csv(format_path("ords_lang_misses_training"), index=False)
 
 
-# Validate the model with vect/class objects.
-# Try each to ensure object integrity.
 def do_validation(pipeline=True):
     data = pd.read_csv(
         format_path("ords_lang_data_validation"),
@@ -393,10 +407,10 @@ def validation_misses_report():
         problem,
         language_known,
         '{0}' as trans_language,
-        {0} as missed,
+        `{0}` as missed,
         '{1}' as trans_prediction
         FROM `ords_problem_translations`
-        WHERE `{0}` = %(problem)s
+        WHERE `problem` = %(problem)s
         ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
@@ -432,7 +446,7 @@ def training_misses_report():
         language_known,
         '{0}' as trans_language,
         `{0}` as trans_problem,
-        {0} as missed,
+        `{0}` as missed,
         '{1}' as trans_prediction
         FROM `ords_problem_translations`
         WHERE `problem` = %(problem)s

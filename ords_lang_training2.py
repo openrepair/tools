@@ -33,41 +33,39 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         dtype=str
     ).query('language_known != "??"')
 
-    df_all = pd.DataFrame(data=df_in[["language_known","country","problem"]])
-    df_all.rename({"language_known" : "language"}, axis=1, inplace=True)
-    df_all.rename({"problem" : "problem_orig"}, axis=1, inplace=True)
-    df_all['problem'] = df_all['problem_orig']
-    logger.debug("Total translation records: {}".format(df_all.index.size))
-    df_all = clean_text(df_all)
-    # Reduce the results to comply with min/max sentence length.
-    df_all["problem"].apply(lambda s: len(str(s)) in range(minchars, maxchars + 1))
-    df_all.dropna(inplace=True, axis=0)
+    df_in = pd.DataFrame(data=df_in[["language_known","country","problem"]])
+    df_in.rename({"language_known" : "language"}, axis=1, inplace=True)
+    df_in['problem_orig'] = df_in['problem']
+    logger.debug("Total translation records: {}".format(df_in.index.size))
+    df_in = clean_text(df_in)
+    df_in["problem"].apply(lambda s: len(str(s)) in range(minchars, maxchars + 1))
+    df_in.dropna(inplace=True, axis=0)
 
     # Take % of the data for validation.
-    df_train, df_valid = train_test_split(df_all, test_size=sample)
+    df_train, df_valid = train_test_split(df_in, test_size=sample)
     logger.debug(
         "Validation data: {} ({})".format(
             df_valid.index.size,
-            df_valid.index.size / df_all.index.size,
+            df_valid.index.size / df_in.index.size,
         )
     )
     logger.debug(
         "Training data: {} ({})".format(
             df_train.index.size,
-            df_train.index.size / df_all.index.size,
+            df_train.index.size / df_in.index.size,
         )
     )
 
     logger.debug("*** ALL USEABLE DATA ***")
-    logger.debug(df_all.index.size)
+    logger.debug(df_in.index.size)
 
     logger.debug("*** TRAINING DATA ***")
     logger.debug(df_train.index.size)
-    logger.debug(df_train.index.size / df_all.index.size)
+    logger.debug(df_train.index.size / df_in.index.size)
 
     logger.debug("*** VALIDATION DATA ***")
     logger.debug(df_valid.index.size)
-    logger.debug(df_valid.index.size / df_all.index.size)
+    logger.debug(df_valid.index.size / df_in.index.size)
 
     # Save the data to the 'out' directory in csv format for use later.
     df_train.to_csv(format_path("ords_lang_data_training2"), index=False)
@@ -75,16 +73,12 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
 
 
 def clean_text(data, dedupe=True, dropna=True):
-    # Make sure there is always a space after a period, else sentences won't be split.
-    data.replace(
-        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
-        {"problem": "\\2. \\3"},
-        regex=True,
-        inplace=True,
-    )
     # Remove HTML symbols (&gt; features a lot)
     data.replace(
-        {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""}, regex=True, inplace=True
+        {"problem": r"(?i)(&[\w\s]+;)"},
+        {"problem": ""},
+        regex=True,
+        inplace=True,
     )
     # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
     data.replace(
@@ -100,10 +94,17 @@ def clean_text(data, dedupe=True, dropna=True):
         regex=True,
         inplace=True,
     )
-    # Remove multiple punctuation characters (???, --, ..., etc.)
+    # Remove multiple punctuation characters.
     data.replace(
-        {"problem": r"(?i)([\W]{2,})"},
+        {"problem": r"(?i)([\.\?\-*,;:]{2,})"},
         {"problem": " "},
+        regex=True,
+        inplace=True,
+    )
+    # Make sure there is always a space after a period, else sentences won't be split.
+    data.replace(
+        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
+        {"problem": "\\2. \\3"},
         regex=True,
         inplace=True,
     )
@@ -256,8 +257,6 @@ def do_training():
     misses.to_csv(format_path("ords_lang_misses_training2"), index=False)
 
 
-# Validate the model with vect/class objects.
-# Try each to ensure object integrity.
 def do_validation(pipeline=True):
     data = pd.read_csv(
         format_path("ords_lang_data_validation2"),
@@ -289,7 +288,6 @@ def do_validation(pipeline=True):
 
     # Prediction misses for inspection.
     misses = data[(data.language != data["prediction"])]
-    logger.debug(misses)
     misses.to_csv(format_path("ords_lang_misses_validation2"), index=False)
 
 
@@ -335,10 +333,10 @@ def validation_misses_report():
         problem,
         language_known,
         '{0}' as trans_language,
-        {0} as missed,
+        `{0}` as missed,
         '{1}' as trans_prediction
         FROM `ords_problem_translations`
-        WHERE `{0}` = %(problem)s
+        WHERE `problem` = %(problem)s
         ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
@@ -373,10 +371,10 @@ def training_misses_report():
         problem,
         language_known,
         '{0}' as trans_language,
-        {0} as missed,
+        `{0}` as missed,
         '{1}' as trans_prediction
         FROM `ords_problem_translations`
-        WHERE `{0}` = %(problem)s
+        WHERE `problem` = %(problem)s
         ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
