@@ -351,6 +351,7 @@ def validation_misses_report():
     df_out.to_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_validation2_ids.csv", index=False
     )
+    logger.debug('misses: {}'.format(len(df_out.index)))
 
 
 # Find records that were missed in training.
@@ -389,6 +390,7 @@ def training_misses_report():
     df_out.to_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_training2_ids.csv", index=False
     )
+    logger.debug('misses: {}'.format(len(df_out.index)))
 
 # Select function to run.
 def exec_opt(options):
