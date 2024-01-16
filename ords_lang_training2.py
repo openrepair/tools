@@ -355,6 +355,42 @@ def validation_misses_report():
     )
 
 
+# Find records that were missed in training.
+# Can uncover issues with the source translation.
+def training_misses_report():
+    df_in = pd.read_csv(
+        pathfuncs.OUT_DIR + "/ords_lang_misses_training2.csv",
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
+    )
+    results = []
+    for i, row in df_in.iterrows():
+        sql = """
+        SELECT
+        id_ords,
+        problem,
+        language_known,
+        '{0}' as trans_language,
+        {0} as missed,
+        '{1}' as trans_prediction
+        FROM `ords_problem_translations`
+        WHERE `{0}` = %(problem)s
+        ORDER BY id_ords
+        """
+        db_res = dbfuncs.query_fetchall(
+            sql.format(row["language"], row["prediction"]), {"problem": row["problem"]}
+        )
+        if (not db_res) or len(db_res) == 0:
+            logger.debug(row["problem"])
+        else:
+            results.extend(db_res)
+
+    df_out = pd.DataFrame(data=results)
+    df_out.to_csv(
+        pathfuncs.OUT_DIR + "/ords_lang_misses_training_ids2.csv", index=False
+    )
+
 # Select function to run.
 def exec_opt(options):
     while True:
@@ -385,9 +421,10 @@ options = {
     0: "exit()",
     1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
     2: "do_training()",
-    3: "do_validation()",
-    4: "validation_misses_report()",
-    5: "do_detection()",
-    6: "experiment()",
+    3: "training_misses_report()",
+    4: "do_validation()",
+    5: "validation_misses_report()",
+    6: "do_detection()",
+    7: "experiment()",
 }
 exec_opt(options)

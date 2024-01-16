@@ -29,4 +29,5 @@ scart
 xbox
 hvac
 gsm
+os
 
