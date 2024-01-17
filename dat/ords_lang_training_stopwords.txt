@@ -33,3 +33,5 @@ os
 defect
 virus
 software
+display
+motor
