@@ -30,4 +30,6 @@ xbox
 hvac
 gsm
 os
-
+defect
+virus
+software

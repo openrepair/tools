@@ -317,10 +317,10 @@ def do_detection(pipeline=True):
 
 # Find records that were missed by the validator.
 # Can uncover issues with the source translation.
-def validation_misses_report():
-    logger.debug('validation_misses_report')
+def misses_report(type):
+    logger.debug('misses_report: {}'.format(type))
     df_in = pd.read_csv(
-        pathfuncs.OUT_DIR + "/ords_lang_misses_validation2.csv",
+        pathfuncs.OUT_DIR + "/ords_lang_misses_{}2.csv".format(type),
         dtype=str,
         keep_default_na=False,
         na_values="",
@@ -330,11 +330,12 @@ def validation_misses_report():
         sql = """
         SELECT
         id_ords,
-        problem,
+        country,
         language_known,
-        '{0}' as trans_language,
-        `{0}` as missed,
-        '{1}' as trans_prediction
+        '{0}' as language_trans,
+        '{1}' as prediction,
+        `{0}` as `text`,
+        problem
         FROM `ords_problem_translations`
         WHERE `problem` = %(problem)s
         ORDER BY id_ords
@@ -349,48 +350,10 @@ def validation_misses_report():
 
     df_out = pd.DataFrame(data=results)
     df_out.to_csv(
-        pathfuncs.OUT_DIR + "/ords_lang_misses_validation2_ids.csv", index=False
+        pathfuncs.OUT_DIR + "/ords_lang_misses_{}2_ids.csv".format(type), index=False
     )
     logger.debug('misses: {}'.format(len(df_out.index)))
 
-
-# Find records that were missed in training.
-# Can uncover issues with the source translation.
-def training_misses_report():
-    logger.debug('training_misses_report')
-    df_in = pd.read_csv(
-        pathfuncs.OUT_DIR + "/ords_lang_misses_training2.csv",
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
-    )
-    results = []
-    for i, row in df_in.iterrows():
-        sql = """
-        SELECT
-        id_ords,
-        problem,
-        language_known,
-        '{0}' as trans_language,
-        `{0}` as missed,
-        '{1}' as trans_prediction
-        FROM `ords_problem_translations`
-        WHERE `problem` = %(problem)s
-        ORDER BY id_ords
-        """
-        db_res = dbfuncs.query_fetchall(
-            sql.format(row["language"], row["prediction"]), {"problem": row["problem_orig"]}
-        )
-        if (not db_res) or len(db_res) == 0:
-            logger.debug('NOT FOUND: {}'.format(row["problem_orig"]))
-        else:
-            results.extend(db_res)
-
-    df_out = pd.DataFrame(data=results)
-    df_out.to_csv(
-        pathfuncs.OUT_DIR + "/ords_lang_misses_training2_ids.csv", index=False
-    )
-    logger.debug('misses: {}'.format(len(df_out.index)))
 
 # Select function to run.
 def exec_opt(options):
@@ -422,9 +385,9 @@ options = {
     0: "exit()",
     1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
     2: "do_training()",
-    3: "training_misses_report()",
+    3: "misses_report('training')",
     4: "do_validation()",
-    5: "validation_misses_report()",
+    5: "misses_report('validation')",
     6: "do_detection()",
     7: "experiment()",
 }
