@@ -31,7 +31,7 @@ def dump_data(minchars=1, maxchars=32):
     )
     logger.debug("Total translation records: {}".format(df_in.index.size))
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
-    df_all = pd.DataFrame(columns=["problem", "sentence", "language"])
+    df_all = pd.DataFrame(columns=["sentence", "language"])
     for lang in langs.keys():
         logger.debug("*** LANGUAGE {} ***".format(lang))
         # Filter for non-empty unique strings in the `problem` column.
@@ -53,14 +53,11 @@ def dump_data(minchars=1, maxchars=32):
                     print(error)
         print("Appending sentences for lang {}".format(lang))
         # Expand the sentence list and save unique to DataFrame.
-        df_lang = df_tmp.explode("sentence").drop_duplicates()
-        # Trim whitespace from `sentence` strings (again).
+        df_lang = df_tmp.explode("sentence")
+        # Trim whitespace from `sentence` strings.
         df_lang["sentence"].str.strip()
-        # Add the ISO lang code to the DataFrame for this language.
-        df_lang["language"] = lang
-        logger.debug(
-            "Total sentences for lang {} : {}".format(lang, df_lang.index.size)
-        )
+        # Dedupe the `sentence` values.
+        df_lang.drop_duplicates(subset=["sentence"], inplace=True)
         # Reduce the results to comply with min/max sentence length.
         df_lang = df_lang[
             (
@@ -72,6 +69,8 @@ def dump_data(minchars=1, maxchars=32):
         logger.debug(
             "Total usable sentences for lang {} : {}".format(lang, df_lang.index.size)
         )
+        # Add the ISO lang code to the DataFrame for this language.
+        df_lang["language"] = lang
         df_all = pd.concat([df_all, df_lang])
 
     df_all.to_csv(pathfuncs.DATA_DIR + "/ords_poetry_lines.csv", index=False)
