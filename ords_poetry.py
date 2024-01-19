@@ -3,6 +3,7 @@
 from funcs import *
 import pandas as pd
 import os
+import json
 from nltk import tokenize
 
 logger = logfuncs.init_logger(__file__)
@@ -99,6 +100,19 @@ def clean_text(data, dedupe=True, dropna=True):
     return data
 
 
+# Split data into lists labelled with language.
+def dump_json():
+    df_in = pd.read_csv(pathfuncs.DATA_DIR + "/ords_poetry_lines.csv", dtype=str)
+    dict = {}
+    for lang in langs.keys():
+        df_tmp = df_in[df_in["language"].isin([lang])]
+        dict[lang] = df_tmp["sentence"].tolist()
+
+    file = "poetry/data.json"
+    with open(file, "w") as f:
+        json.dump(dict, f, indent=4, ensure_ascii=False)
+
+
 # Get language choice.
 def exec_opt(options):
     for i, desc in options.items():
@@ -135,6 +149,7 @@ langs = {
 
 # Should new translations be available.
 # dump_data()
+# dump_json()
 # exit()
 
 # Use the langs dict to create the choices.
