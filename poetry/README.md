@@ -8,4 +8,4 @@ The bottom is out of the Universe.
 ― Rudyard Kipling
 ```
 
-Generate your own fabulous poems about all the broken things, in any of 7 languages, using this ready-to-roll code!
+Generate your own fabulous poems about all the broken things, in any of 7 languages, using this ready-to-roll code! [Try it out!](https://openrepair.github.io/tools/poetry)
