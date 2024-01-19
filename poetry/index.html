@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Open Repair Poetry</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style type="text/css" media="screen">
         body {
@@ -17,21 +16,20 @@
             flex: 1;
         }
     </style>
+    <title>Open Repair Poetry</title>
+    <meta name="keywords" content="Open Data, poetry, repair">
+    <meta name="description" content="Poems generated using Open Data from the Open Repair Alliance.">
+    <meta name="author" content="Zenlan">
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://github.com/openrepair/tools/tree/poetry/poetry/android-chrome-192x192.png" />
 </head>
 
 <body class="has-navbar-fixed-top has-background-white-ter">
     <nav class="navbar is-fixed-top has-background-white-ter">
         <div class="container">
             <div class="navbar-brand">
-                <p class="navbar-item has-text-weight-bold is-size-3">&nbsp;Open Repair Poetry</p>
-            </div>
-        </div>
-        <div class="navbar-menu">
-            <div class="navbar-start">
-            </div>
-            <div class="navbar-end">
-                <div class="field is-horizontal">
-                    <div class="field-label"></div>
+                <p class="navbar-item has-text-weight-bold is-size-3 is-size-6-mobile ml-0">Open Repair Poetry</p>
+                <div class="field is-horizontal mt-2 ml-2">
                     <div class="field-body">
                         <div class="field is-expanded">
                             <div class="field has-addons">
@@ -76,7 +74,7 @@
         </section>
     </div>
     <footer class="footer">
-        <div class="content has-text-centered">
+        <div class="content has-text-centered is-size-7-mobile">
             <p>
                 Data from the
                 <a href="https://openrepair.org" target="_blank"
@@ -101,9 +99,7 @@
                 generate(document.getElementById('lang').value);
 
             }, false);
-
         });
-
 
         function generate(lang) {
 
@@ -122,7 +118,7 @@
         function assign(json) {
 
             data = json;
-
+            generate('en');
         }
 
     </script>
