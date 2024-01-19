@@ -1,4 +1,4 @@
-# About this project
+# About Open Repair Tools
 
 ```
 We had a kettle; we let it leak:
@@ -21,7 +21,7 @@ Some of the things you can do:
 * Detect languages in the text and translate using the DeepL API.
 * Muck about with regular expressions.
 * Try out some Natural Language Processing and even a little basic machine learning.
-* Generate Open Repair Data poetry.
+* Generate [Open Repair Poetry](./poetry).
 
 There is also an [installer and ORDS configuration](solr/README.md) for an Apache Solr search platform that demonstrates indexing and querying multi-lingual text with international (ICU) characters.
 
