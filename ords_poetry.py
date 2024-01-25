@@ -26,7 +26,7 @@ def gen(lang="en", lines=5, verses=12):
 
 
 # Split translations into sentences labelled with language.
-def dump_data(minchars=1, maxchars=32):
+def dump_data(minchars=2, maxchars=32):
     df_in = pd.read_csv(
         pathfuncs.DATA_DIR + "/ords_problem_translations.csv", dtype=str
     )
@@ -36,7 +36,7 @@ def dump_data(minchars=1, maxchars=32):
     for lang in langs.keys():
         logger.debug("*** LANGUAGE {} ***".format(lang))
         # Filter for non-empty unique strings in the `problem` column.
-        df_tmp = clean_text(
+        df_tmp = clean_problem(
             pd.DataFrame(data=df_in[lang].unique(), columns=["problem"]).dropna()
         )
         print("Splitting sentences for lang {}".format(lang))
@@ -54,11 +54,7 @@ def dump_data(minchars=1, maxchars=32):
                     print(error)
         print("Appending sentences for lang {}".format(lang))
         # Expand the sentence list and save unique to DataFrame.
-        df_lang = df_tmp.explode("sentence")
-        # Trim whitespace from `sentence` strings.
-        df_lang["sentence"].str.strip()
-        # Dedupe the `sentence` values.
-        df_lang.drop_duplicates(subset=["sentence"], inplace=True)
+        df_lang = clean_sentence(df_tmp.explode("sentence"))
         # Reduce the results to comply with min/max sentence length.
         df_lang = df_lang[
             (
@@ -77,7 +73,7 @@ def dump_data(minchars=1, maxchars=32):
     df_all.to_csv(pathfuncs.DATA_DIR + "/ords_poetry_lines.csv", index=False)
 
 
-def clean_text(data, dedupe=True, dropna=True):
+def clean_problem(data, dedupe=True, dropna=True):
     # Make sure there is always a space after a period, else sentences won't be split.
     data.replace(
         {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
@@ -85,9 +81,11 @@ def clean_text(data, dedupe=True, dropna=True):
         regex=True,
         inplace=True,
     )
-    # Remove HTML symbols (&gt; features a lot)
+    # Remove HTML symbols (&gt; features a lot).
     data.replace(
-        {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""}, regex=True, inplace=True
+        {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""},
+        regex=True,
+        inplace=True
     )
     # Trim whitespace from `problem` strings.
     data["problem"].str.strip()
@@ -100,12 +98,47 @@ def clean_text(data, dedupe=True, dropna=True):
     return data
 
 
+def clean_sentence(data, dedupe=True, dropna=True):
+    # Remove weight only values. (0.5kg, 5kg, 5 kg, .5kg etc.)
+    data.replace(
+        {"sentence": r"(?i)^(([0-9]+)?\.?[0-9\s]+kg\.?)$"},
+        {"sentence": ""},
+        regex=True,
+        inplace=True,
+    )
+    # Remove numeric only values.
+    data.replace(
+        {"sentence": r"(?i)^(([0-9]+)?\.?[0-9\s]+\.?)$"},
+        {"sentence": ""},
+        regex=True,
+        inplace=True,
+    )
+    # Remove short punctuation only values.
+    data.replace(
+        {"sentence": r"(?i)^([\d\W]{1,3}\.?)$"},
+        {"sentence": ""},
+        regex=True,
+        inplace=True,
+    )
+    # Trim whitespace from `sentence` strings.
+    data["problem"].str.strip()
+    if dropna:
+        # Drop `sentence` values that may be empty after the replacements and trimming.
+        data.dropna(subset=["sentence"], inplace=True)
+    if dedupe:
+        # Dedupe the `sentence` values.
+        data.drop_duplicates(subset=["sentence"], inplace=True)
+    return data
+
+
 # Split data into lists labelled with language.
 def dump_json():
     df_in = pd.read_csv(pathfuncs.DATA_DIR + "/ords_poetry_lines.csv", dtype=str)
     dict = {}
     for lang in langs.keys():
         df_tmp = df_in[df_in["language"].isin([lang])]
+        # df_tmp.sort_values(by)
+        df_tmp.sort_values(by="sentence", key=lambda x: x.str.len(), inplace=True)
         dict[lang] = df_tmp["sentence"].tolist()
 
     file = "poetry/data.json"
@@ -148,9 +181,9 @@ langs = {
 }
 
 # Should new translations be available.
-# dump_data()
-# dump_json()
-# exit()
+dump_data()
+dump_json()
+exit()
 
 # Use the langs dict to create the choices.
 options = pd.Series(data=langs.values(), index=list(range(1, 8)))
