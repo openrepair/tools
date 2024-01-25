@@ -29,13 +29,12 @@ def format_path(filename, ext="csv"):
 def dump_data(sample=0.3, minchars=12, maxchars=65535):
     # Read input DataFrame.
     df_in = pd.read_csv(
-        pathfuncs.DATA_DIR + "/ords_problem_translations.csv",
-        dtype=str
+        pathfuncs.DATA_DIR + "/ords_problem_translations.csv", dtype=str
     ).query('language_known != "??"')
 
-    df_in = pd.DataFrame(data=df_in[["language_known","country","problem"]])
-    df_in.rename({"language_known" : "language"}, axis=1, inplace=True)
-    df_in['problem_orig'] = df_in['problem']
+    df_in = pd.DataFrame(data=df_in[["language_known", "country", "problem"]])
+    df_in.rename({"language_known": "language"}, axis=1, inplace=True)
+    df_in["problem_orig"] = df_in["problem"]
     logger.debug("Total translation records: {}".format(df_in.index.size))
     df_in = clean_text(df_in)
     df_in["problem"].apply(lambda s: len(str(s)) in range(minchars, maxchars + 1))
@@ -163,10 +162,7 @@ def get_stopwords():
 
 # Experiment with classifier/vectorizer.
 def experiment():
-    data = pd.read_csv(
-        format_path("ords_lang_data_training2"),
-        dtype=str
-    ).dropna()
+    data = pd.read_csv(format_path("ords_lang_data_training2"), dtype=str).dropna()
 
     stopwords = get_stopwords()
     column = data.problem
@@ -223,10 +219,7 @@ def experiment():
 
 
 def do_training():
-    data = pd.read_csv(
-        format_path("ords_lang_data_training2"),
-        dtype=str
-    ).dropna()
+    data = pd.read_csv(format_path("ords_lang_data_training2"), dtype=str).dropna()
 
     column = data.problem
     labels = data.language
@@ -258,10 +251,7 @@ def do_training():
 
 
 def do_validation(pipeline=True):
-    data = pd.read_csv(
-        format_path("ords_lang_data_validation2"),
-        dtype=str
-    ).dropna()
+    data = pd.read_csv(format_path("ords_lang_data_validation2"), dtype=str).dropna()
 
     column = data.problem
     labels = data.language
@@ -318,7 +308,7 @@ def do_detection(pipeline=True):
 # Find records that were missed by the validator.
 # Can uncover issues with the source translation.
 def misses_report(type):
-    logger.debug('misses_report: {}'.format(type))
+    logger.debug("misses_report: {}".format(type))
     df_in = pd.read_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_{}2.csv".format(type),
         dtype=str,
@@ -341,10 +331,11 @@ def misses_report(type):
         ORDER BY id_ords
         """
         db_res = dbfuncs.query_fetchall(
-            sql.format(row["language"], row["prediction"]), {"problem": row["problem_orig"]}
+            sql.format(row["language"], row["prediction"]),
+            {"problem": row["problem_orig"]},
         )
         if (not db_res) or len(db_res) == 0:
-            logger.debug('NOT FOUND: {}'.format(row["problem_orig"]))
+            logger.debug("NOT FOUND: {}".format(row["problem_orig"]))
         else:
             results.extend(db_res)
 
@@ -352,7 +343,96 @@ def misses_report(type):
     df_out.to_csv(
         pathfuncs.OUT_DIR + "/ords_lang_misses_{}2_ids.csv".format(type), index=False
     )
-    logger.debug('misses: {}'.format(len(df_out.index)))
+    logger.debug("misses: {}".format(len(df_out.index)))
+
+
+# Check for obvious issues in translations table.
+def checkup():
+    langs = {
+        "en": "english",
+        "de": "german",
+        "nl": "dutch",
+        "fr": "french",
+        "it": "italian",
+        "es": "spanish",
+        "da": "danish",
+    }
+
+    qry = """SELECT `id_ords`, `language_known`,
+`problem`,
+`{0}` as trans,
+LENGTH(`problem`) as len_problem,
+LENGTH(`{0}`) as len_trans
+FROM `ords_problem_translations`
+WHERE `language_known` = '{0}'
+"""
+    ands = [
+        """AND LENGTH(`{0}`) <> LENGTH(`problem`)""",
+        """AND LENGTH(TRIM(`{0}`)) <> TRIM(LENGTH(`problem`))""",
+        """AND REGEXP_REPLACE(LOWER(`{0}`), ' ', '') <> REGEXP_REPLACE(LOWER(`problem`), ' ', '')""",
+    ]
+
+    for i in range(0, len(ands)):
+        df_out = pd.DataFrame()
+        sql = qry + ands[i]
+        for lang in langs.keys():
+            logger.debug(sql.format(lang))
+            df_res = pd.DataFrame(dbfuncs.query_fetchall(sql.format(lang)))
+            df_out = pd.concat([df_out, df_res])
+
+        df_out.to_csv(
+            pathfuncs.OUT_DIR + "/ords_lang_training2_checkup{}.csv".format(i),
+            index=False,
+        )
+
+
+# Check char by char using differ.
+def charcheck():
+    import difflib
+
+    d = difflib.Differ()
+
+    langs = {
+        "en": "english",
+        "de": "german",
+        "nl": "dutch",
+        "fr": "french",
+        "it": "italian",
+        "es": "spanish",
+        "da": "danish",
+    }
+
+    sql = """SELECT `id_ords`, `language_known`,
+1 as what,
+'' as diff,
+`problem`,
+`{0}` as trans
+FROM `ords_problem_translations`
+WHERE `language_known` = '{0}'
+AND(
+LENGTH(`{0}`) <> LENGTH(`problem`)
+OR REGEXP_REPLACE(LOWER(`{0}`), ' ', '') <> REGEXP_REPLACE(LOWER(`problem`), ' ', '')
+)
+"""
+
+    df = pd.DataFrame()
+    for lang in langs.keys():
+        df_res = pd.DataFrame(dbfuncs.query_fetchall(sql.format(lang)))
+        df = pd.concat([df, df_res])
+
+    df.reset_index(inplace=True)
+    for i, row in df.iterrows():
+        p = row.problem
+        t = row.trans
+        diff = list(set([s for s in list(d.compare(p, t)) if s[0] in ["-", "+"]]))
+        df.at[i, "diff"] = ",".join(diff)
+        if (len(diff) == 1) & (diff[0].strip() == "-"):
+            df.at[i, "what"] = 0
+
+    df.sort_values(by=["what", "problem"], inplace=True, ignore_index=True)
+    df.to_csv(pathfuncs.OUT_DIR + "/ords_lang_training2_charcheck.csv", index=False)
+
+    exit()
 
 
 # Select function to run.
@@ -390,5 +470,7 @@ options = {
     5: "misses_report('validation')",
     6: "do_detection()",
     7: "experiment()",
+    8: "checkup()",
+    9: "charcheck()",
 }
 exec_opt(options)
