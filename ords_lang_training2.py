@@ -346,46 +346,6 @@ def misses_report(type):
     logger.debug("misses: {}".format(len(df_out.index)))
 
 
-# Check for obvious issues in translations table.
-def checkup():
-    langs = {
-        "en": "english",
-        "de": "german",
-        "nl": "dutch",
-        "fr": "french",
-        "it": "italian",
-        "es": "spanish",
-        "da": "danish",
-    }
-
-    qry = """SELECT `id_ords`, `language_known`,
-`problem`,
-`{0}` as trans,
-LENGTH(`problem`) as len_problem,
-LENGTH(`{0}`) as len_trans
-FROM `ords_problem_translations`
-WHERE `language_known` = '{0}'
-"""
-    ands = [
-        """AND LENGTH(`{0}`) <> LENGTH(`problem`)""",
-        """AND LENGTH(TRIM(`{0}`)) <> TRIM(LENGTH(`problem`))""",
-        """AND REGEXP_REPLACE(LOWER(`{0}`), ' ', '') <> REGEXP_REPLACE(LOWER(`problem`), ' ', '')""",
-    ]
-
-    for i in range(0, len(ands)):
-        df_out = pd.DataFrame()
-        sql = qry + ands[i]
-        for lang in langs.keys():
-            logger.debug(sql.format(lang))
-            df_res = pd.DataFrame(dbfuncs.query_fetchall(sql.format(lang)))
-            df_out = pd.concat([df_out, df_res])
-
-        df_out.to_csv(
-            pathfuncs.OUT_DIR + "/ords_lang_training2_checkup{}.csv".format(i),
-            index=False,
-        )
-
-
 # Check char by char using differ.
 def charcheck():
     import difflib
@@ -407,7 +367,7 @@ def charcheck():
 '' as diff,
 `problem`,
 `{0}` as trans
-FROM `ords_problem_translations`
+FROM `ords_problem_translations_NEW`
 WHERE `language_known` = '{0}'
 AND(
 LENGTH(`{0}`) <> LENGTH(`problem`)
@@ -470,7 +430,6 @@ options = {
     5: "misses_report('validation')",
     6: "do_detection()",
     7: "experiment()",
-    8: "checkup()",
-    9: "charcheck()",
+    8: "charcheck()",
 }
 exec_opt(options)
