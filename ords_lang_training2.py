@@ -367,7 +367,7 @@ def charcheck():
 '' as diff,
 `problem`,
 `{0}` as trans
-FROM `ords_problem_translations_NEW`
+FROM `ords_problem_translations`
 WHERE `language_known` = '{0}'
 AND(
 LENGTH(`{0}`) <> LENGTH(`problem`)
