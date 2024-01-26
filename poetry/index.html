@@ -100,43 +100,45 @@
 
             document.getElementById('go').addEventListener('click', function (e) {
                 e.preventDefault();
-                if ((Date.now() % 2) == 1) {
-                    generateA(document.getElementById('lang').value);
-                } else {
-                    generateB(document.getElementById('lang').value);
-                }
-
+                generate(document.getElementById('lang').value, Math.round(Math.random() * 3));
             }, false);
         });
 
-        // Free form verses
-        function generateA(lang) {
-
-            let poem = '';
-            for (i = 0; i < 3; i++) {
-                for (j = 0; j < 5; j++) {
-                    poem = poem + data[lang][Math.round(Math.random() * (data[lang].length - 1))] + "\n";
-                }
-                poem = poem + "\n";
+        function generate(lang, seed) {
+            if (seed > 0) {
+                console.log('seeded: ' + seed);
+                // Roll for more chances of 0, free form verses.
+                seed = Math.round(Math.random()) ? seed : 0;
+                console.log('going with: ' + seed);
             }
-            document.getElementById('poem').innerText = poem;
-        }
-
-        // Use line lengths for patterned verses.
-        function generateB(lang) {
-
-            const short = data[lang].slice(0,data[lang].length / 3)
-            const medium = data[lang].slice(data[lang].length / 3, (data[lang].length / 3)*2)
-            const long = data[lang].slice((data[lang].length / 3)*2, data[lang].length -1)
+            const fifth = data[lang].length / 5;
+            const a = data[lang].slice(0, fifth);
+            const b = data[lang].slice(fifth, fifth * 2);
+            const c = data[lang].slice(fifth * 2, fifth * 3);
+            const d = data[lang].slice(fifth * 3, fifth * 4);
+            const e = data[lang].slice(fifth * 4, data[lang].length - 1);
+            lines = [a, b, c, d, e]
             let poem = '';
             for (i = 0; i < 3; i++) {
                 for (j = 0; j < 5; j++) {
-                    if (j == 0 || j==4) {
-                        line = short[Math.round(Math.random() * (short.length - 1))];
-                    } else if (j == 1 || j==3) {
-                        line = medium[Math.round(Math.random() * (medium.length - 1))];
+                    if (seed == 1) {
+                        line = lines[j][Math.round(Math.random() * (lines[j].length - 1))];
+                    } else if (seed == 2) {
+                        n = Math.abs(j - 4);
+                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+                    } else if (seed == 3) {
+                        if (j < 2) {
+                            n = j + 1;
+                        } else if (j == 2) {
+                            n = 4;
+                        } else if (j == 3) {
+                            n = 3;
+                        } else if (j == 4) {
+                            n = 0;
+                        }
+                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
                     } else {
-                        line = long[Math.round(Math.random() * (long.length - 1))];
+                        line = data[lang][Math.round(Math.random() * (data[lang].length - 1))];
                     }
                     poem = poem + line + "\n";
                 }
@@ -148,7 +150,7 @@
         function assign(json) {
 
             data = json;
-            generateA('en');
+            generate('en', 0);
         }
 
     </script>
