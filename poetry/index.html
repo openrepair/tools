@@ -100,7 +100,7 @@
 
             document.getElementById('go').addEventListener('click', function (e) {
                 e.preventDefault();
-                generate(document.getElementById('lang').value, Math.round(Math.random() * 3));
+                generate(document.getElementById('lang').value, Math.round(Math.random() * 4));
             }, false);
         });
 
@@ -135,6 +135,25 @@
                             n = 3;
                         } else if (j == 4) {
                             n = 0;
+                        }
+                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+                    } else if (seed == 4) {
+                        if (i == 0) {
+                            n = j;
+                        } else if (i == 1) {
+                            if (j == 0) {
+                                n = 3;
+                            } else if (j == 1) {
+                                n = 2;
+                            } else if (j == 2) {
+                                n = 1;
+                            } else if (j == 3) {
+                                n = 2;
+                            } else if (j == 4) {
+                                n = 3;
+                            }
+                        } else {
+                            n = Math.abs(j - 4);
                         }
                         line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
                     } else {
