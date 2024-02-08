@@ -211,7 +211,7 @@ def detect_language(data, path):
 
     if (not pathfuncs.check_path(path)):
         print('LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}'.format(lang_obj_path))
-        print("TO FIX THIS EXECUTE: ords_lang_training.py")
+        print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
         exit()
 
     from joblib import load
@@ -221,12 +221,12 @@ def detect_language(data, path):
     # Adjust filters in get_work() and retrain model as appropriate.
     data.loc[:, 'language_known'] = model.predict(data.problem)
 
+    # `language_expected` is based on familiar assumptions about the data and may be empty.
     data.loc[:, 'mismatch'] = data['language_expected'] != data['language_known']
 
     # Log the mismatches.
     miss = data.loc[data['mismatch'] == True]
-    miss.to_csv(pathfuncs.OUT_DIR +
-                '/deepl_work_lang_mismatch.csv', index=False)
+    miss.to_csv(pathfuncs.OUT_DIR + '/deepl_work_lang_mismatch.csv', index=False)
     # Count the mismatches.
     grp = miss.groupby('country').agg({'mismatch': ['count']}).pipe(lambda x: x.set_axis(
         x.columns.map('_'.join), axis=1)).sort_values(by='mismatch_count', ascending=False)
@@ -309,12 +309,12 @@ def exec_opt(options):
 # Check requirements first!
 # "mock=True" allows for trial and error without using up API credits.
 # "max=10000" recommended for live run.
-# NOTE!! Temporary halt on RCInt as old strings may change in upcoming export and require re-translating!
-# clause = 'data_provider != "Repair Café International"'
-clause = 'data_provider = "The Restart Project"'
-mock = False
+# Create a clause to implement a filter. (Only for get_work())
+# clause = 'data_provider = "The Restart Project"'
+clause = '1'
+mock = True
 print('Mock={}'.format(mock))
-lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls.joblib'
+lang_obj_path = pathfuncs.OUT_DIR + '/ords_lang_obj_tfidf_cls_sentence.joblib'
 options = {
     0: "exit()",
     1: "check_requirements()",
