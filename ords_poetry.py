@@ -134,6 +134,8 @@ def clean_sentence(data, dedupe=True, dropna=True):
     data["sentence"] = data["sentence"].str.strip()
     # Trim periods from end of `sentence` strings.
     data["sentence"] = data["sentence"].str.strip(".")
+    # Trim whitespace from `sentence` strings - again.
+    data["sentence"] = data["sentence"].str.strip()
     if dropna:
         # Drop `sentence` values that may be empty after the replacements and trimming.
         data.dropna(subset=["sentence"], inplace=True)
@@ -150,7 +152,7 @@ def dump_json():
     dict = {}
     for lang in langs.keys():
         df_tmp = df_in[df_in["language"].isin([lang])]
-        # df_tmp.sort_values(by)
+        df_tmp.dropna(axis=0, inplace=True)
         df_tmp.sort_values(by="sentence", key=lambda x: x.str.len(), inplace=True)
         dict[lang] = df_tmp["sentence"].tolist()
 
