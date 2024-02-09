@@ -97,7 +97,7 @@ def clean_problem(data, dedupe=True, dropna=True):
         {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""}, regex=True, inplace=True
     )
     # Trim whitespace from `problem` strings.
-    data["problem"].str.strip()
+    data["problem"] = data["problem"].str.strip()
     if dropna:
         # Drop `problem` values that may be empty after the replacements and trimming.
         data.dropna(subset=["problem"], inplace=True)
@@ -108,7 +108,8 @@ def clean_problem(data, dedupe=True, dropna=True):
 
 
 def clean_sentence(data, dedupe=True, dropna=True):
-    # Remove weight only values. (0.5kg, 5kg, 5 kg, .5kg etc.)
+    # Remove weight only values. (0.5kg, 5kg, 5 kg0
+    # , .5kg etc.)
     data.replace(
         {"sentence": r"(?i)^(([0-9]+)?\.?[0-9\s]+kg\.?)$"},
         {"sentence": ""},
@@ -130,7 +131,9 @@ def clean_sentence(data, dedupe=True, dropna=True):
         inplace=True,
     )
     # Trim whitespace from `sentence` strings.
-    data["problem"].str.strip()
+    data["sentence"] = data["sentence"].str.strip()
+    # Trim periods from end of `sentence` strings.
+    data["sentence"] = data["sentence"].str.strip(".")
     if dropna:
         # Drop `sentence` values that may be empty after the replacements and trimming.
         data.dropna(subset=["sentence"], inplace=True)

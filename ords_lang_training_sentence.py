@@ -65,7 +65,7 @@ def clean_text(data, dedupe=True, dropna=True):
         inplace=True,
     )
     # Trim whitespace from `problem` strings.
-    data["problem"].str.strip()
+    data["problem"] = data["problem"].str.strip()
     if dropna:
         # Drop `problem` values that may be empty after the replacements and trimming.
         data.dropna(subset=["problem"], inplace=True)
@@ -179,7 +179,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
             {"sentence": r"(?i)([\W]{2,})"}, {"sentence": " "}, regex=True, inplace=True
         )
         # Trim whitespace from `sentence` strings (again).
-        df_lang["sentence"].str.strip()
+        df_lang["sentence"] = df_lang["sentence"].str.strip()
         # Add the ISO lang code to the DataFrame for this language.
         df_lang["language"] = lang
         logger.debug(
