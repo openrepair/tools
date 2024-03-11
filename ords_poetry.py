@@ -26,6 +26,7 @@ def test_poems():
     langs = get_langs()
     df = pd.read_csv(pathfuncs.DATA_DIR + "/ords_poetry_lines.csv", dtype=str).dropna()
     for key in langs.keys():
+        logger.debug("*** {} ***".format(langs[key]))
         print("*** {} ***".format(langs[key]))
         rows = df[df["language"].isin([key])].sample(3)
         for i in range(0, len(rows)):

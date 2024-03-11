@@ -346,8 +346,8 @@ if __name__ == "__main__":
     # "mock=True" allows for trial and error without using up API credits.
     # "max=10000" recommended for live run.
     # Create a clause to implement a filter.
-    # e.g. clause = 'data_provider = "The Restart Project"'
-    clause = "TRUE"
+    # e.g. clause = 'country = "GBR"'
+    # clause = "TRUE"
     mock = True
     print("Mock={}".format(mock))
     lang_obj_path = pathfuncs.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
