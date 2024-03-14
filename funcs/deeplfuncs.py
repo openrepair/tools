@@ -11,6 +11,8 @@ def get_columns():
 def get_languages():
     return deeplWrapper.get_languages()
 
+def check_api_key():
+    return 'DEEPL_KEY' in os.environ
 
 # Wrap/mock DeepL calls.
 class deeplWrapper:

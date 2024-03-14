@@ -5,13 +5,13 @@ import pandas as pd
 from nltk import word_tokenize
 from nltk import sent_tokenize
 import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+
 logger = logfuncs.init_logger(__file__)
-# Uncomment the following on first run or to update.
-# nltk.download('punkt')
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('maxent_ne_chunker')
-# nltk.download('words')
 
 # Demonstration of common NLP methods taken from online tutorials.
 # https://towardsdatascience.com/free-hands-on-tutorials-to-get-started-in-natural-language-processing-6a378e24dbfc

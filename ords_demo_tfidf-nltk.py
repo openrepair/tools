@@ -8,8 +8,9 @@ from sklearn.metrics.pairwise import linear_kernel
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
-# Uncomment if not already downloaded.
-# nltk.download('punkt')
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet')
 
 logger = logfuncs.init_logger(__file__)
 
