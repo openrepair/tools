@@ -136,10 +136,10 @@ def write_to_files(df, suffix, index=False, sample=0):
         print(result)
 
 
-# slice_events()
-# slice_repairs()
-# slice_product_age()
-# slice_year_of_manufacture()
-# slice_categories()
+slice_events()
+slice_repairs()
+slice_product_age()
+slice_year_of_manufacture()
+slice_categories()
 slice_item_types()
-# slice_countries()
+slice_countries()
