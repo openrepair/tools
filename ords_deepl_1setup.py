@@ -3,8 +3,6 @@
 from funcs import *
 import pandas as pd
 
-logger = logfuncs.init_logger(__file__)
-
 """
 Series of scripts for translating ORDS `problem` text.
 
@@ -21,76 +19,93 @@ Step 4: ords_deepl_4backfill.py
 """
 
 
-def dbbackup():
+def backup_only():
     try:
         sql = """
         SELECT *
         FROM ords_problem_translations
         """
         df = pd.DataFrame(dbfuncs.query_fetchall(sql))
-        path_to_csv = pathfuncs.DATA_DIR + \
-            '/backup_{}.csv'.format(datefuncs.format_curr_datetime())
+        path_to_csv = pathfuncs.OUT_DIR + "/ords_problem_translations_{}.csv".format(
+            datefuncs.format_curr_datetime()
+        )
         pathfuncs.rm_file(path_to_csv)
         df.to_csv(path_to_csv, index=False)
         if pathfuncs.check_path(path_to_csv):
-            print('Backup written to {}'.format(path_to_csv))
+            print("Backup written to {}".format(path_to_csv))
             return path_to_csv
         else:
-            print('Failed to write data to {}'.format(path_to_csv))
+            print("Failed to write data to {}".format(path_to_csv))
     except Exception as error:
         print("Exception: {}".format(error))
-    finally:
         return False
 
 
-def dbsetup(path_to_csv=''):
+def setup_database():
 
-    # Check for path_to_csv.
-    if path_to_csv == '':
-        path_to_csv = pathfuncs.DATA_DIR + '/ords_problem_translations.csv'
+    path_to_csv = pathfuncs.DATA_DIR + "/ords_problem_translations.csv"
 
     if not pathfuncs.check_path(path_to_csv):
-        print('ERROR: {} NOT FOUND!'.format(path_to_csv))
+        print("ERROR: FILE NOT FOUND! {}".format(path_to_csv))
         return False
 
-    logger.debug('Reading data from file {}'.format(path_to_csv))
+    logger.debug("Reading data from file {}".format(path_to_csv))
     df = pd.read_csv(path_to_csv)
 
     # Get translations table schema.
     path_to_sql = pathfuncs.get_path(
-        [pathfuncs.DATA_DIR + '/tableschema_translations_mysql.sql'])
+        [pathfuncs.DATA_DIR + "/tableschema_translations_mysql.sql"]
+    )
     print(path_to_sql)
-    logger.debug('Reading sql from file {}'.format(path_to_sql))
+    logger.debug("Reading sql from file {}".format(path_to_sql))
     # Create table.
-    sql = path_to_sql.read_text().format(tablename='ords_problem_translations')
+    sql = path_to_sql.read_text().format(tablename="ords_problem_translations")
     dbfuncs.execute(sql)
 
     # Import existing translations.
-    rows = df.to_sql(name='ords_problem_translations', con=dbfuncs.alchemy_eng(),
-                     if_exists='append', index=False)
-    logger.debug('{} written to table "{}"'.format(
-        rows, 'ords_problem_translations'))
+    rows = df.to_sql(
+        name="ords_problem_translations",
+        con=dbfuncs.alchemy_eng(),
+        if_exists="append",
+        index=False,
+    )
+    logger.debug('{} written to table "{}"'.format(rows, "ords_problem_translations"))
 
 
-def replace_csv_file(path_to_csv_new):
-
-    path_to_csv_old = pathfuncs.DATA_DIR + \
-        '/ords_problem_translations.csv'
-    pathfuncs.rm_file(path_to_csv_old)
+def backup_and_replace_file():
+    path_to_csv_new = backup_only()
+    path_to_csv_old = pathfuncs.DATA_DIR + "/ords_problem_translations.csv"
     pathfuncs.copy_file(path_to_csv_new, path_to_csv_old)
 
 
-# START
+# Select function to run.
+def exec_opt(options):
+    while True:
+        for i, desc in options.items():
+            print("{} : {}".format(i, desc))
+        choice = input("Type a number: ")
+        try:
+            choice = int(choice)
+        except ValueError:
+            print("Invalid choice")
+        else:
+            if choice >= len(options):
+                print("Out of range")
+            else:
+                f = options[choice]
+                print(f)
+                eval(f)
 
-path_to_csv = dbbackup()
 
-if path_to_csv:
-    # Replace the csv file with the table dump file?
-    replace = False
-    if replace:
-        replace_csv_file(path_to_csv)
+def get_options():
+    return {
+        0: "exit()",
+        1: "backup_only()",
+        2: "backup_and_replace_file()",
+        3: "setup_database()",
+    }
 
-# Drop and recreate table, import data from csv file.
-clean = True
-if clean:
-    dbsetup()
+
+if __name__ == "__main__":
+    logger = logfuncs.init_logger(__file__)
+    exec_opt(get_options())
