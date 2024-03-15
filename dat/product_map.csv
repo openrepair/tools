@@ -1,0 +1,59 @@
+product,ords_product_category,unu_key,unu_id,ords_id
+air-conditioner,Aircon/dehumidifier,Air Conditioners (household installed and portable),111,1
+dehumidifier,Aircon/dehumidifier,"Other Cooling (f.i. dehumidifiers, heat pump dryers)",112,1
+fan,Fan,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,7
+camera-still,Digital compact camera,"Cameras (f.i. camcorders, photo & digital still cameras)",406,5
+camera-video,DSLR/video camera,"Video (f.i. Video recorders, DVD, Blue Ray, set-top boxes)",404,6
+charger-adapter,Battery/charger/adapter,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,2
+clothes-dryer,Large home electrical,"Dryers (wash dryers, centrifuges)",105,17
+coffee-machine,Coffee maker,"Hot Water (f.i. coffee, tea, water cookers)",203,36
+computer-accessory,PC accessory,"Small IT (f.i. routers, mice, keyboards, external drives & accessories)",301,22
+computer-auto,Tablet,"Portable Audio & Video (f.i. MP3, e-readers, car navigation)",402,30
+computer-desktop,Desktop computer,"Desktop PCs (excl. monitors, accessories)",302,4
+computer-laptop,Laptop,Laptops (incl. tablets),303,16
+computer-tablet,Tablet,Laptops (incl. tablets),303,30
+dishwasher,Large home electrical,Dishwashers,102,17
+flatpanel-screen,Flat screen,"Flat Display Panel Monitors (LCD, LED)",309,8
+flatpanel-tv,Flat screen,"Flat Display Panel TVs (LCD, LED, Plasma)",408,8
+food-processor,Food processor,"Food (f.i. toaster, grills, food processing, frying pans)",202,37
+freezer,Large home electrical,Freezers,109,17
+fridge,Large home electrical,Fridges (incl. combi-fridges),108,17
+gaming-console,Games console,Game Consoles,702,38
+gaming-portable,Handheld entertainment device,"Small Consumer Electronics (f.i. headphones, remote controls)",401,10
+garden-machine,Large home electrical,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,17
+hairdryer,Hair dryer,"Personal Care (f.i. tooth brushes, hair dryers, razors)",205,39
+headphone,Headphones,"Small Consumer Electronics (f.i. headphones, remote controls)",401,11
+heater,Small home electrical,"Household Heating & Ventilation (f.i. hoods, ventilators, space heaters)",106,28
+hi-fi,Hi-Fi separates,"Music Instruments, Radio, HiFi (incl. audio sets)",403,13
+iron,Iron,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,40
+kettle,Kettle,"Hot Water (f.i. coffee, tea, water cookers)",203,14
+lawnmower,Large home electrical,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,17
+lighting-lamp,Lamp,"Lamps (f.i. pocket, Christmas, excl. LED & incandescent)",501,15
+lighting-led,Decorative or safety lights,LED Lamps (incl. retrofit LED lamps & household LED luminaires),505,3
+lighting-other,Decorative or safety lights,"Lamps (f.i. pocket, Christmas, excl. LED & incandescent)",501,3
+microwave,Large home electrical,"Microwaves (incl. combined, excl. grills)",114,17
+musical-instrument,Musical instrument,"Music Instruments, Radio, HiFi (incl. audio sets)",403,20
+personal-grooming,Hair & beauty item,"Personal Care (f.i. tooth brushes, hair dryers, razors)",205,9
+personal-hygiene,Hair & beauty item,"Personal Care (f.i. tooth brushes, hair dryers, razors)",205,9
+personal-medical,Small home electrical,"Household Medical (f.i. thermometers, blood pressure meters)",801,28
+portable-audio-video,Handheld entertainment device,"Portable Audio & Video (f.i. MP3, e-readers, car navigation)",402,10
+power-tool,Power tool,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,24
+printer,Printer/scanner,"Printers (f.i. scanners, multifunctionals, faxes)",304,25
+projector,Projector,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,26
+remote-control,TV and gaming-related accessories,"Small Consumer Electronics (f.i. headphones, remote controls)",401,33
+set-top-box,TV and gaming-related accessories,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,33
+sewing-machine,Sewing machine,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,27
+shredder,Paper shredder,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,21
+small-domestic,Small home electrical,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,28
+small-kitchen,Small kitchen item,"Food (f.i. toaster, grills, food processing, frying pans)",202,29
+food-steamer,Small kitchen item,"Hot Water (f.i. coffee, tea, water cookers)",203,29
+speaker,Hi-Fi separates,Speakers,405,13
+sport-exercise,Large home electrical,"Leisure (f.i. large exercise, sports equipment)",703,17
+steam-cleaner,Power tool,"Household Tools (f.i. drills, saws, high pressure cleaners, lawn mowers)",601,24
+telecom,Small home electrical,"Telecom (f.i. (cordless) phones, answering machines)",305,28
+telecom-mobile,Mobile,"Mobile Phones (incl. smartphones, pagers)",306,19
+toaster,Toaster,"Food (f.i. toaster, grills, food processing, frying pans)",202,31
+toy,Toy,"Toys (f.i. car racing sets, electric trains, music toys, biking computers)",701,32
+vacuum-cleaner,Vacuum,Vacuum Cleaners (excl. professional),204,34
+washing-machine,Large home electrical,Washing Machines (incl. combined dryers),104,17
+watch-clock,Watch/clock,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,35
