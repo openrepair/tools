@@ -27,6 +27,7 @@ def get_item_types():
     df["matched"] = 0
     df["unu_keys"] = ""
     df["products"] = ""
+    df["unu_str"] = ""
     logger.debug("TOTAL NON-EMPTY UNIQUE ITEM TYPES: {}".format(len(df)))
 
     return df
@@ -42,7 +43,7 @@ def build_regexes():
     for key in regexes:
         pattern = miscfuncs.build_regex_string(rxelems[key].dropna().values)
         built[key] = pattern
-        regexes[key] = re.compile(pattern, flags=re.IGNORECASE + re.UNICODE)
+        regexes[key] = re.compile(pattern, flags=re.IGNORECASE)
 
     out = open(pathfuncs.OUT_DIR + "/product_regexes_built.csv", "w")
     z = csv.writer(out)
@@ -58,13 +59,15 @@ def run_regexes(regexes, data):
     map = pd.read_csv(pathfuncs.DATA_DIR + "/product_map.csv", dtype=str)
     result = {}
     result = result.fromkeys(map["unu_id"])
+    x = 0
     for n, row in map.iterrows():
         terms = data.loc[data["product_category"] == row["product_category"]]
         key = row["unu_id"]
         rx = regexes[row["product"]]
         for i, term in terms.iterrows():
-            matches = rx.search(term["item_type"], re.IGNORECASE)
+            matches = rx.search(term["item_type"])
             if matches != None:
+                x += 1
                 keys = data.at[i, "unu_keys"].split(",")
                 keys.append(key)
                 keys = list(set(list(filter(None, keys))))
@@ -74,7 +77,7 @@ def run_regexes(regexes, data):
                 prods = data.at[i, "products"].split(",")
                 prods.append(row["product"])
                 data.at[i, "products"] = ",".join(list(filter(None, prods)))
-
+        logger.debug("MATCHES FOR {} ~ {} : {} ".format(row["product_category"], row["product"], x))
     return data
 
 
@@ -89,7 +92,7 @@ def run_regexes_misc(regexes, data):
         key = row["unu_id"]
         rx = regexes[row["product"]]
         for i, term in terms.iterrows():
-            matches = rx.search(term["item_type"], re.IGNORECASE)
+            matches = rx.search(term["item_type"])
             if matches != None:
                 keys = data.at[i, "unu_keys"].split(",")
                 keys.append(key)
@@ -151,7 +154,7 @@ def write_summaries(data, prefix=""):
 
     one = data.loc[result["matched"] == 1]
     one.to_csv(
-        pathfuncs.OUT_DIR + "/unukey_matches_one._{}.csv".format(prefix), index=False
+        pathfuncs.OUT_DIR + "/unukey_matches_one_{}.csv".format(prefix), index=False
     )
     logger.debug("ONE MATCH: {}".format(len(one)))
     cats = (
@@ -226,25 +229,37 @@ def assign_keys():
     )
 
     keys = pd.read_csv(
-        pathfuncs.OUT_DIR + "/unukey_matches_defaults_after.csv", dtype=str
+        pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", dtype=str
     )
     for n, row in keys.iterrows():
         df["unu_key"].loc[
             (df["product_category"] == row["product_category"])
             & (df["item_type"] == row["item_type"])
         ] = row["unu_keys"]
+        df["unu_str"].loc[
+            (df["unu_key"] == row["unu_keys"])
+        ] = row["unu_str"]
 
-    keys = pd.read_csv(pathfuncs.OUT_DIR + "/unukey_matches_one_after.csv", dtype=str)
-    for n, row in keys.iterrows():
-        df["unu_key"].loc[
-            (df["product_category"] == row["product_category"])
-            & (df["item_type"] == row["item_type"])
-        ] = row["unu_keys"]
-    logger.debug("ASSIGNED UNU KEYS: {}".format(len(df.loc[df["unu_key"] > ""])))
+    # keys = pd.read_csv(
+    #     pathfuncs.OUT_DIR + "/unukey_matches_defaults_after.csv", dtype=str
+    # )
+    # for n, row in keys.iterrows():
+    #     df["unu_key"].loc[
+    #         (df["product_category"] == row["product_category"])
+    #         & (df["item_type"] == row["item_type"])
+    #     ] = row["unu_keys"]
 
-    keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
-    for n, row in keys.iterrows():
-        df["unu_str"].loc[(df["unu_key"] == row["key"])] = row["description"]
+    # keys = pd.read_csv(pathfuncs.OUT_DIR + "/unukey_matches_one_after.csv", dtype=str)
+    # for n, row in keys.iterrows():
+    #     df["unu_key"].loc[
+    #         (df["product_category"] == row["product_category"])
+    #         & (df["item_type"] == row["item_type"])
+    #     ] = row["unu_keys"]
+    # logger.debug("ASSIGNED UNU KEYS: {}".format(len(df.loc[df["unu_key"] > ""])))
+
+    # keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
+    # for n, row in keys.iterrows():
+    #     df["unu_str"].loc[(df["unu_key"] == row["key"])] = row["description"]
 
     return df
 
@@ -258,6 +273,7 @@ def get_subsets():
         ["speakers", "405,403", "405"],
         ["heaters", "106,201", "106"],
         ["remotes", "201,401", "401"],
+        ["remotes", "404,401", "401"],
         ["aircon", "111,112", "112"],
         ["cooker", "202,203", "203"],
         ["scales", "801,201", "201"],
@@ -268,19 +284,21 @@ def get_subsets():
 def tweak(data, regexes):
     tweaks = [
         ["Mobile", "305", "^Telephone \(not mobile or smartphone\)$"],
-        # ["Lamp", "505", "\bled\b"],
+        ["Small home electrical", "305", regexes["telecom-wired"]],
         ["Lamp", "505", regexes["lighting-led"]],
         ["Large home electrical", "106", regexes["heater"]],
+        ["DSLR/video camera", "406", regexes["camera"]],
+        ["TV and gaming-related accessories", "405", regexes["speaker"]]
     ]
     for row in tweaks:
         terms = data.loc[data["product_category"] == row[0]]
         key = row[1]
         if issubclass(type(row[2]), str):
-            rx = re.compile(row[2])
+            rx = re.compile(row[2], re.IGNORECASE)
         else:
             rx = row[2]
         for i, term in terms.iterrows():
-            matches = rx.search(term["item_type"], re.IGNORECASE)
+            matches = rx.search(term["item_type"])
             if matches != None:
                 keys = data.at[i, "unu_keys"].split(",")
                 keys.append(key)
@@ -294,6 +312,21 @@ def tweak(data, regexes):
                 logger.debug("TWEAKED: {}".format(row[0]))
     return data
 
+def test_regex(data, regexes):
+    product_category = "Small home electrical"
+    product = "heater"
+    rx = regexes[product]
+    terms = data.loc[data["product_category"] == product_category]
+    for i, term in terms.iterrows():
+        matches = rx.search(term["item_type"])
+        if matches != None:
+            terms.at[i, "matched"] = 1
+            terms.at[i, "products"] = product
+            data.at[i, "matched"] = 1
+            data.at[i, "products"] = product
+    terms.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_testA_{}.csv".format(product))
+    data.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_testB_{}.csv".format(product))
+    return data
 
 if __name__ == "__main__":
 
@@ -311,16 +344,26 @@ if __name__ == "__main__":
     regexes = build_regexes()
     # Take the ORDS dataset, split the partner_product_category to item_type and group.
     data = get_item_types()
+    # test_regex(data, regexes)
+    # exit()
     # Run regexes using the "product map".
     result = run_regexes(regexes, data)
+    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_data_1.csv", index=False)
     # Run all regexes against the Misc category.
     result = run_regexes_misc(regexes, data)
+    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_data_2.csv", index=False)
     logger.debug("BEFORE AMENDMENTS")
     # Create csv summaries of regex results in the ./out folder.
     write_summaries(result, prefix="before")
     # Assign keys to the unmatched records and amend the subset keys.
     result = set_defaults(result)
+    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_data_3.csv", index=False)
     result = tweak(result, regexes)
+
+    keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
+    for n, row in keys.iterrows():
+        result["unu_str"].loc[(result["unu_keys"] == row["key"])] = row["description"]
+    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", index=False)
     logger.debug("AFTER AMENDMENTS")
     # Create csv summaries of amendments and defaults in the ./out folder.
     write_summaries(result, prefix="after")
