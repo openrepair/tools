@@ -219,30 +219,6 @@ def _write_subset_match(data, keys, title, prefix=""):
     return cats
 
 
-def assign_keys():
-
-    df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
-    )
-    df["unu_key"] = ""
-    df["unu_str"] = ""
-    df["product"] = df["partner_product_category"].apply(
-        lambda s: s.split("~").pop().strip()
-    )
-
-    keys = pd.read_csv(
-        pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", dtype=str
-    )
-    for n, row in keys.iterrows():
-        df["unu_key"].loc[
-            (df["product_category"] == row["product_category"])
-            & (df["product"] == row["product"])
-        ] = row["unu_keys"]
-        df["unu_str"].loc[(df["unu_key"] == row["unu_keys"])] = row["unu_str"]
-
-    return df
-
-
 # Some UNU cats are subsets of ORDS cats
 # e.g. lighting/LED lighting, Hi-Fi/speakers etc.
 def get_subsets():
@@ -268,6 +244,8 @@ def tweak(data, regexes):
         ["Large home electrical", "106", regexes["heater"]],
         ["DSLR/video camera", "406", regexes["camera"]],
         ["TV and gaming-related accessories", "405", regexes["speaker"]],
+        ["Misc", "901", "(alarm|detect)"],
+        ["Small home electrical", "901", "(alarm|detect)"],
     ]
     for row in tweaks:
         terms = data.loc[data["product_category"] == row[0]]
@@ -282,7 +260,6 @@ def tweak(data, regexes):
                 keys = data.at[i, "unu_keys"].split(",")
                 keys.append(key)
                 keys = list(set(list(filter(None, keys))))
-                data.at[i, "matched"] = 1
                 data.at[i, "unu_keys"] = key
 
                 prods = data.at[i, "products"].split(",")
@@ -359,17 +336,15 @@ if __name__ == "__main__":
     result = tweak(result, regexes)
     result = leftovers(result)
 
-    # Values of `matched`, `records` and `products` useful for checking the regexes.
-    keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
-    for n, row in keys.iterrows():
-        result["unu_str"].loc[(result["unu_keys"] == row["key"])] = row["description"]
-    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", index=False)
-
     logger.debug("AFTER AMENDMENTS")
     # Create csv summaries of amendments and defaults in the ./out folder.
     write_summaries(result, prefix="after")
 
-    exit()
-    # Append key to each individual record in the ORDS dataset.
-    data = assign_keys()
-    data.to_csv(pathfuncs.OUT_DIR + "/unukey_matched_data.csv", index=False)
+    # Values of `matched`, `matches` and `records` are useful for checking the regexes.
+    keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
+    for n, row in keys.iterrows():
+        result["unu_str"].loc[(result["unu_keys"] == row["key"])] = row["description"]
+    result.rename(columns={"unu_keys": "unu_key"}, inplace=True)
+    result.rename(columns={"products": "matches"}, inplace=True)
+    result.sort_values(["unu_key"], ascending=[True], inplace=True)
+    result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", index=False)
