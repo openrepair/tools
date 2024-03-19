@@ -23,8 +23,8 @@ def get_item_types():
         .sort_values(["product_category", "records"], ascending=[True, False])
     )
     df["matched"] = 0
-    df["unu_key"] = ""
     df["matches"] = ""
+    df["unu_key"] = ""
     df["unu_str"] = ""
     logger.debug("TOTAL NON-EMPTY UNIQUE ITEM TYPES: {}".format(len(df)))
 
