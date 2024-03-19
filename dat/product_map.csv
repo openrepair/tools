@@ -1,4 +1,4 @@
-product,product_category,unu_key,unu_id,ords_id
+product,product_category,unu_str,unu_key,ords_id
 air-conditioner,Aircon/dehumidifier,Air Conditioners (household installed and portable),111,1
 dehumidifier,Aircon/dehumidifier,"Other Cooling (f.i. dehumidifiers, heat pump dryers)",112,1
 fan,Fan,"Other Small Household (f.i. small ventilators, irons, clocks, adapters)",201,7
