@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-from funcs import *
-from joblib import load
-import pandas as pd
-import deepl
-import re
-
 """
 Series of scripts for translating ORDS `problem` text.
 
@@ -20,6 +14,13 @@ Step 3: ords_deepl_3check.py
 Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
+
+
+from funcs import *
+from joblib import load
+import pandas as pd
+import deepl
+import re
 
 
 # Fetch problem text that has not yet been translated.

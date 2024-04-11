@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# An attempt at using the DeepL translated problem text to train an NLP model using scikit.
+# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
+# WORK IN PROGRESS!
+
+# THIS VERSION SPLITS THE PROBLEM TEXT.
+# MORE USEFUL FOR TRAINING.
+
 from funcs import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -12,16 +19,6 @@ from joblib import dump
 from joblib import load
 from nltk import tokenize
 import nltk
-
-nltk.download("punkt")
-
-
-# An attempt at using the DeepL translated problem text to train an NLP model using scikit.
-# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
-# WORK IN PROGRESS!
-
-# THIS VERSION SPLITS THE PROBLEM TEXT.
-# MORE USEFUL FOR TRAINING.
 
 
 def format_path_out(filename, ext="csv", suffix=""):
@@ -509,9 +506,12 @@ def get_options():
         8: "experiment()",
     }
 
-
-# Enable selected funcs from this file to be imported from other files.
 if __name__ == "__main__":
+
+
+    # Enable selected funcs from this file to be imported from other files.
     file_suffix = "sentence"
     logger = logfuncs.init_logger(__file__)
+
+    nltk.download("punkt")
     exec_opt(get_options())

@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-from funcs import *
-import pandas as pd
-import deepl
-
 """
 Series of scripts for translating ORDS `problem` text.
 
@@ -18,6 +14,10 @@ Step 3: ords_deepl_3check.py
 Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
+
+from funcs import *
+import pandas as pd
+import deepl
 
 
 def find_existing_translation_for_col(problem, column):
@@ -143,6 +143,7 @@ def insert_data(data, columns=[]):
     print("New data written to {}".format(cfile))
 
     return True
+
 
 if __name__ == "__main__":
 

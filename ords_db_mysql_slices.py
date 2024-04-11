@@ -2,15 +2,10 @@
 
 from funcs import *
 import pandas as pd
-import json
-
-logger = logfuncs.init_logger(__file__)
 
 # MYSQL database functions.
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
-
-tablename = envfuncs.get_var('ORDS_DATA')
 
 
 # Events - date range is arbitrary, amend or omit.
@@ -27,9 +22,8 @@ def slice_events():
     WHERE event_date BETWEEN '{}' AND '{}'
     ORDER BY event_date, id
     """
-    dfsub = pd.DataFrame(dbfuncs.query_fetchall(
-        sql.format(tablename, '2018', '2022')))
-    write_to_files(dfsub, 'events', index=False)
+    dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename, "2018", "2022")))
+    write_to_files(dfsub, "events", index=False)
 
 
 # Products and repairs.
@@ -48,8 +42,8 @@ def slice_repairs():
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
     # Empty repair_barrier_if_end_of_life values
-    dfsub.fillna('', inplace=True)
-    write_to_files(dfsub, 'repairs', index=False)
+    dfsub.fillna("", inplace=True)
+    write_to_files(dfsub, "repairs", index=False)
 
 
 # Year of manufacture.
@@ -66,8 +60,8 @@ def slice_year_of_manufacture():
     ORDER BY product_category
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
-    dfsub['average'] = dfsub['average'].astype(int)
-    write_to_files(dfsub, 'year_of_manufacture', index=False, sample=0)
+    dfsub["average"] = dfsub["average"].astype(int)
+    write_to_files(dfsub, "year_of_manufacture", index=False, sample=0)
 
 
 # Product age.
@@ -86,7 +80,7 @@ def slice_product_age():
     ORDER BY product_category
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
-    write_to_files(dfsub, 'product_age', index=False, sample=0)
+    write_to_files(dfsub, "product_age", index=False, sample=0)
 
 
 # Product categories.
@@ -102,7 +96,7 @@ def slice_categories():
     ORDER BY product_category, id
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
-    write_to_files(dfsub, 'categories', index=False)
+    write_to_files(dfsub, "categories", index=False)
 
 
 # Item types.
@@ -124,14 +118,13 @@ def slice_item_types():
     ORDER BY product_category, records DESC
     """
     dfsub = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
-    write_to_files(dfsub, 'item_types', index=False)
+    write_to_files(dfsub, "item_types", index=False)
 
 
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(pathfuncs.DATA_DIR +
-                            '/iso_country_codes.csv')
+    countries = pd.read_csv(pathfuncs.DATA_DIR + "/iso_country_codes.csv")
 
     sql = """
     SELECT
@@ -143,11 +136,14 @@ def slice_countries():
     ORDER BY country, group_identifier
     """
 
-    dfsub = pd.merge(pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename))).reset_index(),
-                     countries,  how='inner',
-                     left_on=['iso'],
-                     right_on=['iso']).set_index('index')
-    write_to_files(dfsub, 'countries', index=False)
+    dfsub = pd.merge(
+        pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename))).reset_index(),
+        countries,
+        how="inner",
+        left_on=["iso"],
+        right_on=["iso"],
+    ).set_index("index")
+    write_to_files(dfsub, "countries", index=False)
 
 
 # Set sample to a fraction to return a subset of results.
@@ -157,16 +153,22 @@ def write_to_files(dfsub, suffix, index=False, sample=0):
     if sample:
         dfsub = dfsub.sample(frac=sample, replace=False, random_state=1)
 
-    path = '{}/{}_{}'.format(pathfuncs.OUT_DIR, tablename, suffix)
+    path = "{}/{}_{}".format(pathfuncs.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(dfsub, path, index)
     for result in results:
         print(result)
 
 
-slice_events()
-slice_repairs()
-slice_year_of_manufacture()
-slice_product_age()
-slice_categories()
-slice_item_types()
-slice_countries()
+if __name__ == "__main__":
+
+    logger = logfuncs.init_logger(__file__)
+
+    tablename = envfuncs.get_var("ORDS_DATA")
+
+    slice_events()
+    slice_repairs()
+    slice_year_of_manufacture()
+    slice_product_age()
+    slice_categories()
+    slice_item_types()
+    slice_countries()

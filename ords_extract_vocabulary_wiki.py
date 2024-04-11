@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+
+# Extract a vocabulary from a restarters.net wiki page for an ORDS category (Vacuum).
+
 from funcs import *
 import pandas as pd
 import re
@@ -9,19 +12,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk import word_tokenize
 
-logger = logfuncs.init_logger(__file__)
-
-# Extract a vocabulary from a restarters.net wiki page for an ORDS category (Vacuum).
-
 
 class LemmaTokenizer:
     def __init__(self):
         self.wnl = WordNetLemmatizer()
         # Remove numbers and punctuation.
-        self.rx = re.compile('[\W\d_]')
+        self.rx = re.compile("[\W\d_]")
 
     def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))]
+        return [
+            self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))
+        ]
 
 
 # [Simple HTML and XHTML parser](https://docs.python.org/3/library/html.parser.html)
@@ -29,10 +30,10 @@ class WikiHTMLParser(HTMLParser):
     lines = []
 
     def handle_data(self, data):
-        if self.lasttag == 'p':
+        if self.lasttag == "p":
             print(data)
             line = data.strip()
-            if line > '':
+            if line > "":
                 self.lines.append(line)
 
 
@@ -44,38 +45,39 @@ def fetch_text(url):
     return parser.lines
 
 
-tokenizer = LemmaTokenizer()
+if __name__ == "__main__":
 
-# [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
-# [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
-# [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-stopfile1 = open(pathfuncs.DATA_DIR + '/stopwords-english.txt', "r")
-# ORDS corpus custom stopwords.
-stopfile2 = open(pathfuncs.DATA_DIR + '/stopwords-english-repair.txt', "r")
-stoplist = stopfile1.read().replace("\n", ' ') + \
-    stopfile2.read().replace("\n", ' ')
-stopfile1.close()
-stopfile2.close()
-# Use same tokenizer on stopwords as used in the vectorizer.
-stop_tokens = tokenizer(stoplist)
+    logger = logfuncs.init_logger(__file__)
 
-tv = TfidfVectorizer(stop_words=stop_tokens, tokenizer=tokenizer)
+    tokenizer = LemmaTokenizer()
 
-logger.debug('*** STOPWORDS ***')
-logger.debug(tv.get_stop_words())
+    # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
+    # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
+    # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
+    stopfile1 = open(pathfuncs.DATA_DIR + "/stopwords-english.txt", "r")
+    # ORDS corpus custom stopwords.
+    stopfile2 = open(pathfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
+    stopfile1.close()
+    stopfile2.close()
+    # Use same tokenizer on stopwords as used in the vectorizer.
+    stop_tokens = tokenizer(stoplist)
 
-sentences = fetch_text('https://wiki.restarters.net/Vacuum_cleaners')
-logger.debug(sentences)
+    tv = TfidfVectorizer(stop_words=stop_tokens, tokenizer=tokenizer)
 
-tv.fit_transform(sentences)
+    logger.debug("*** STOPWORDS ***")
+    logger.debug(tv.get_stop_words())
 
-logger.debug('** VOCABULARY **')
-logger.debug(tv.vocabulary_)
+    sentences = fetch_text("https://wiki.restarters.net/Vacuum_cleaners")
+    logger.debug(sentences)
 
-df = pd.DataFrame({'term': tv.vocabulary_.keys(),
-                  'idx': tv.vocabulary_.values()})
-df.sort_values(by=['idx', 'term'],
-               ascending=True, inplace=True, ignore_index=True)
+    tv.fit_transform(sentences)
 
-path = pathfuncs.OUT_DIR + '/ords_vocabulary_wiki_Vacuum.csv'
-df.to_csv(path, index=False)
+    logger.debug("** VOCABULARY **")
+    logger.debug(tv.vocabulary_)
+
+    df = pd.DataFrame({"term": tv.vocabulary_.keys(), "idx": tv.vocabulary_.values()})
+    df.sort_values(by=["idx", "term"], ascending=True, inplace=True, ignore_index=True)
+
+    path = pathfuncs.OUT_DIR + "/ords_vocabulary_wiki_Vacuum.csv"
+    df.to_csv(path, index=False)

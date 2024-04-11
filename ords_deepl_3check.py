@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+"""
+Series of scripts for translating ORDS `problem` text.
+
+https://github.com/DeepLcom/deepl-python
+
+Step 1: ords_deepl_1setup.py
+    Table created, MySQL database required.
+Step 2: ords_deepl_2fetch.py
+    Compiles workload, translates, DeepL API key required.
+Step 3: ords_deepl_3check.py
+    Inspect data integrity.
+Step 4: ords_deepl_4backfill.py
+    Translate missing values for given languages.
+"""
+
 from funcs import *
 import pandas as pd
 
@@ -7,22 +22,6 @@ import pandas as pd
 if __name__ == "__main__":
 
     logger = logfuncs.init_logger(__file__)
-
-    """
-    Series of scripts for translating ORDS `problem` text.
-
-    https://github.com/DeepLcom/deepl-python
-
-    Step 1: ords_deepl_1setup.py
-        Table created, MySQL database required.
-    Step 2: ords_deepl_2fetch.py
-        Compiles workload, translates, DeepL API key required.
-    Step 3: ords_deepl_3check.py
-        Inspect data integrity.
-    Step 4: ords_deepl_4backfill.py
-        Translate missing values for given languages.
-    """
-
 
     # Language detection stats.
     logger.debug("*** DETECTED ***")
@@ -35,7 +34,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(dbfuncs.query_fetchall(sql))
     logger.debug(df)
 
-
     # Outlier languages detected.
     logger.debug("*** UNKNOWN LANGUAGE DETECTED***")
     sql = """
@@ -47,7 +45,6 @@ if __name__ == "__main__":
         """
     df = pd.DataFrame(dbfuncs.query_fetchall(sql))
     logger.debug(df)
-
 
     # Detected language does not match "known" language.
     # Note that "known" language could be incorrect.
@@ -73,7 +70,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df.to_csv(path, index=False)
 
-
     # Identical translations across languages.
     # Could be bad language detected or malformed problem text.
     # Write results to csv file.
@@ -96,7 +92,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df.to_csv(path, index=False)
 
-
     # Missing translations across languages.
     # Could have run out of DeepL credits before lang set completion.
     # Write results to csv file.
@@ -112,4 +107,3 @@ if __name__ == "__main__":
         """
     df = pd.DataFrame(dbfuncs.query_fetchall(sql))
     df.to_csv(path, index=False)
-
