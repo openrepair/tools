@@ -337,7 +337,7 @@ def exec_opt(options):
 def get_options():
     # Check requirements first!
     # "mock=True" allows for trial and error without using up API credits.
-    mock = False
+    mock = True
     # Create a clause to implement a filter.
     # e.g. clause = 'country = "GBR"'
     # clause = "TRUE"
