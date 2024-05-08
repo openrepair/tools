@@ -13,6 +13,7 @@ tablename = envfuncs.get_var('ORDS_DATA')
 
 # The data file maps categories and average weight estimates between ORDS and UNU-KEYS.
 # See dat/README.md for more details.
+# NOTE: New work in progress to map ORDS data to UNU Keys, see ords_regex_unukey_products.py
 weights = pd.read_csv(pathfuncs.DATA_DIR +
                       '/ords_product_category_unu_key_map.csv')
 

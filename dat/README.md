@@ -58,7 +58,7 @@ Maps the ORDS `product_category` values to a set known as "UNU Keys" produced by
 
 The UNU average weights (kgs) in the file are lifted from [E-waste statistics: Guidelines on classifications, reporting and indicators](https://www.researchgate.net/publication/271845217_E-waste_statistics_Guidelines_on_classifications_reporting_and_indicators).
 
-Not all ORDS categories can be directly mapped to other sets of product categories. Combining category maps with queries to find item types could produce better results.
+Not all ORDS categories can be directly mapped to other sets of product categories. Combining category maps with queries to find item types could produce better results. NOTE: New work in progress, see ords_regex_unukey_products.py
 
 The Restart Project compiles emissions and waste data that can be mapped to ORDS and UNU categories, for details [contact them directly](https://therestartproject.org/contact/).
 

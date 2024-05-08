@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 from funcs import *
+from joblib import dump
+from joblib import load
 import pandas as pd
 import re
-import csv
 
+# Fine-grain mapping of ORDS and UNU-KEYS using "products" rather than categories.
 
 def get_item_types():
 
@@ -31,10 +33,15 @@ def get_item_types():
     return df
 
 
-# Given a list of "terms" (actually mini-regexes), return a compiled regex for each product.
+# Given a list of mini-regex "terms", compile a regex for each product.
+# Requires a table of regex elements.
 def build_regexes():
 
-    rxelems = pd.read_csv(pathfuncs.DATA_DIR + "/product_regexes.csv", dtype=str)
+    data = pathfuncs.DATA_DIR + "/product_regex_elements.csv"
+    if not pathfuncs.check_path(data):
+        print("NOT FOUND: {}".format(data))
+        exit()
+    rxelems = pd.read_csv(data, dtype=str)
     built = {}
     regexes = {}
     regexes = regexes.fromkeys(rxelems.columns)
@@ -42,19 +49,19 @@ def build_regexes():
         pattern = miscfuncs.build_regex_string(rxelems[key].dropna().values)
         built[key] = pattern
         regexes[key] = re.compile(pattern, flags=re.IGNORECASE)
+    dump(regexes, pathfuncs.DATA_DIR + "/product_regexes.joblib")
 
-    out = open(pathfuncs.OUT_DIR + "/product_regexes_built.csv", "w")
-    z = csv.writer(out)
-    for new_k, new_v in built.items():
-        z.writerow([new_k, new_v])
-    out.close()
-    return regexes
+
+# Return a compiled regex for each product.
+def get_regexes():
+
+    return load(pathfuncs.DATA_DIR + "/product_regexes.joblib")
 
 
 # product,product_category,unu_key,unu_id,ords_id
 def run_regexes(regexes, data):
 
-    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_map.csv", dtype=str)
+    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_unukey_map.csv", dtype=str)
     result = {}
     result = result.fromkeys(map["unu_key"])
     x = 0
@@ -86,7 +93,7 @@ def run_regexes(regexes, data):
 # product,product_category,unu_key,unu_id,ords_id
 def run_regexes_misc(regexes, data):
 
-    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_map.csv", dtype=str)
+    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_unukey_map.csv", dtype=str)
     result = {}
     result = result.fromkeys(map["unu_key"])
     terms = data.loc[data["product_category"] == "Misc"]
@@ -117,21 +124,29 @@ def set_defaults(data):
             pathfuncs.OUT_DIR + "/unukey_matches_{}_before.csv".format(title), dtype=str
         )
         for n, row in keys.iterrows():
-            update = data["matched"].loc[
+            update = (
+                data["matched"]
+                .loc[
                     (data["product_category"] == row["product_category"])
                     & (data["product"] == row["product"])
-                ].index
-            data.loc[update, 'matched'] = 1
-            data.loc[update, 'unu_key'] = unu_key
+                ]
+                .index
+            )
+            data.loc[update, "matched"] = 1
+            data.loc[update, "unu_key"] = unu_key
 
     # Set default keys.
-    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_map_default.csv", dtype=str)
+    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_unukey_map_default.csv", dtype=str)
     for n, row in map.iterrows():
-        update = data["unu_key"].loc[
+        update = (
+            data["unu_key"]
+            .loc[
                 (data["product_category"] == row["product_category"])
                 & (data["matched"] == 0)
-            ].index
-        data.loc[update, 'unu_key'] = row["unu_key"]
+            ]
+            .index
+        )
+        data.loc[update, "unu_key"] = row["unu_key"]
 
     logger.debug("ASSIGNED UNU KEYS: {}".format(len(data.loc[data["unu_key"] > ""])))
 
@@ -270,14 +285,14 @@ def tweak(data, regexes):
 
 def leftovers(data):
 
-    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_map_leftovers.csv", dtype=str)
+    map = pd.read_csv(pathfuncs.DATA_DIR + "/product_unukey_map_leftovers.csv", dtype=str)
     for n, row in map.iterrows():
 
         update = data.loc[
-                (data["product_category"] == row["product_category"])
-                & (data["product"] == row["product"])
-            ].index
-        data.loc[update, 'unu_key'] = row["unu_key"]
+            (data["product_category"] == row["product_category"])
+            & (data["product"] == row["product"])
+        ].index
+        data.loc[update, "unu_key"] = row["unu_key"]
     return data
 
 
@@ -312,8 +327,11 @@ if __name__ == "__main__":
     # e.g. heaters in both Small/Large Home Electrical
     # See tweak() for current workaround.
 
-    # Take the product_regexes and compile a regex for each product.
-    regexes = build_regexes()
+    # Take the product_regex_elements and compile a regex for each product.
+    build_regexes()
+
+    # Fetch compiled regexes.
+    regexes = get_regexes()
 
     # Take the ORDS dataset, split and group the partner_product_category into products.
     data = get_item_types()
@@ -347,7 +365,7 @@ if __name__ == "__main__":
     keys = pd.read_csv(pathfuncs.DATA_DIR + "/unu_keys.csv", dtype=str)
     for n, row in keys.iterrows():
         update = result.loc[(result["unu_key"] == row["key"])].index
-        if len(update)>0:
-            result.loc[update, 'unu_str'] = row["description"]
+        if len(update) > 0:
+            result.loc[update, "unu_str"] = row["description"]
     result.sort_values(["unu_key"], ascending=[True], inplace=True)
     result.to_csv(pathfuncs.OUT_DIR + "/unukey_matches_final_results.csv", index=False)

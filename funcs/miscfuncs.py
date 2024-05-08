@@ -6,7 +6,7 @@ import json
 # Put together an "OR" regex string pattern from a list of lowercase terms.
 # With optional prefix/suffix captures of minimum length multilingual words.
 def build_regex_string(terms, pre=True, aft=True):
-    result = '(?i)('
+    result = '('
     if (pre == True):
         result += '([a-zß-ÿœ]{3,}[ -]?)?'
     if (len(terms) > 0):
