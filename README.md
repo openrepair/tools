@@ -43,6 +43,7 @@ It is compiled and published by the [Open Repair Alliance (ORA)](https://openrep
 * Tests
 * Data visualisation
 * Document all the things
+* Clean up poor quality code
 
 ## Licences & acknowledgments
 

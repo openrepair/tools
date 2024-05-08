@@ -11,8 +11,7 @@ from nltk.corpus import stopwords
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
-
-logger = logfuncs.init_logger(__file__)
+nltk.download('stopwords')
 
 
 # Using quest data for a single product category.
@@ -60,15 +59,19 @@ def log_vectors(title):
     # logger.debug(doc_vectors.toarray())
 
 
-docs = get_docs()
+if __name__ == "__main__":
 
-vectorizer = TfidfVectorizer()
-docvects = vectorizer.fit_transform(docs)
-log_vectors('#1 DEFAULT')
+    logger = logfuncs.init_logger(__file__)
 
-stop_words = set(stopwords.words('english'))
-tokenizer = LemmaTokenizer()
-token_stop = tokenizer(' '.join(stop_words))
-vectorizer = TfidfVectorizer(stop_words=token_stop, tokenizer=tokenizer)
-docvects = vectorizer.fit_transform(docs)
-log_vectors('#2 WITH STOPWORDS')
+    docs = get_docs()
+
+    vectorizer = TfidfVectorizer()
+    docvects = vectorizer.fit_transform(docs)
+    log_vectors('#1 DEFAULT')
+
+    stop_words = set(stopwords.words('english'))
+    tokenizer = LemmaTokenizer()
+    token_stop = tokenizer(' '.join(stop_words))
+    vectorizer = TfidfVectorizer(stop_words=token_stop, tokenizer=tokenizer)
+    docvects = vectorizer.fit_transform(docs)
+    log_vectors('#2 WITH STOPWORDS')

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# THIS VERSION DOES NOT SPLIT THE PROBLEM TEXT.
+# USEFUL FOR VALIDATION.
+
 from funcs import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -15,9 +18,6 @@ from ords_lang_training_sentence import (
     get_stopwords,
     get_alpha,
 )
-
-# THIS VERSION DOES NOT SPLIT THE PROBLEM TEXT.
-# USEFUL FOR VALIDATION.
 
 
 # For each entire problem text string.
@@ -306,6 +306,9 @@ def get_options():
 
 
 if __name__ == "__main__":
+
+    # Enable selected funcs from this file to be imported from other files.
     file_suffix = "problem"
     logger = logfuncs.init_logger(__file__)
+
     exec_opt(get_options())

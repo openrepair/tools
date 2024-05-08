@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
+# Challenge - build a Repair Haiku generator.
+# https://spacy.io/universe/project/spacy_syllables
+
 from funcs import *
 import pandas as pd
 import os
 import json
 from nltk import tokenize
-
-# Challenge - build a Repair Haiku generator.
-# https://spacy.io/universe/project/spacy_syllables
 
 
 def write_poem(lang="en", lines=5, verses=12):
@@ -204,5 +204,7 @@ def get_langs():
 
 
 if __name__ == "__main__":
+
     logger = logfuncs.init_logger(__file__)
+
     exec_opt(get_options())
