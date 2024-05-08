@@ -34,7 +34,6 @@ def get_item_types():
 
 
 # Given a list of mini-regex "terms", compile a regex for each product.
-# Requires a table of regex elements.
 def build_regexes():
 
     data = pathfuncs.DATA_DIR + "/product_regex_elements.csv"
@@ -328,7 +327,8 @@ if __name__ == "__main__":
     # See tweak() for current workaround.
 
     # Take the product_regex_elements and compile a regex for each product.
-    build_regexes()
+    # Requires a table of regex elements.
+    # build_regexes()
 
     # Fetch compiled regexes.
     regexes = get_regexes()
