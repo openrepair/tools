@@ -20,10 +20,10 @@ from nltk import word_tokenize
 from joblib import dump
 from joblib import load
 import nltk
-# nltk.download('punkt')
-nltk.download('wordnet')
-# nltk.download('stopwords')
 
+# nltk.download('punkt')
+nltk.download("wordnet")
+# nltk.download('stopwords')
 
 
 def get_datasets(product_category_id, language="en"):
@@ -59,21 +59,28 @@ def get_datasets(product_category_id, language="en"):
 
     logger.debug("*** NEW DATA ***")
     data = detect_language(
-        clean_text(jdata.loc[(jdata.fault_type_q.isna()) & (jdata.fault_type_v.isna())])
+        textfuncs.clean_text(
+            jdata.loc[(jdata.fault_type_q.isna()) & (jdata.fault_type_v.isna())],
+            "problem",
+        )
     )
     data = data.loc[data.language == language]
     data.drop(columns=["fault_type_q", "fault_type_v"], inplace=True)
     logger.debug(data)
 
     logger.debug("*** VAL DATA ***")
-    valdata = detect_language(clean_text(jdata.loc[(jdata.fault_type_v.notna())]))
+    valdata = detect_language(
+        textfuncs.clean_text(jdata.loc[(jdata.fault_type_v.notna())])
+    )
     valdata = valdata.loc[valdata.language == language]
     valdata.rename(columns={"fault_type_v": "fault_type"}, inplace=True)
     valdata.drop(columns="fault_type_q", inplace=True)
     logger.debug(valdata)
 
     logger.debug("*** QUEST DATA ***")
-    questdata = detect_language(clean_text(jdata.loc[(jdata.fault_type_q.notna())]))
+    questdata = detect_language(
+        textfuncs.clean_text(jdata.loc[(jdata.fault_type_q.notna())])
+    )
     questdata = questdata.loc[questdata.language == language]
     questdata.rename(columns={"fault_type_q": "fault_type"}, inplace=True)
     questdata.drop(columns="fault_type_v", inplace=True)
@@ -84,41 +91,6 @@ def get_datasets(product_category_id, language="en"):
         "valdata": valdata,
         "data": data,
     }
-
-
-def clean_text(data, dropna=True):
-
-    # Make sure there is always a space after a period, else sentences won't be split.
-    data.replace(
-        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
-        {"problem": "\\2. \\3"},
-        regex=True,
-        inplace=True,
-    )
-    # Remove HTML symbols (&gt; features a lot)
-    data.replace(
-        {"problem": r"(?i)(&[\w\s]+;)"}, {"problem": ""}, regex=True, inplace=True
-    )
-    # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
-    data.replace(
-        {"problem": r"(?i)(([0-9]+)?\.?[0-9\s]+kg)"},
-        {"problem": ""},
-        regex=True,
-        inplace=True,
-    )
-    # Remove strange codes often found prefixing `problem` strings.
-    data.replace(
-        {"problem": r"(?i)^(\W|\d+)([\d|\W]+)?"},
-        {"problem": ""},
-        regex=True,
-        inplace=True,
-    )
-    # Trim whitespace from `problem` strings.
-    data["problem"].str.strip()
-    if dropna:
-        # Drop `problem` values that may be empty after the replacements and trimming.
-        data.dropna(subset=["problem"], inplace=True)
-    return data
 
 
 # Use a pre-trained model to detect and set the language.
