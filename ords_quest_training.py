@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 
-from funcs import *
-import pandas as pd
-import re
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn import metrics
-from sklearn import model_selection
-from nltk.stem import WordNetLemmatizer
-from nltk import word_tokenize
-from joblib import dump
-from joblib import load
 
 """
 A rudimentary attempt at using Quest data to train an NLP model using scikit-learn.
@@ -93,19 +82,30 @@ The following "test" was conducted on the 202303 dataset:
     14.29%	Dustbag/canister        (-35.71%)
 """
 
+from funcs import *
+import pandas as pd
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import metrics
+from sklearn import model_selection
+from nltk.stem import WordNetLemmatizer
+from nltk import word_tokenize
+from joblib import dump
+from joblib import load
+
 
 # Split value is the fraction to take for validation, e.g. 0.3
 def dump_data(data, countries, split=0):
 
-    logger.debug('*** RAW DATA ***')
+    logger.debug("*** RAW DATA ***")
     logger.debug(len(data))
     # Filter out NaNs in problem column.
-    data.dropna(axis='rows', subset=[
-        'problem'], inplace=True, ignore_index=True)
-    logger.debug('*** NO NAN DATA ***')
+    data.dropna(axis="rows", subset=["problem"], inplace=True, ignore_index=True)
+    logger.debug("*** NO NAN DATA ***")
     logger.debug(len(data))
-    data = data[data['country'].isin(countries)]
-    logger.debug('*** COUNTRY DATA ***')
+    data = data[data["country"].isin(countries)]
+    logger.debug("*** COUNTRY DATA ***")
     logger.debug(len(data))
     # Filter for string length. Earlier quests often contained very short problem text.
     # However, this can leave almost no data for training.
@@ -114,14 +114,14 @@ def dump_data(data, countries, split=0):
     # logger.debug(len(data))
 
     # Select useful columns and rows.
-    data = data.reindex(
-        columns=['id_ords', 'fault_type', 'problem'])
+    data = data.reindex(columns=["id_ords", "fault_type", "problem"])
 
     if split != 0:
         # Take % of the data for validation.
-        data_val = data.groupby(['fault_type']).sample(
-            frac=split, replace=False, random_state=1)
-        logger.debug('*** VALIDATION DATA ***')
+        data_val = data.groupby(["fault_type"]).sample(
+            frac=split, replace=False, random_state=1
+        )
+        logger.debug("*** VALIDATION DATA ***")
         logger.debug(len(data_val))
         logger.debug(len(data_val) / len(data))
         # Remaining % of the data is for training.
@@ -130,13 +130,13 @@ def dump_data(data, countries, split=0):
         data_val = pd.DataFrame()
         data_train = data
 
-    logger.debug('*** TRAINING DATA ***')
+    logger.debug("*** TRAINING DATA ***")
     logger.debug(len(data_train))
     logger.debug(len(data_train) / len(data))
 
     # Save the data to the 'out' directory in csv format for use later.
-    data_train.to_csv(format_path('ords_quest_training_data'), index=False)
-    data_val.to_csv(format_path('ords_quest_validation_data'), index=False)
+    data_train.to_csv(format_path("ords_quest_training_data"), index=False)
+    data_val.to_csv(format_path("ords_quest_validation_data"), index=False)
 
 
 # Most of the quest data returns an alpha of 0.01.
@@ -146,19 +146,29 @@ def dump_data(data, countries, split=0):
 def get_alpha(data, labels, vects, search=False, refit=False):
     if search:
         # Try out some alpha values to find the best one for this data.
-        params = {'alpha': [0, 0.001, 0.01, 0.1, 5, 10], }
+        params = {
+            "alpha": [0, 0.001, 0.01, 0.1, 5, 10],
+        }
         # Instantiate the search with the model we want to try and fit it on the training data.
         cvval = 5
         if len(data) < cvval:
             cvval = len(data)
-        multinomial_nb_grid = model_selection.GridSearchCV(MultinomialNB(
-        ), param_grid=params, scoring='f1_macro', n_jobs=-1, cv=cvval, refit=False, verbose=2)
+        multinomial_nb_grid = model_selection.GridSearchCV(
+            MultinomialNB(),
+            param_grid=params,
+            scoring="f1_macro",
+            n_jobs=-1,
+            cv=cvval,
+            refit=False,
+            verbose=2,
+        )
         multinomial_nb_grid.fit(vects, labels)
-        msg = '** TRAIN {}: classifier best alpha value(s): {}'.format(
-            quest, multinomial_nb_grid.best_params_)
+        msg = "** TRAIN {}: classifier best alpha value(s): {}".format(
+            quest, multinomial_nb_grid.best_params_
+        )
         logger.debug(msg)
         print(msg)
-        return multinomial_nb_grid.best_params_['alpha']
+        return multinomial_nb_grid.best_params_["alpha"]
     else:
         return 0.01
 
@@ -167,17 +177,18 @@ def get_alpha(data, labels, vects, search=False, refit=False):
 class LemmaTokenizer:
     def __init__(self):
         self.wnl = WordNetLemmatizer()
-        self.rx = re.compile('[\W\d_]')
+        self.rx = re.compile("[\W\d_]")
 
     def __call__(self, doc):
-        return [self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))]
+        return [
+            self.wnl.lemmatize(t) for t in word_tokenize(doc) if (not self.rx.search(t))
+        ]
 
 
 def get_stopwords():
-    stopfile1 = open(pathfuncs.DATA_DIR + '/stopwords-english.txt', "r")
-    stopfile2 = open(pathfuncs.DATA_DIR + '/stopwords-english-repair.txt', "r")
-    stoplist = stopfile1.read().replace("\n", ' ') + \
-        stopfile2.read().replace("\n", ' ')
+    stopfile1 = open(pathfuncs.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile2 = open(pathfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
     return stoplist
@@ -213,23 +224,25 @@ def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
     # Get the alpha value. Use search=True to find a good value, or False for default.
     alpha = get_alpha(column, labels, feature_vects, search=False)
     # Other classifiers are available!
-    nb_classifier = MultinomialNB(
-        force_alpha=True, alpha=alpha)
+    nb_classifier = MultinomialNB(force_alpha=True, alpha=alpha)
 
-    logger.debug('** TRAIN : vectorizer ~ shape **')
+    logger.debug("** TRAIN : vectorizer ~ shape **")
     logger.debug(feature_vects.shape)
-    logger.debug('** TRAIN : vectorizer ~ feature names **')
+    logger.debug("** TRAIN : vectorizer ~ feature names **")
     logger.debug(vectorizer.get_feature_names_out())
 
     # Fit the data.
     nb_classifier.fit(feature_vects, labels)
-    logger.debug('** TRAIN : nb_classifier: params **')
+    logger.debug("** TRAIN : nb_classifier: params **")
     logger.debug(nb_classifier.get_params())
 
     # Get predictions.
     preds = nb_classifier.predict(feature_vects)
-    logger.debug('** TRAIN : nb_classifier: F1 SCORE: {}'.format(
-        metrics.f1_score(labels, preds, average='macro')))
+    logger.debug(
+        "** TRAIN : nb_classifier: F1 SCORE: {}".format(
+            metrics.f1_score(labels, preds, average="macro")
+        )
+    )
     logger.debug(preds)
 
     # Save the classifier and vectoriser objects for use later.
@@ -237,13 +250,13 @@ def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
     dump(vectorizer, tdffile)
 
     # Save predictions to 'out' directory in csv format.
-    data.loc[:, 'prediction'] = preds
-    data.to_csv(format_path('ords_quest_training_results'), index=False)
+    data.loc[:, "prediction"] = preds
+    data.to_csv(format_path("ords_quest_training_results"), index=False)
 
     # Save prediction misses.
-    misses = data[(data['fault_type'] != data['prediction'])]
+    misses = data[(data["fault_type"] != data["prediction"])]
     logger.debug(misses)
-    misses.to_csv(format_path('ords_quest_training_misses'), index=False)
+    misses.to_csv(format_path("ords_quest_training_misses"), index=False)
 
 
 def do_validation(data):
@@ -253,137 +266,151 @@ def do_validation(data):
 
     # Get the classifier and vectoriser that were fitted for this task.
     nb_classifier = load(clsfile)
-    logger.debug('** VAL : classifier {}'.format(type(nb_classifier)))
+    logger.debug("** VAL : classifier {}".format(type(nb_classifier)))
     vectorizer = load(tdffile)
-    logger.debug('** VAL : vectorizer {}'.format(type(vectorizer)))
+    logger.debug("** VAL : vectorizer {}".format(type(vectorizer)))
 
     # Get the predictions
     feature_vects = vectorizer.transform(column)
     preds = nb_classifier.predict(feature_vects)
-    logger.debug('** VAL : nb_classifier: F1 SCORE: {}'.format(
-        metrics.f1_score(labels, preds, average='macro')))
-    logger.debug(metrics.classification_report(
-        labels, preds))
+    logger.debug(
+        "** VAL : nb_classifier: F1 SCORE: {}".format(
+            metrics.f1_score(labels, preds, average="macro")
+        )
+    )
+    logger.debug(metrics.classification_report(labels, preds))
 
     # Predictions output for inspection.
-    data.loc[:, 'prediction'] = preds
-    data.to_csv(format_path('ords_quest_validation_results'), index=False)
+    data.loc[:, "prediction"] = preds
+    data.to_csv(format_path("ords_quest_validation_results"), index=False)
 
     # Prediction misses for inspection.
-    misses = data[(data['fault_type'] != data['prediction'])]
+    misses = data[(data["fault_type"] != data["prediction"])]
     logger.debug(misses)
-    misses.to_csv(format_path('ords_quest_validation_misses'), index=False)
+    misses.to_csv(format_path("ords_quest_validation_misses"), index=False)
 
 
 def do_test(data, category, countries):
 
-    data.dropna(axis='rows', subset=[
-        'problem'], inplace=True, ignore_index=True)
-    data = data[(data['product_category'] == category)
-                & (data['country'].isin(countries))]
+    data.dropna(axis="rows", subset=["problem"], inplace=True, ignore_index=True)
+    data = data[
+        (data["product_category"] == category) & (data["country"].isin(countries))
+    ]
 
     column = data.problem
 
     # Get the classifier and vectoriser that were fitted for this task.
     nb_classifier = load(clsfile)
-    logger.debug('** TEST : classifier {}'.format(type(nb_classifier)))
+    logger.debug("** TEST : classifier {}".format(type(nb_classifier)))
     vectorizer = load(tdffile)
-    logger.debug('** TEST : vectorizer {}'.format(type(vectorizer)))
+    logger.debug("** TEST : vectorizer {}".format(type(vectorizer)))
 
     # Get the predictions.
     feature_vects = vectorizer.transform(column)
     preds = nb_classifier.predict(feature_vects)
 
     # Predictions output.
-    data.loc[:, 'prediction'] = preds
-    data.to_csv(format_path('ords_quest_test_results'), index=False)
+    data.loc[:, "prediction"] = preds
+    data.to_csv(format_path("ords_quest_test_results"), index=False)
 
 
-def format_path(filename, ext='csv'):
-    return '{}/{}_{}.{}'.format(pathfuncs.OUT_DIR, filename, quest, ext)
+def format_path(filename, ext="csv"):
+    return "{}/{}_{}.{}".format(pathfuncs.OUT_DIR, filename, quest, ext)
 
 
-# START
+if __name__ == "__main__":
 
+    logger = logfuncs.init_logger(__file__)
 
-# Available quest datasets.
-# See dat/quests for details.
-quests = [
-    tuple(['Compcat-Laptops', 'computers/compcat_laptops.csv', 'Laptop']),
-    tuple(['Compcat-Desktops', 'computers/compcat_laptops.csv', 'Desktop PC']),
-    tuple(['MobiFix', 'mobiles/mobifix.csv', 'Mobiles']),
-    tuple(['PrintCat', 'printers/printcat.csv', 'Printer/scanner']),
-    tuple(['TabiCat', 'tablets/tabicat.csv', 'Tablet']),
-    tuple(['DustUp', 'vacuums/dustup.csv', 'Vacuum'])
-]
+    # Available quest datasets.
+    # See dat/quests for details.
+    quests = [
+        tuple(["Compcat-Laptops", "computers/compcat_laptops.csv", "Laptop"]),
+        tuple(["Compcat-Desktops", "computers/compcat_laptops.csv", "Desktop PC"]),
+        tuple(["MobiFix", "mobiles/mobifix.csv", "Mobiles"]),
+        tuple(["PrintCat", "printers/printcat.csv", "Printer/scanner"]),
+        tuple(["TabiCat", "tablets/tabicat.csv", "Tablet"]),
+        tuple(["DustUp", "vacuums/dustup.csv", "Vacuum"]),
+    ]
 
-# Select a dataset 0 to 5.
-quest, path, category = quests[5]
+    # Select a dataset 0 to 5.
+    quest, path, category = quests[5]
 
-logger = logfuncs.init_logger('ords_quest_training_' + quest)
+    logger = logfuncs.init_logger("ords_quest_training_" + quest)
 
-# Path to the classifier and vectoriser objects for dump/load.
-clsfile = format_path('ords_quest_obj_nbcl', 'joblib')
-tdffile = format_path('ords_quest_obj_tdif', 'joblib')
+    # Path to the classifier and vectoriser objects for dump/load.
+    clsfile = format_path("ords_quest_obj_nbcl", "joblib")
+    tdffile = format_path("ords_quest_obj_tdif", "joblib")
 
-# Quest data is multi-lingual and NLP tends to require a single language.
-# Using English stopwords/vocabulary will require English language text.
-# Filter for subset of records with English language text.
-iso_list = ['GBR', 'USA']
-# Other countries with en lang `problem` (only a few dozen more records)
-# ['AUS', 'IRL', 'ISL', 'JEY', 'NOR', 'NZL', 'SWE']
+    # Quest data is multi-lingual and NLP tends to require a single language.
+    # Using English stopwords/vocabulary will require English language text.
+    # Filter for subset of records with English language text.
+    iso_list = ["GBR", "USA"]
+    # Other countries with en lang `problem` (only a few dozen more records)
+    # ['AUS', 'IRL', 'ISL', 'JEY', 'NOR', 'NZL', 'SWE']
 
-# Get vocabulary for `product_category` from list of terms after stopwords extracted.
-# See `ords_extract_vocabulary.py`
-vocabulary = False
-# dfvocab = pd.read_csv(pathfuncs.OUT_DIR + '/ords_vocabulary_problem.csv',
-#                     dtype=str)
-# vocabulary = list(dfvocab.loc[dfvocab.category == category].groupby(
-#     'term', sort=False).groups)
+    # Get vocabulary for `product_category` from list of terms after stopwords extracted.
+    # See `ords_extract_vocabulary.py`
+    vocabulary = False
+    # dfvocab = pd.read_csv(pathfuncs.OUT_DIR + '/ords_vocabulary_problem.csv',
+    #                     dtype=str)
+    # vocabulary = list(dfvocab.loc[dfvocab.category == category].groupby(
+    #     'term', sort=False).groups)
 
-# Use stopwords?
-stopwords = False
-# stopwords = get_stopwords()
+    # Use stopwords?
+    stopwords = False
+    # stopwords = get_stopwords()
 
-# Use tokenisation?
-tokenizer = False
-# tokenizer = LemmaTokenizer()
+    # Use tokenisation?
+    tokenizer = False
+    # tokenizer = LemmaTokenizer()
 
-# # Initialise the training and (optional) validation datasets.
-data = pd.read_csv(pathfuncs.DATA_DIR + '/quests/' + path,
-                   dtype=str, keep_default_na=False, na_values="")
+    # # Initialise the training and (optional) validation datasets.
+    data = pd.read_csv(
+        pathfuncs.DATA_DIR + "/quests/" + path,
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
+    )
 
-# Do validation step?
-validate = False
-# If validating, take a fraction of corpus, e.g. 0.3
-splitval = 0
+    # Do validation step?
+    validate = False
+    # If validating, take a fraction of corpus, e.g. 0.3
+    splitval = 0
 
-logger.debug('*** quest={} ***'.format(quest))
-logger.debug('*** countries={} ***'.format(iso_list))
-logger.debug('*** validate={} ***'.format(validate))
-logger.debug('*** splitval={} ***'.format(splitval))
-logger.debug('*** vocabulary={} ***'.format(vocabulary))
-logger.debug('*** stopwords={} ***'.format(stopwords))
-logger.debug('*** tokenizer={} ***'.format(tokenizer))
+    logger.debug("*** quest={} ***".format(quest))
+    logger.debug("*** countries={} ***".format(iso_list))
+    logger.debug("*** validate={} ***".format(validate))
+    logger.debug("*** splitval={} ***".format(splitval))
+    logger.debug("*** vocabulary={} ***".format(vocabulary))
+    logger.debug("*** stopwords={} ***".format(stopwords))
+    logger.debug("*** tokenizer={} ***".format(tokenizer))
 
-dump_data(data, iso_list, splitval)
+    dump_data(data, iso_list, splitval)
 
-# Use the dumped training dataset.
-data = pd.read_csv(format_path('ords_quest_training_data'),
-                   dtype=str, keep_default_na=False, na_values="")
-do_training(data, tokenizer=tokenizer,
-            stopwords=stopwords, vocabulary=vocabulary)
+    # Use the dumped training dataset.
+    data = pd.read_csv(
+        format_path("ords_quest_training_data"),
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
+    )
+    do_training(data, tokenizer=tokenizer, stopwords=stopwords, vocabulary=vocabulary)
 
-if validate:
-    # Use the dumped validation dataset or provide other dataset.
-    data = pd.read_csv(format_path('ords_quest_validation_data'),
-                       dtype=str, keep_default_na=False, na_values="")
-    do_validation(data)
+    if validate:
+        # Use the dumped validation dataset or provide other dataset.
+        data = pd.read_csv(
+            format_path("ords_quest_validation_data"),
+            dtype=str,
+            keep_default_na=False,
+            na_values="",
+        )
+        do_validation(data)
 
-# Read the entire ORDS export.
-data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
-# The function will filter the data for the appropriate product_category.
-# The subset will contain the training and validation data
-# but does not have a fault_type column and id_ords may not match.
-# Early ORDS exports did not have permanent unique identifiers.
-do_test(data, category, iso_list)
+    # Read the entire ORDS export.
+    data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
+    # The function will filter the data for the appropriate product_category.
+    # The subset will contain the training and validation data
+    # but does not have a fault_type column and id_ords may not match.
+    # Early ORDS exports did not have permanent unique identifiers.
+    do_test(data, category, iso_list)

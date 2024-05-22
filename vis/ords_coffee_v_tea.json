@@ -1,62 +1,62 @@
-{
-    "BEL": [
-        {
-            "product": "Coffee maker",
-            "records": 1123
-        },
-        {
-            "product": "Kettle",
-            "records": 216
-        }
-    ],
-    "DEU": [
-        {
-            "product": "Coffee maker",
-            "records": 714
-        },
-        {
-            "product": "Kettle",
-            "records": 291
-        }
-    ],
-    "DNK": [
-        {
-            "product": "Coffee maker",
-            "records": 164
-        },
-        {
-            "product": "Kettle",
-            "records": 75
-        }
-    ],
-    "FRA": [
-        {
-            "product": "Coffee maker",
-            "records": 328
-        },
-        {
-            "product": "Kettle",
-            "records": 70
-        }
-    ],
-    "GBR": [
-        {
-            "product": "Coffee maker",
-            "records": 330
-        },
-        {
-            "product": "Kettle",
-            "records": 719
-        }
-    ],
-    "NLD": [
-        {
-            "product": "Coffee maker",
-            "records": 3443
-        },
-        {
-            "product": "Kettle",
-            "records": 640
-        }
-    ]
-}
+[
+    {
+        "product": "Coffee maker",
+        "records": 1436
+    },
+    {
+        "product": "Kettle",
+        "records": 257
+    },
+    {
+        "product": "Kettle",
+        "records": 56
+    },
+    {
+        "product": "Coffee maker",
+        "records": 911
+    },
+    {
+        "product": "Kettle",
+        "records": 349
+    },
+    {
+        "product": "Coffee maker",
+        "records": 361
+    },
+    {
+        "product": "Kettle",
+        "records": 157
+    },
+    {
+        "product": "Coffee maker",
+        "records": 460
+    },
+    {
+        "product": "Kettle",
+        "records": 118
+    },
+    {
+        "product": "Coffee maker",
+        "records": 474
+    },
+    {
+        "product": "Kettle",
+        "records": 930
+    },
+    {
+        "product": "Coffee maker",
+        "records": 51
+    },
+    {
+        "product": "Coffee maker",
+        "records": 4297
+    },
+    {
+        "product": "Kettle",
+        "records": 764
+    },
+    {
+        "product": "Kettle",
+        "records": 64
+    }
+]

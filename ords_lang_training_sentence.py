@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# An attempt at using the DeepL translated problem text to train an NLP model using scikit.
+# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
+# WORK IN PROGRESS!
+
+# THIS VERSION SPLITS THE PROBLEM TEXT.
+# MORE USEFUL FOR TRAINING.
+
 from funcs import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -13,68 +20,9 @@ from joblib import load
 from nltk import tokenize
 import nltk
 
-nltk.download("punkt")
-
-
-# An attempt at using the DeepL translated problem text to train an NLP model using scikit.
-# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
-# WORK IN PROGRESS!
-
-# THIS VERSION SPLITS THE PROBLEM TEXT.
-# MORE USEFUL FOR TRAINING.
-
 
 def format_path_out(filename, ext="csv", suffix=""):
     return "{}/{}_{}.{}".format(pathfuncs.OUT_DIR, filename, suffix, ext)
-
-
-def clean_text(data, dedupe=True, dropna=True):
-    # Remove HTML symbols (&gt; features a lot)
-    data.replace(
-        {"problem": r"(?i)(&[\w\s]+;)"},
-        {"problem": ""},
-        regex=True,
-        inplace=True,
-    )
-    # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
-    data.replace(
-        {"problem": r"(?i)(([0-9]+)?\.?[0-9\s]+kg)"},
-        {"problem": ""},
-        regex=True,
-        inplace=True,
-    )
-    # Remove strange codes often found prefixing `problem` strings.
-    data.replace(
-        {"problem": r"(?i)^(\W|\d+)([\d|\W]+)?"},
-        {"problem": ""},
-        regex=True,
-        inplace=True,
-    )
-    # Remove multiple punctuation characters.
-    data.replace(
-        {"problem": r"(?i)([\.\?\-*,;:]{2,})"},
-        {"problem": " "},
-        regex=True,
-        inplace=True,
-    )
-    # Make sure there is always a space after a period, else sentences won't be split.
-    data.replace(
-        {"problem": r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
-        {"problem": "\\2. \\3"},
-        regex=True,
-        inplace=True,
-    )
-    # Trim whitespace from `problem` strings.
-    data["problem"] = data["problem"].str.strip()
-    if dropna:
-        # Drop `problem` values that may be empty after the replacements and trimming.
-        data.dropna(subset=["problem"], inplace=True)
-        print(data.index.size)
-    if dedupe:
-        # Dedupe the `problem` values.
-        data.drop_duplicates(subset=["problem"], inplace=True)
-        print(data.index.size)
-    return data
 
 
 # Use this to check for best value and set it as default
@@ -157,7 +105,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
             .rename(columns={"problem": "problem_orig"})
             .rename(columns={lang: "problem"})
         )
-        df_tmp = clean_text(df_tmp)
+        df_tmp = textfuncs.clean_text(df_tmp, "problem")
         print("Splitting sentences for lang {}".format(lang))
         for i, row in df_tmp.iterrows():
             if len(row.problem) > 0:
@@ -510,8 +458,11 @@ def get_options():
     }
 
 
-# Enable selected funcs from this file to be imported from other files.
 if __name__ == "__main__":
+
+    # Enable selected funcs from this file to be imported from other files.
     file_suffix = "sentence"
     logger = logfuncs.init_logger(__file__)
+
+    nltk.download("punkt")
     exec_opt(get_options())

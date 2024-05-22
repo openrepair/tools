@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from funcs import *
-import pandas as pd
-
 """
 Series of scripts for translating ORDS `problem` text.
 
@@ -17,6 +14,9 @@ Step 3: ords_deepl_3check.py
 Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
+
+from funcs import *
+import pandas as pd
 
 
 def backup_only():
@@ -107,5 +107,7 @@ def get_options():
 
 
 if __name__ == "__main__":
+
     logger = logfuncs.init_logger(__file__)
+
     exec_opt(get_options())

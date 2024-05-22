@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# THIS VERSION DOES NOT SPLIT THE PROBLEM TEXT.
+# USEFUL FOR VALIDATION.
+
 from funcs import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -11,13 +14,9 @@ from joblib import dump
 from joblib import load
 from ords_lang_training_sentence import (
     format_path_out,
-    clean_text,
     get_stopwords,
     get_alpha,
 )
-
-# THIS VERSION DOES NOT SPLIT THE PROBLEM TEXT.
-# USEFUL FOR VALIDATION.
 
 
 # For each entire problem text string.
@@ -33,7 +32,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
     df_in.rename({"language_known": "language"}, axis=1, inplace=True)
     df_in["problem_orig"] = df_in["problem"]
     logger.debug("Total translation records: {}".format(df_in.index.size))
-    df_in = clean_text(df_in)
+    df_in = textfuncs.clean_text(df_in, "problem")
     df_in["problem"].apply(lambda s: len(str(s)) in range(minchars, maxchars + 1))
     df_in.dropna(inplace=True, axis=0)
 
@@ -306,6 +305,9 @@ def get_options():
 
 
 if __name__ == "__main__":
+
+    # Enable selected funcs from this file to be imported from other files.
     file_suffix = "problem"
     logger = logfuncs.init_logger(__file__)
+
     exec_opt(get_options())
