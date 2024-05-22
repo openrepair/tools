@@ -76,23 +76,19 @@
         document.addEventListener("DOMContentLoaded", function (event) {
 
             const data = {};
-
             fetch('data.json')
                 .then((response) => response.json())
                 .then((json) => assign(json));
-
             document.getElementById('go').addEventListener('click', function (e) {
                 e.preventDefault();
-                generate(document.getElementById('lang').value, Math.round(Math.random() * 4));
+                generate(document.getElementById('lang').value, Math.round(Math.random() * 5));
             }, false);
         });
 
         function generate(lang, seed) {
             if (seed > 0) {
-                console.log('seeded: ' + seed);
                 // Roll for more chances of 0, free form verses.
                 seed = Math.round(Math.random()) ? seed : 0;
-                console.log('going with: ' + seed);
             }
             const fifth = data[lang].length / 5;
             const a = data[lang].slice(0, fifth);
@@ -100,53 +96,96 @@
             const c = data[lang].slice(fifth * 2, fifth * 3);
             const d = data[lang].slice(fifth * 3, fifth * 4);
             const e = data[lang].slice(fifth * 4, data[lang].length - 1);
-            lines = [a, b, c, d, e]
-            let poem = '';
-            for (i = 0; i < 3; i++) {
-                for (j = 0; j < 5; j++) {
-                    if (seed == 1) {
-                        line = lines[j][Math.round(Math.random() * (lines[j].length - 1))];
-                    } else if (seed == 2) {
-                        n = Math.abs(j - 4);
-                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
-                    } else if (seed == 3) {
-                        if (j < 2) {
-                            n = j + 1;
-                        } else if (j == 2) {
-                            n = 4;
-                        } else if (j == 3) {
-                            n = 3;
-                        } else if (j == 4) {
-                            n = 0;
-                        }
-                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
-                    } else if (seed == 4) {
-                        if (i == 0) {
-                            n = j;
-                        } else if (i == 1) {
-                            if (j == 0) {
-                                n = 3;
-                            } else if (j == 1) {
-                                n = 2;
-                            } else if (j == 2) {
-                                n = 1;
-                            } else if (j == 3) {
-                                n = 2;
-                            } else if (j == 4) {
-                                n = 3;
-                            }
-                        } else {
-                            n = Math.abs(j - 4);
-                        }
-                        line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+            document.lines = [a, b, c, d, e]
+            document.getElementById('poem').innerText = '';
+            if (seed == 5) {
+                // 1 stanza line by line
+                let j = 0;
+                let n = 5;
+                let line = document.lines[j][Math.round(Math.random() * (document.lines[j].length - 1))];
+                document.getElementById('poem').innerText += line + "\n";
+                j++;
+                let x = setInterval(function () {
+                    if (j == 1) {
+                        n = 2;
+                    } else if (j == 2) {
+                        n = 4;
+                    } else if (j == 3) {
+                        n = 2;
+                    } else if (j == 4) {
+                        n = 0;
                     } else {
-                        line = data[lang][Math.round(Math.random() * (data[lang].length - 1))];
+                        clearInterval(x)
+                        return;
                     }
-                    poem = poem + line + "\n";
-                }
-                poem = poem + "\n";
+                    line = document.lines[n][Math.round(Math.random() * (document.lines[n].length - 1))];
+                    document.getElementById('poem').innerText += line + "\n";
+                    j++;
+                }, 1500);
+
+            } else {
+                // 3 stanzas
+                let i = 0;
+                let stanza = make_stanza(document.lines, lang, seed, i);
+                document.getElementById('poem').innerText += stanza + "\n";
+                i++;
+                let x = setInterval(function (lines) {
+                    if (i == 3) {
+                        clearInterval(x);
+                        return;
+                    }
+                    stanza = make_stanza(document.lines, lang, seed, i);
+                    document.getElementById('poem').innerText += stanza + "\n";
+                    i++;
+                }, 2500);
             }
-            document.getElementById('poem').innerText = poem;
+        }
+
+        function make_stanza(lines, lang, seed, i) {
+
+            let result = ''
+            for (j = 0; j < 5; j++) {
+                if (seed == 1) {
+                    line = lines[j][Math.round(Math.random() * (lines[j].length - 1))];
+                } else if (seed == 2) {
+                    n = Math.abs(j - 4);
+                    line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+                } else if (seed == 3) {
+                    if (j < 2) {
+                        n = j + 1;
+                    } else if (j == 2) {
+                        n = 4;
+                    } else if (j == 3) {
+                        n = 3;
+                    } else if (j == 4) {
+                        n = 0;
+                    }
+                    line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+                } else if (seed == 4) {
+                    if (i == 0) {
+                        n = j;
+                    } else if (i == 1) {
+                        if (j == 0) {
+                            n = 3;
+                        } else if (j == 1) {
+                            n = 2;
+                        } else if (j == 2) {
+                            n = 1;
+                        } else if (j == 3) {
+                            n = 2;
+                        } else if (j == 4) {
+                            n = 3;
+                        }
+                    } else {
+                        n = Math.abs(j - 4);
+                    }
+                    line = lines[n][Math.round(Math.random() * (lines[n].length - 1))];
+                } else {
+                    line = data[lang][Math.round(Math.random() * (data[lang].length - 1))];
+                }
+                result = result + line + "\n";
+            }
+            return result
         }
 
         function assign(json) {
