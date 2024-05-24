@@ -44,6 +44,8 @@ It is compiled and published by the [Open Repair Alliance (ORA)](https://openrep
 * Data visualisation
 * Document all the things
 * Clean up poor quality code
+* Sort out requirements
+* Refactor pandas to polars for speed and clarity
 
 ## Licences & acknowledgments
 
