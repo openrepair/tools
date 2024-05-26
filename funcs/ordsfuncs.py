@@ -4,7 +4,6 @@ import polars as pl
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 LOG_DIR = os.path.join(ROOT_DIR, "log", "")
 DATA_DIR = os.path.join(ROOT_DIR, "dat", "")
-WEB_DIR = os.path.join(ROOT_DIR, "web", "")
 OUT_DIR = os.path.join(ROOT_DIR, "out", "")
 
 
@@ -21,10 +20,10 @@ def csv_path(filename):
     return "dat/ords/" + filename + ".csv"
 
 
-def get_data(csvfile):
+def get_data(filename):
 
     return pl.read_csv(
-        csvfile,
+        csv_path(filename),
         try_parse_dates=True,
         dtypes=polars_schema(),
         infer_schema_length=0,
@@ -43,3 +42,14 @@ def polars_schema():
         "repair_barrier_if_end_of_life": pl.String,
         "event_date": pl.Date,
     }
+
+def get_categories(filename):
+
+    return pl.read_csv(
+        csv_path(filename),
+        try_parse_dates=True,
+        dtypes=polars_schema(),
+        infer_schema_length=0,
+        ignore_errors=True,
+        missing_utf8_is_empty_string=True,
+    )

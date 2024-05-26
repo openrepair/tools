@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     # Filter for small subset with English language text.
     # Filter for decent length strings in the `problem` column.
-    df = ordsfuncs.get_data(ordsfuncs.csv_path(envfuncs.get_var("ORDS_DATA")))
+    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
     df_data = df.filter(
         pl.col("country") == pl.lit("USA"),
         pl.col("problem").str.len_chars() > 24,
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         )
     )
 
-    df_cats = pl.read_csv(ordsfuncs.csv_path(envfuncs.get_var("ORDS_CATS")))
+    df_cats = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
 
     for i, category in df_cats.iter_rows():
         logger.debug("**** {} ****".format(category))

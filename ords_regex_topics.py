@@ -123,7 +123,7 @@ if __name__ == "__main__":
         rx=pl.col("patt").map_elements(lambda x: re.compile(x), return_dtype=pl.Object)
     )
 
-    df = ordsfuncs.get_data(ordsfuncs.csv_path(envfuncs.get_var("ORDS_DATA")))
+    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
     itemtypes = get_item_types(df)
     for row in topics.iter_rows():
         topic = row[0]
