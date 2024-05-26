@@ -12,113 +12,120 @@ To truly verify an outlier it is necessary to look at the item type, brand and p
 This script also flags vintage, antique and recent devices.
 """
 
-from funcs import *
-import pandas as pd
+import polars as pl
 import datetime
 from datetime import datetime
-import re
+from funcs import *
+
+
+def get_data():
+
+    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    df = (
+        df.drop_nulls(subset=["year_of_manufacture"])
+        .filter(
+            pl.col("product_category") != pl.lit("Misc"),
+        )
+        .select(
+            pl.col(
+                "id",
+                "year_of_manufacture",
+                "product_age",
+                "event_date",
+                "product_category",
+                "product_category_id",
+                "brand",
+                "partner_product_category",
+                "problem",
+            )
+        )
+        .with_columns(
+            pl.col("partner_product_category")
+            .str.split("~")
+            .list.last()
+            .str.strip_chars_start()
+            .alias("item_type")
+        )
+    ).drop_nulls(subset=["item_type"])
+    return df
+
+
+# Assumptions that can be changed.
+# 1. vintage cut-off is halfway between current year minus earliest year
+# 2. recent year is between current year and 10 years previous
+def process_age_data(data):
+
+    dt = {
+        "year_curr": pl.Int64,
+        "year_event": pl.Int64,
+        "year_recent": pl.Int64,
+        "year_vintage": pl.Int64,
+        "year_decade": pl.Int64,
+        "is_impossible": pl.Boolean,
+        "is_mistake": pl.Boolean,
+        "is_vintage": pl.Boolean,
+        "is_antique": pl.Boolean,
+        "is_recent": pl.Boolean,
+    }
+    try:
+        curr_year = datetime.now().year
+        data = data.with_columns(
+            year_curr=pl.lit(curr_year).cast(pl.Int64),
+            year_recent=pl.lit(curr_year - 10).cast(pl.Int64),
+            year_event=pl.col("event_date").dt.year().cast(pl.Int64),
+            year_decade=pl.col("year_of_manufacture")
+            .cast(pl.String)
+            .str.replace(r"([\d]{3})([0-9])", "${1}0")
+            .cast(pl.Int64),
+            year_vintage=(
+                pl.lit(curr_year) - ((pl.lit(curr_year) - pl.col("earliest")) / 2)
+            ).cast(pl.Int64),
+        )
+        data = data.with_columns(
+            is_mistake=pl.col("year_of_manufacture") >= pl.col("year_event"),
+            is_impossible=(pl.col("year_of_manufacture") <= pl.col("earliest"))
+            & (pl.col("year_of_manufacture") > pl.col("year_curr")),
+            is_recent=pl.col("year_of_manufacture") >= pl.col("year_recent"),
+            is_antique=pl.col("year_of_manufacture") <= pl.col("year_vintage"),
+            is_vintage=(pl.col("year_of_manufacture") >= pl.col("year_vintage"))
+            & (pl.col("year_of_manufacture") <= pl.col("year_recent")),
+        )
+
+    except Exception as error:
+        print(error)
+    return data
+
 
 if __name__ == "__main__":
 
     logger = logfuncs.init_logger(__file__)
 
-    # Read the ORDS data.
-    df_in = pd.read_csv(pathfuncs.path_to_ords_csv())
-    df_in.dropna(
-        axis="rows", subset=["year_of_manufacture"], inplace=True, ignore_index=True
-    )
-    # Misc records have no timeline data.
-    df_in = df_in.loc[df_in.product_category != "Misc"]
-    # The type of item is the interesting part of the partner_product_category.
-    df_in.partner_product_category = (
-        df_in.partner_product_category.str.split("~").str.get(1).str.strip()
-    )
-    df_in.rename(columns={"partner_product_category": "item_type"}, inplace=True)
-    # Uncomment the following if only interested in success stories.
-    # df_in = df_in.loc[df_in.repair_status.isin(['Fixed', 'Repairable'])]
-
-    # Convert string to date so year can be extracted.
-    df_in["event_date"] = pd.to_datetime(df_in["event_date"])
-
     # Read the timeline data.
-    df_ref = pd.read_csv(pathfuncs.DATA_DIR + "/consumer_electronics_timeline.csv")
-    # In case any year values are missing.
-    df_ref.dropna(axis="rows", subset=["earliest"], inplace=True, ignore_index=True)
+    df_ref = pl.read_csv(
+        ordsfuncs.DATA_DIR + "/consumer_electronics_timeline.csv"
+    ).drop_nulls(subset=["earliest"])
+
+    # Read the ORDS data.
+    df_in = get_data()
 
     # Join the two frames.
-    data = df_in.join(
-        df_ref.set_index("product_category_id"), on="product_category_id", rsuffix="_"
-    )
-    data.drop(columns=["product_category_"], inplace=True)
+    data = df_in.join(df_ref, on="product_category_id", how="left")
 
-    # Assumptions that can be changed.
-    # 1. vintage cut-off is halfway between current year minus earliest year
-    # 2. recent year is between current year and 10 years previous
-    curr_year = datetime.now().year
-    dict = {
-        "year_event": 0,
-        "year_recent": 0,
-        "year_vintage": 0,
-        "year_decade": 0,
-        "is_impossible": False,
-        "is_mistake": False,
-        "is_vintage": False,
-        "is_antique": False,
-        "is_recent": False,
-    }
-    cols = sorted(list(set(list(data.columns) + list(dict.keys()))))
-    df_out = pd.DataFrame(columns=cols)
-    rowlist = []
-    for i, row in data.iterrows():
-        try:
-            d = row.to_dict() | dict
-            d["year_curr"] = curr_year
-            d["year_recent"] = curr_year - 10
-            d["year_event"] = row.event_date.year
-            d["year_decade"] = re.sub("([1-9]\.0)", "0", str(row.year_of_manufacture))
-            d["year_vintage"] = round(
-                d["year_curr"] - ((d["year_curr"] - row.earliest) / 2)
-            )
-            if row.year_of_manufacture >= d["year_event"]:
-                d["is_mistake"] = True
-            elif (row.year_of_manufacture <= row.earliest) & (
-                row.year_of_manufacture > d["year_curr"]
-            ):
-                d["is_impossible"] = True
-            elif row.year_of_manufacture >= d["year_recent"]:
-                d["is_recent"] = True
-            elif row.year_of_manufacture <= d["year_vintage"]:
-                d["is_antique"] = True
-            elif (row.year_of_manufacture >= d["year_vintage"]) & (
-                row.year_of_manufacture <= d["year_recent"]
-            ):
-                d["is_vintage"] = True
-            else:
-                logger.debug("???????")
-                logger.debug(d)
-            rowlist.append(d)
-        except Exception as error:
-            print(row)
-            print(error)
-            continue
+    #
+    df_out = process_age_data(data)
 
-    df_out = pd.concat([df_out, pd.DataFrame(data=rowlist, columns=cols)])
-    df_out.sort_values(
-        by=["product_category"], ascending=True, inplace=True, ignore_index=True
-    )
-
-    df_1 = df_out.loc[(df_out["is_vintage"] == True) | (df_out["is_antique"] == True)]
-    df_1.to_csv(
-        pathfuncs.OUT_DIR
+    df_1 = df_out.filter(
+        (pl.col("is_vintage") == True) | (pl.col("is_antique") == True)
+    ).sort("product_category")
+    df_1.write_csv(
+        ordsfuncs.OUT_DIR
         + "/{}_product_ages_vintage.csv".format(envfuncs.get_var("ORDS_DATA")),
-        index=False,
     )
 
-    df_2 = df_out.loc[
-        (df_out["is_impossible"] == True) | (df_out["is_mistake"] == True)
-    ]
-    df_2.to_csv(
-        pathfuncs.OUT_DIR
+    df_2 = df_out.filter(
+        (pl.col("is_impossible") == True) | (pl.col("is_mistake") == True)
+    ).sort("product_category")
+    df_2.write_csv(
+        ordsfuncs.OUT_DIR
         + "/{}_product_ages_impossible.csv".format(envfuncs.get_var("ORDS_DATA")),
-        index=False,
     )
