@@ -43,13 +43,13 @@ def polars_schema():
         "event_date": pl.Date,
     }
 
+
 def get_categories(filename):
 
     return pl.read_csv(
         csv_path(filename),
-        try_parse_dates=True,
-        dtypes=polars_schema(),
-        infer_schema_length=0,
-        ignore_errors=True,
-        missing_utf8_is_empty_string=True,
+        dtypes={
+            "product_category_id": pl.Int64,
+            "product_category": pl.String,
+        },
     )
