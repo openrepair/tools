@@ -4,45 +4,52 @@
 # https://towardsdatascience.com/free-hands-on-tutorials-to-get-started-in-natural-language-processing-6a378e24dbfc
 # https://towardsai.net/p/nlp/natural-language-processing-nlp-with-python-tutorial-for-beginners-1f54e610a1a0
 
-from funcs import *
-import pandas as pd
+import polars as pl
 from nltk import word_tokenize
 from nltk import sent_tokenize
 import nltk
-
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("averaged_perceptron_tagger")
-nltk.download("maxent_ne_chunker")
-nltk.download("words")
-
+from funcs import *
 
 if __name__ == "__main__":
 
     logger = logfuncs.init_logger(__file__)
 
-    # Read the data file as type string with na values set to empty string.
-    df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
-    )
+    nltk.download("punkt")
+    nltk.download("stopwords")
+    nltk.download("averaged_perceptron_tagger")
+    nltk.download("maxent_ne_chunker")
+    nltk.download("words")
+
     # Filter for small subset with English language text.
-    df = df[df["country"].isin(["USA"])]
     # Filter for decent length strings in the `problem` column.
-    df = df[(df["problem"].apply(lambda s: len(str(s)) > 24))]
-
-    categories = pd.read_csv(
-        pathfuncs.ORDS_DIR + "/{}.csv".format(envfuncs.get_var("ORDS_CATS"))
+    df = ordsfuncs.get_data(ordsfuncs.csv_path(envfuncs.get_var("ORDS_DATA")))
+    df_data = df.filter(
+        pl.col("country") == pl.lit("USA"),
+        pl.col("problem").str.len_chars() > 24,
+    ).select(
+        pl.col(
+            "id",
+            "product_category",
+            "problem",
+        )
     )
 
-    for n in range(0, len(categories)):
-        category = categories.iloc[n].product_category
+    df_cats = pl.read_csv(ordsfuncs.csv_path(envfuncs.get_var("ORDS_CATS")))
+
+    for i, category in df_cats.iter_rows():
         logger.debug("**** {} ****".format(category))
 
         # Fetch a single string for demo purposes.
-        data = df.loc[df.product_category == category]["problem"]
-        if not data.any():
+        data = df_data.filter(
+            pl.col("product_category") == pl.lit(category),
+        ).select(
+            pl.col(
+                "problem",
+            )
+        )
+        if len(data) == 0:
             continue
-        text = data.iloc[0]
+        text = data.item(1, 0)
 
         logger.debug("** TEXT **")
         logger.debug(text)
