@@ -15,7 +15,7 @@ def get_item_types(df):
             pl.col("partner_product_category")
             .str.split("~")
             .list.last()
-            .str.strip_chars_start()
+            .str.strip_chars()
             .alias("item_type")
         )
         .drop_nulls()

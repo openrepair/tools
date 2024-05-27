@@ -1,35 +1,36 @@
 import re
+import polars as pl
 
 
 def clean_text(df, column="problem", dropna=True, strip=True, dedupe=True):
 
-    clean_text_sentences(df, column)
+    df = clean_text_html_tags(df, column)
 
-    clean_text_html_tags(df, column)
+    df = clean_text_html_symbols(df, column)
 
-    clean_text_html_symbols(df, column)
+    df = clean_text_weights(df, column)
 
-    clean_text_weights(df, column)
+    df = clean_text_code_prefixes(df, column)
 
-    clean_text_code_prefixes(df, column)
+    df = clean_text_nonprinting_chars(df, column)
 
-    clean_text_nonprinting_chars(df, column)
+    df = clean_text_missing_newline(df, column)
 
-    clean_text_missing_newline(df, column)
+    df = clean_text_tabs_spaces(df, column)
+
+    df = clean_text_sentences(df, column)
 
     if strip:
         # Trim whitespace.
-        df[column] = df[column].str.strip()
+        df = df.with_columns(pl.col(column).str.strip_chars())  # .alias(column))
 
     if dropna:
-        # Drop column values that may be empty after the replacements and trimming.
-        df[column].replace("", None, inplace=True)
-        df.dropna(subset=[column], inplace=True)
+        # Drop `problem` values that may be empty after the replacements and trimming.
+        df = df.filter(pl.col(column) != "").drop_nulls(subset=[column])
 
     if dedupe:
         # Dedupe the column values.
-        df.drop_duplicates(subset=[column], inplace=True)
-        print(df.index.size)
+        df = df.unique()
 
     return df
 
@@ -37,68 +38,57 @@ def clean_text(df, column="problem", dropna=True, strip=True, dedupe=True):
 # Make sure there is always a space after a period, else sentences won't be split.
 def clean_text_sentences(df, column="problem"):
 
-    df.replace(
-        {column: r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"},
-        {column: "\\2. \\3"},
-        regex=True,
-        inplace=True,
-    )
-    return df
+    p = r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"
+    s = "${2}. ${3}"
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Remove HTML symbols (&gt; features a lot)
 def clean_text_html_symbols(df, column="problem"):
 
-    df.replace({column: r"(?i)(&[\w\s]+;)"}, {column: ""}, regex=True, inplace=True)
-    return df
+    p = r"(?i)(&[\w\s]+;)"
+    s = ""
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Remove HTML tags
 def clean_text_html_tags(df, column="problem"):
 
-    df.replace(
-        {column: r"(?i)<\/?[a-z][a-z0-9]*[^<>]*>|<!--.*?-->"},
-        {column: ""},
-        regex=True,
-        inplace=True,
-    )
-    return df
+    p = r"<[^>]+>"
+    s = ""
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Remove weight values (0.5kg, 5kg, 5 kg, .5kg etc.)
 def clean_text_weights(df, column="problem"):
 
-    df.replace(
-        {column: r"(?i)(([0-9]+)?\.?[0-9\s]+kg)"},
-        {column: ""},
-        regex=True,
-        inplace=True,
-    )
-    return df
+    p = r"(?i)(([0-9]+)?\.?[0-9\s]+kg)"
+    s = ""
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Remove random non-alpha codes often found prefixing `problem` strings.
 def clean_text_code_prefixes(df, column="problem"):
 
-    df.replace(
-        {column: r"(?i)^(\W|\d+)([\d|\W]+)?"},
-        {column: ""},
-        regex=True,
-        inplace=True,
-    )
-    return df
+    p = r"(?i)^(\W|\d+)([\d|\W]+)?"
+    s = ""
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Some literal eol chars are embedded.
 def clean_text_nonprinting_chars(df, column="problem"):
 
-    df.replace(
-        {column: r"(\\+(r|n))"},
-        {column: " "},
-        regex=True,
-        inplace=True,
-    )
-    return df
+    p = r"(\+(r|n))"
+    s = " "
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
+
+
+# Tabs and multiple spaces.
+def clean_text_tabs_spaces(df, column="problem"):
+
+    p = r"([\s\t]+)"
+    s = " "
+    return df.with_columns(pl.col(column).str.replace_all(p, s))
 
 
 # Result of error in export script, newlines were replaced with '',
@@ -145,6 +135,10 @@ def clean_text_missing_newline(df, column="problem"):
                 text = re.sub(pattern, "\\2. \\3", text, re.MULTILINE)
         return text
 
-    df[column] = df[column].apply(lambda s: fix_text(s))
+    df = df.with_columns(
+        pl.col(column)
+        .map_elements(lambda s: fix_text(s), return_dtype=pl.String)
+        .alias(column)
+    )
 
     return df

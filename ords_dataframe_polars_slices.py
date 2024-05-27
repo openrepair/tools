@@ -5,9 +5,9 @@
 # Writes the dataframes to csv and json format files.
 
 
-from funcs import *
-import polars as pl
 import datetime
+import polars as pl
+from funcs import *
 
 
 # Events date range sorted by event_date.
@@ -63,7 +63,7 @@ def slice_product_age(df):
         )
     )
     dfsub = (
-        dfsub.group_by("product_category")
+        dfsub.group_by(["product_category"])
         .agg(
             pl.col("product_age").min().alias("earliest"),
             pl.col("product_age").max().alias("latest"),
@@ -87,7 +87,7 @@ def slice_year_of_manufacture(df):
         )
     )
     dfsub = (
-        dfsub.group_by("product_category")
+        dfsub.group_by(["product_category"])
         .agg(
             pl.col("year_of_manufacture").min().alias("newest"),
             pl.col("year_of_manufacture").max().alias("oldest"),
@@ -131,7 +131,7 @@ def slice_item_types(df):
         .alias("item_type")
     )
     dfsub = (
-        dfsub.group_by("product_category", "item_type")
+        dfsub.group_by(["product_category", "item_type"])
         .agg(
             pl.col("item_type").count().name.suffix("_count"),
         )
@@ -149,7 +149,7 @@ def slice_item_types(df):
 # Countries and groups.
 def slice_countries(df):
 
-    countries = pl.read_csv(pathfuncs.DATA_DIR + "/iso_country_codes.csv").sort("iso")
+    countries = pl.read_csv(ordsfuncs.DATA_DIR + "/iso_country_codes.csv").sort("iso")
     logger.debug(countries)
     dfsub = (
         df.select(
@@ -165,7 +165,7 @@ def slice_countries(df):
     dfsub = dfsub.join(countries, on="iso", how="left")
     logger.debug(dfsub)
     dfsub = (
-        dfsub.group_by("iso", "group", "country").agg(
+        dfsub.group_by(["iso", "group", "country"]).agg(
             pl.col("group").count().name.suffix("_count"),
         )
     ).sort("iso", "group")
@@ -180,7 +180,7 @@ def write_to_files(df, suffix, sample=0):
     if sample:
         df = df.sample(frac=sample, with_replacement=False)
 
-    path = "{}/{}_{}".format(pathfuncs.OUT_DIR, envfuncs.get_var("ORDS_DATA"), suffix)
+    path = "{}/{}_{}".format(ordsfuncs.OUT_DIR, envfuncs.get_var("ORDS_DATA"), suffix)
     df.write_csv(path + ".csv")
     df.write_json(path + ".json", row_oriented=True, pretty=True)
 

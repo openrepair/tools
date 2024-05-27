@@ -4,9 +4,8 @@
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
 
-
-from funcs import *
 import pandas as pd
+from funcs import *
 
 
 # Events
@@ -100,7 +99,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(pathfuncs.DATA_DIR + "/iso_country_codes.csv")
+    countries = pd.read_csv(ordsfuncs.DATA_DIR + "/iso_country_codes.csv")
 
     dfsub = df.reindex(columns=["country", "group_identifier"]).rename(
         columns={"country": "iso", "group_identifier": "group"}
@@ -121,7 +120,7 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    path = "{}/{}_{}".format(pathfuncs.OUT_DIR, tablename, suffix)
+    path = "{}/{}_{}".format(ordsfuncs.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(df, path, index)
     for result in results:
         print(result)
@@ -136,7 +135,10 @@ if __name__ == "__main__":
 
     # Read the data file as type string with na values set to empty string.
     df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
+        ordsfuncs.csv_path_ords(envfuncs.get_var("ORDS_DATA")),
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
     )
 
     # Convert some of the dtypes as appropriate.

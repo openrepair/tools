@@ -129,7 +129,7 @@ def clean_problem(data, dedupe=True, dropna=True):
     data = data.with_columns(pl.col("problem").str.replace(p, s))
 
     # Trim whitespace from `problem` strings.
-    data = data.with_columns(pl.col("problem").str.strip_chars_start())
+    data = data.with_columns(pl.col("problem").str.strip_chars())
     if dropna:
         # Drop `problem` values that may be empty after the replacements and trimming.
         data = data.drop_nulls(subset=["problem"])

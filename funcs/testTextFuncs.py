@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
 import unittest
-import pandas as pd
+import polars as pl
 import textfuncs
-
-# https://wiki.python.org/moin/PythonTestingToolsTaxonomy
-# https://docs.python.org/3/library/unittest.html
 
 
 class TextFuncsTestCase(unittest.TestCase):
@@ -28,7 +25,7 @@ class TextFuncsTestCase(unittest.TestCase):
             "Sentence three. Sentence four.",
             "Serial no. 1234. Model A.1",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_sentences(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
@@ -48,7 +45,7 @@ class TextFuncsTestCase(unittest.TestCase):
             "Foo ",
             "Foo > bar",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_html_tags(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
@@ -68,7 +65,7 @@ class TextFuncsTestCase(unittest.TestCase):
             "Foo <foo></foo>",
             "Bang & Olufsen",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_html_symbols(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
@@ -124,8 +121,9 @@ class TextFuncsTestCase(unittest.TestCase):
             " foo",
             " foo",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_weights(df, column="problem")
+        print(result)
         self.assertEqual(list(result["problem"]), expect)
 
     def test_clean_text_code_prefixes(self):
@@ -150,7 +148,7 @@ class TextFuncsTestCase(unittest.TestCase):
             "Foo",
             "Foo",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_code_prefixes(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
@@ -166,7 +164,7 @@ class TextFuncsTestCase(unittest.TestCase):
             "Foobar999",
             "Foo bar999",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_missing_newline(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
@@ -200,23 +198,26 @@ class TextFuncsTestCase(unittest.TestCase):
             "Foo bar.",
             "Foo bar.",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
         result = textfuncs.clean_text_nonprinting_chars(df, column="problem")
         self.assertEqual(list(result["problem"]), expect)
 
     def test_clean_text(self):
 
         data = [
+            " 999:Foo &gt;bar&lt; <em>!</em> 10.5kg",
             "999:Foo &gt;bar&lt; <em>!</em> 10.5kg ",
-            "999:Foo &gt;bar&lt; <em>!</em> 10.5kg ",
-            "999: &gt; &lt; <em></em> 10.5kg ",
+            " 999: &gt; &lt; <em></em> 10.5kg",
             "999: &gt; &lt; <em></em> 10.5kg ",
         ]
         expect = [
             "Foo bar !",
         ]
-        df = pd.DataFrame(data=data, columns=["problem"])
-        result = textfuncs.clean_text(df, column="problem", strip=True, dropna=True, dedupe=True)
+        df = pl.DataFrame(data=data, schema={"problem" : pl.String})
+        result = textfuncs.clean_text(
+            df, column="problem", strip=True, dropna=True, dedupe=True
+        )
+        print(result)
         self.assertEqual(list(result["problem"]), expect)
 
 

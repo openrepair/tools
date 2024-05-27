@@ -1,23 +1,24 @@
 import mysql.connector
 import sqlite3
 import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
 
-# MYSQL database function wrappers.
-# SQLITE3 connection.
+load_dotenv()
 
 dbvars = {
-    'host': '{ORDS_DB_HOST}'.format(**os.environ),
-    'database': '{ORDS_DB_DATABASE}'.format(**os.environ),
-    'collation': '{ORDS_DB_COLLATION}'.format(**os.environ),
-    'user': '{ORDS_DB_USER}'.format(**os.environ),
-    'pwd': '{ORDS_DB_PWD}'.format(**os.environ)
+    "host": "{ORDS_DB_HOST}".format(**os.environ),
+    "database": "{ORDS_DB_DATABASE}".format(**os.environ),
+    "collation": "{ORDS_DB_COLLATION}".format(**os.environ),
+    "user": "{ORDS_DB_USER}".format(**os.environ),
+    "pwd": "{ORDS_DB_PWD}".format(**os.environ),
 }
 
 
-def query_fetchall(sql, params=None):
+def mysql_query_fetchall(sql, params=None):
     result = False
     try:
-        dbh = mysql_con()
+        dbh = mysql_connection()
         cursor = dbh.cursor(dictionary=True)
         cursor.execute(sql, params)
         result = cursor.fetchall()
@@ -30,10 +31,10 @@ def query_fetchall(sql, params=None):
         return result
 
 
-def execute(sql, params=None):
+def mysql_execute(sql, params=None):
     result = 0
     try:
-        dbh = mysql_con()
+        dbh = mysql_connection()
         cursor = dbh.cursor()
         cursor.execute(sql, params)
         dbh.commit()
@@ -47,10 +48,10 @@ def execute(sql, params=None):
         return result
 
 
-def executemany(sql, params=None):
+def mysql_executemany(sql, params=None):
     result = 0
     try:
-        dbh = mysql_con()
+        dbh = mysql_connection()
         cursor = dbh.cursor()
         cursor.executemany(sql, params)
         dbh.commit()
@@ -64,16 +65,16 @@ def executemany(sql, params=None):
         return result
 
 
-def show_create_table(name):
+def mysql_show_create_table(name):
     result = False
     try:
-        dbh = mysql_con()
+        dbh = mysql_connection()
         cursor = dbh.cursor(dictionary=True)
         sql = "SHOW CREATE TABLE `{}`".format(name)
         cursor.execute(sql)
         rows = cursor.fetchall()
         for row in rows:
-            result = row['Create Table']
+            result = row["Create Table"]
     except Exception as error:
         pass
         # result = "Table not found: {}".format(name)
@@ -84,31 +85,31 @@ def show_create_table(name):
         return result
 
 
-def dump_table_to_csv(table, path):
-    import pandas as pd
-    sql = """
-    SELECT *
-    FROM {}
-    """.format(table)
-    df = pd.DataFrame(query_fetchall(sql))
-    path_to_csv = path + '/{}.csv'.format(table)
-    df.to_csv(path_to_csv, index=False)
-    if os.path.exists(path_to_csv):
-        print('Data dumped to {}'.format(path_to_csv))
-        return path_to_csv
-    else:
-        print('Failed to dump data to {}'.format(path_to_csv))
-        return False
+# def mysql_dump_table_to_csv(table, path):
+
+#     sql = """
+#     SELECT *
+#     FROM {}
+#     """.format(table)
+#     df = pd.DataFrame(mysql_query_fetchall(sql))
+#     path_to_csv = path + '/{}.csv'.format(table)
+#     df.to_csv(path_to_csv, index=False)
+#     if os.path.exists(path_to_csv):
+#         print('Data dumped to {}'.format(path_to_csv))
+#         return path_to_csv
+#     else:
+#         print('Failed to dump data to {}'.format(path_to_csv))
+#         return False
 
 
-def mysql_con():
+def mysql_connection():
     dbh = False
     try:
         dbh = mysql.connector.connect(
-            host=dbvars['host'],
-            database=dbvars['database'],
-            user=dbvars['user'],
-            password=dbvars['pwd'],
+            host=dbvars["host"],
+            database=dbvars["database"],
+            user=dbvars["user"],
+            password=dbvars["pwd"],
             # collation=dbvars['collation'],
             # raw=True
         )
@@ -119,13 +120,14 @@ def mysql_con():
         return dbh
 
 
-def alchemy_con():
-    return "mysql+mysqldb://{ORDS_DB_USER}:{ORDS_DB_PWD}@{ORDS_DB_HOST}/{ORDS_DB_DATABASE}".format(**os.environ)
+def alchemy_constr():
+    return "mysql+mysqldb://{ORDS_DB_USER}:{ORDS_DB_PWD}@{ORDS_DB_HOST}/{ORDS_DB_DATABASE}".format(
+        **os.environ
+    )
 
 
 def alchemy_eng():
-    from sqlalchemy import create_engine
-    con = alchemy_con()
+    con = alchemy_constr()
     return create_engine(con)
 
 
@@ -134,10 +136,10 @@ def sqlite_dict_factory(cursor, row):
     return {key: value for key, value in zip(fields, row)}
 
 
-def sqlite_connect():
+def sqlite_connection():
     con = False
     try:
-        con = sqlite3.connect(dbvars['database'])
+        con = sqlite3.connect(dbvars["database"])
         con.row_factory = sqlite_dict_factory
     except sqlite3.Error as error:
         print("Exception: {}".format(error))

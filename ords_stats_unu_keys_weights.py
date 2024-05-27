@@ -23,7 +23,7 @@ if __name__ == "__main__":
         ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
         .filter(pl.col("repair_status") == pl.lit("Fixed"))
         .join(weights, on="product_category", how="left")
-        .group_by("product_category")
+        .group_by(["product_category"])
         .agg(
             pl.col("unu_1995").sum().round(1).alias("unu_1995_total"),
             pl.col("unu_2000").sum().round(1).alias("unu_2000_total"),

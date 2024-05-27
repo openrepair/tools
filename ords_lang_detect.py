@@ -9,9 +9,9 @@
 
 
 from langdetect import detect
-from funcs import *
-import pandas as pd
 from langdetect import DetectorFactory
+import polars as pl
+from funcs import *
 
 
 if __name__ == "__main__":
@@ -20,37 +20,14 @@ if __name__ == "__main__":
 
     DetectorFactory.seed = 0
 
-    # Read the entire ORDS export.
-    data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
-    logger.debug(data)
-    # Remove empty strings and group non-empty strings
     data = (
-        pd.DataFrame(data=data["problem"].unique(), columns=["problem"])
-        .dropna()
-        .astype("str")
+        ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+        .drop_nulls(subset="problem")
     )
-
-    test = False
-    # For testing purposes you could filter for longer strings and shuffle the values.
-    if test:
-        data = data[(data["problem"].apply(lambda s: len(str(s)) > 64))].sample(
-            frac=0.1
-        )
-
-    data["language"] = ""
-    data.reindex(copy=False)
+    data = data.filter(pl.col("problem").str.len_chars() > 64).sample(10)
     logger.debug(data)
-    for i, row in data.iterrows():
-        print(i)
-        try:
-            lang = detect(row.problem)
-        except Exception as error:
-            lang = ""
-            print(row.problem)
-            print(error)
-            continue
-
-        data.at[i, "language"] = lang
-
-    data.to_csv(pathfuncs.OUT_DIR + "/ords_lang_detect.csv", index=False)
+    data = data.with_columns(language=pl.col("problem").map_elements(
+            lambda p: detect(p), return_dtype=pl.String
+        ))
     logger.debug(data)
+    data.write_csv(ordsfuncs.OUT_DIR + "/ords_lang_detect.csv")

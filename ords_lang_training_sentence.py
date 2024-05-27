@@ -7,8 +7,6 @@
 # THIS VERSION SPLITS THE PROBLEM TEXT.
 # MORE USEFUL FOR TRAINING.
 
-from funcs import *
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -19,10 +17,12 @@ from joblib import dump
 from joblib import load
 from nltk import tokenize
 import nltk
+import polars as pl
+from funcs import *
 
 
 def format_path_out(filename, ext="csv", suffix=""):
-    return "{}/{}_{}.{}".format(pathfuncs.OUT_DIR, filename, suffix, ext)
+    return "{}/{}_{}.{}".format(ordsfuncs.OUT_DIR, filename, suffix, ext)
 
 
 # Use this to check for best value and set it as default
@@ -59,7 +59,7 @@ def get_alpha(data, labels, vects, search=False):
 
 # In the case of repair data, ignore acronyms and jargon.
 def get_stopwords():
-    stopfile = open(pathfuncs.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
+    stopfile = open(ordsfuncs.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
     stoplist = list(stopfile.read().replace("\n", " "))
     stopfile.close()
     return stoplist
@@ -81,68 +81,68 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         "da": "danish",
     }
     # Read input DataFrame.
-    df_in = pd.read_csv(
-        pathfuncs.DATA_DIR + "/ords_problem_translations.csv", dtype=str
-    ).query('language_known != "??"')
-
-    logger.debug(df_in.columns)
-    logger.debug("Total translation records: {}".format(df_in.index.size))
+    df_in = pl.read_csv(ordsfuncs.DATA_DIR + "/ords_problem_translations.csv").filter(
+        pl.col("language_known") != pl.lit("??")
+    )
+    logger.debug("Total translation records: {}".format(df_in.height))
     # Create output DataFrames:
     # problem_orig = problem text before cleaning.
     # problem = translated problem text.
     # sentence = one of the sentences that make up the translated problem text.
     # language = language_known.
     # country = ISO country code.
-    cols = ["problem_orig", "problem", "sentence", "language", "country"]
-    df_all = pd.DataFrame(columns=cols)
-    df_valid = pd.DataFrame(columns=cols)
-    df_train = pd.DataFrame(columns=cols)
+    cols = {
+        "problem_orig": pl.String,
+        "problem": pl.String,
+        "sentence": pl.String,
+        "language": pl.String,
+        "country": pl.String,
+    }
+    df_valid = pl.DataFrame(schema=cols)
+    df_train = pl.DataFrame(schema=cols)
+
     for lang in langs.keys():
         logger.debug("*** LANGUAGE {} ***".format(lang))
-        df_tmp = (
-            df_in[[lang, "country", "problem"]]
-            .astype("str")
-            .rename(columns={"problem": "problem_orig"})
-            .rename(columns={lang: "problem"})
+        df_lang = pl.DataFrame(schema=cols)
+        df_tmp = df_in.select(lang, "country", "problem").rename(
+            {"problem": "problem_orig", lang: "problem"}
         )
         df_tmp = textfuncs.clean_text(df_tmp, "problem")
         print("Splitting sentences for lang {}".format(lang))
-        for i, row in df_tmp.iterrows():
-            if len(row.problem) > 0:
+        for row in df_tmp.iter_rows():
+            problem = row[0]
+            if len(problem) > 0:
                 try:
                     # Split the `problem` string into sentences.
-                    sentences = tokenize.sent_tokenize(
-                        row.problem, language=langs[lang]
+                    sentences = tokenize.sent_tokenize(problem, language=langs[lang])
+                    df_tmp = pl.DataFrame(
+                        data={
+                            "problem_orig": row[2],
+                            "problem": problem,
+                            "sentence": sentences,
+                            "language": lang,
+                            "country": row[1],
+                        }
                     )
-                    df_tmp.at[i, "sentences"] = len(sentences)
-                    # Add the sentences to the list for this language.
-                    df_tmp.at[i, "sentence"] = sentences
+                    df_lang.extend(df_tmp)
                 except Exception as error:
                     print(error)
         print("Appending sentences for lang {}".format(lang))
-        # Expand the sentence lists and save unique to DataFrame.
-        df_lang = df_tmp.explode("sentence").drop_duplicates()
-        # Remove multiple punctuation characters (???, --, ..., etc.)
-        df_lang.replace(
-            {"sentence": r"(?i)([\W]{2,})"}, {"sentence": " "}, regex=True, inplace=True
-        )
-        # Trim whitespace from `sentence` strings (again).
-        df_lang["sentence"] = df_lang["sentence"].str.strip()
-        # Add the ISO lang code to the DataFrame for this language.
-        df_lang["language"] = lang
-        logger.debug(
-            "Total sentences for lang {} : {}".format(lang, df_lang.index.size)
-        )
-        # Reduce the results to comply with min/max sentence length.
-        df_lang = df_lang[
-            (
-                df_lang["sentence"].apply(
-                    lambda s: len(str(s)) in range(minchars, maxchars + 1)
-                )
+        logger.debug("Total sentences for lang {} : {}".format(lang, df_lang.height))
+        df_lang = (
+            df_lang.unique()
+            .filter(
+                pl.col("sentence").str.len_chars().is_between(minchars, maxchars + 1)
             )
-        ]
+            .with_columns(
+                pl.col("sentence")
+                .str.replace(r"(?i)([\W]{2,})", " ")
+                .str.strip_chars()
+                .alias("sentence")
+            )
+        )
         logger.debug(
-            "Total usable sentences for lang {} : {}".format(lang, df_lang.index.size)
+            "Total usable sentences for lang {} : {}".format(lang, df_lang.height)
         )
 
         # Take % of the data for validation.
@@ -150,52 +150,45 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         logger.debug(
             "Validation data for lang {}: {} ({})".format(
                 lang,
-                df_valid_tmp.index.size,
-                df_valid_tmp.index.size / df_lang.index.size,
+                df_valid_tmp.height,
+                df_valid_tmp.height / df_lang.height,
             )
         )
         logger.debug(
             "Training data for lang {}: {} ({})".format(
                 lang,
-                df_train_tmp.index.size,
-                df_train_tmp.index.size / df_lang.index.size,
+                df_train_tmp.height,
+                df_train_tmp.height / df_lang.height,
             )
         )
 
-        df_valid = pd.concat([df_valid, df_valid_tmp])
-        df_train = pd.concat([df_train, df_train_tmp])
-
-        # Just for loggging.
-        df_all = pd.concat([df_all, df_lang])
+        df_valid.extend(df_valid_tmp)
+        df_train.extend(df_train_tmp)
 
     logger.debug("*** ALL USEABLE DATA ***")
-    logger.debug(df_all.index.size)
+    logger.debug(df_train.height + df_valid.height)
 
     logger.debug("*** TRAINING DATA ***")
-    logger.debug(df_train.index.size)
-    logger.debug(df_train.index.size / df_all.index.size)
+    logger.debug(df_train.height)
+    logger.debug(df_train.height / (df_train.height + df_valid.height))
 
     logger.debug("*** VALIDATION DATA ***")
-    logger.debug(df_valid.index.size)
-    logger.debug(df_valid.index.size / df_all.index.size)
+    logger.debug(df_valid.height)
+    logger.debug(df_valid.height / (df_train.height + df_valid.height))
 
     # Save the data to the 'out' directory in csv format for use later.
-    df_train.to_csv(
-        format_path_out("ords_lang_data_training", "csv", file_suffix), index=False
-    )
-    df_valid.to_csv(
-        format_path_out("ords_lang_data_validation", "csv", file_suffix), index=False
-    )
+    df_train.write_csv(format_path_out("ords_lang_data_training", "csv", file_suffix))
+    df_valid.write_csv(format_path_out("ords_lang_data_validation", "csv", file_suffix))
 
 
 # Experiment with classifier/vectorizer.
 def experiment():
-    data = pd.read_csv(
-        format_path_out("ords_lang_data_training", "csv", file_suffix), dtype=str
-    ).dropna()
+    data = pl.read_csv(
+        format_path_out("ords_lang_data_training", "csv", file_suffix)
+    ).drop_nulls(subset="sentence")
     stopwords = get_stopwords()
-    column = data.sentence
-    labels = data.language
+    column = data["sentence"]
+    labels = data["language"]
 
     vectorizer = TfidfVectorizer()
     if stopwords != False:
@@ -251,11 +244,12 @@ def experiment():
 
 
 def do_training():
-    data = pd.read_csv(
-        format_path_out("ords_lang_data_training", "csv", file_suffix), dtype=str
-    ).dropna()
-    column = data.sentence
-    labels = data.language
+
+    data = pl.read_csv(
+        format_path_out("ords_lang_data_training", "csv", file_suffix)
+    ).drop_nulls(subset="sentence")
+    column = data["sentence"]
+    labels = data["language"]
 
     vectorizer = TfidfVectorizer()
     vectorizer.set_params(stop_words=get_stopwords())
@@ -275,29 +269,26 @@ def do_training():
     logger.debug("** TRAIN : F1 SCORE: {}".format(score))
 
     # Save predictions to 'out' directory in csv format.
-    data.loc[:, "prediction"] = predictions
-    data.to_csv(
-        format_path_out("ords_lang_results_training", "csv", file_suffix), index=False
-    )
+    data = data.with_columns(prediction=predictions)
+    data.write_csv(format_path_out("ords_lang_results_training", "csv", file_suffix))
 
     # Save prediction misses.
-    misses = data[(data["language"] != data["prediction"])]
-    misses.to_csv(
-        format_path_out("ords_lang_misses_training", "csv", file_suffix), index=False
-    )
+    misses = data.filter(pl.col("language") != pl.col("prediction"))
+    misses.write_csv(format_path_out("ords_lang_misses_training", "csv", file_suffix))
 
 
 def do_validation(pipeline=True):
-    data = pd.read_csv(
-        format_path_out("ords_lang_data_validation", "csv", file_suffix), dtype=str
-    ).dropna()
-    column = data.sentence
-    labels = data.language
+    data = pl.read_csv(
+        format_path_out("ords_lang_data_validation", "csv", file_suffix)
+    ).drop_nulls(subset="sentence")
+    column = data["sentence"]
+    labels = data["language"]
+
     logger.debug("** VALIDATE : using pipeline - {}".format(pipeline))
     if pipeline:
         # Use the pipeline that was fitted for this task.
         pipe = load(get_pipefile())
-        predictions = pipe.predict(data.sentence)
+        predictions = pipe.predict(column)
     else:
         # Use the classifier and vectoriser that were fitted for this task.
         classifier = load(get_clsfile())
@@ -310,28 +301,25 @@ def do_validation(pipeline=True):
     logger.debug(metrics.classification_report(labels, predictions))
 
     # Predictions output for inspection.
-    data.loc[:, "prediction"] = predictions
-    data.to_csv(
-        format_path_out("ords_lang_results_validation", "csv", file_suffix), index=False
-    )
+    data = data.with_columns(prediction=predictions)
+    data.write_csv(format_path_out("ords_lang_results_validation", "csv", file_suffix))
 
     # Prediction misses for inspection.
-    misses = data[(data.language != data["prediction"])]
-    misses.to_csv(
-        format_path_out("ords_lang_misses_validation", "csv", file_suffix), index=False
-    )
+    misses = data.filter(pl.col("language") != pl.col("prediction"))
+    misses.write_csv(format_path_out("ords_lang_misses_validation", "csv", file_suffix))
 
 
 # Use model on untrained data, with either pipeline or vect/class objects.
 def do_detection(pipeline=True):
-    data = pd.read_csv(pathfuncs.path_to_ords_csv(), dtype=str)
-    data.dropna(axis="rows", subset=["problem"], inplace=True, ignore_index=True)
-    column = data.problem
+
+    data = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    column = data["problem"]
+
     logger.debug("** DETECT : using pipeline - {}".format(pipeline))
     if pipeline:
         # Use the pipeline that was fitted for this task.
         pipe = load(get_pipefile())
-        predictions = pipe.predict(data.problem)
+        predictions = pipe.predict(column)
     else:
         # Use the classifier and vectoriser that were fitted for this task.
         classifier = load(get_clsfile())
@@ -340,26 +328,27 @@ def do_detection(pipeline=True):
         predictions = classifier.predict(feature_vects)
 
     # Predictions output.
-    data.loc[:, "prediction"] = predictions
-    data = data.reindex(columns=["id", "problem", "prediction"])
-    data.to_csv(
-        format_path_out("ords_lang_results_detection", "csv", file_suffix), index=False
-    )
-    return data
+    data = data.with_columns(prediction=predictions)
+    data.write_csv(format_path_out("ords_lang_results_detection", "csv"))
 
 
-# Find records that were missed.
-# Can uncover issues with the source translation.
-def misses_report(type):
+# Can uncover translations where original text no longer exists or has changed.
+# Requires database with latest translations.
+# To Do: refactor for dataframe.
+def missing_problem_text(type):
+
     logger.debug("misses_report: {}".format(type))
-    df_in = pd.read_csv(
-        format_path_out("ords_lang_misses_{}".format(type), "csv", file_suffix),
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
+    # problem_orig,problem,sentence,language,country,prediction
+    df_in = pl.read_csv(
+        format_path_out("ords_lang_misses_{}".format(type), "csv", file_suffix)
     )
+    cols = df_in.columns
+    language = cols.index("language")
+    problem = cols.index("problem")
+    problem_orig = cols.index("problem_orig")
+    prediction = cols.index("prediction")
     results = []
-    for i, row in df_in.iterrows():
+    for row in df_in.iter_rows():
         sql = """
         SELECT
         id_ords,
@@ -373,44 +362,41 @@ def misses_report(type):
         WHERE `problem` = %(problem)s
         ORDER BY id_ords
         """
-        db_res = dbfuncs.query_fetchall(
-            sql.format(row["language"], row["prediction"]),
-            {"problem": row["problem_orig"]},
+        db_res = dbfuncs.mysql_query_fetchall(
+            sql.format(row[language], row[prediction]),
+            {"problem": row[problem]},
         )
         if (not db_res) or len(db_res) == 0:
-            logger.debug("NOT FOUND: {}".format(row["problem_orig"]))
+            logger.debug("NOT FOUND: {}".format(row[problem_orig]))
         else:
             results.extend(db_res)
 
-    df_out = pd.DataFrame(data=results).sort_values(by=["id_ords"])
-    df_out.to_csv(
-        format_path_out("ords_lang_misses_{}_ids".format(type), "csv", file_suffix),
-        index=False,
-    )
-    logger.debug("misses: {}".format(len(df_out.index)))
+    df_out = pl.DataFrame(data=results).sort("id_ords")
+    df_out.write_csv(format_path_out("ords_lang_misses_{}_ids".format(type), "csv"))
+    logger.debug("misses: {}".format(df_out.height))
 
 
 # Just checking lengths of sentences sent to classifier.
-def short_misses_report():
-    logger.debug("misses_report")
-    df_t = pd.read_csv(
-        format_path_out("ords_lang_misses_training", "csv", file_suffix),
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
+def misses_by_sentence_length():
+    logger.debug("short_misses_report")
+    df_t = pl.read_csv(
+        format_path_out("ords_lang_misses_training", "csv", file_suffix)
     )[["sentence"]]
-    df_v = pd.read_csv(
-        format_path_out("ords_lang_misses_validation", "csv", file_suffix),
-        dtype=str,
-        keep_default_na=False,
-        na_values="",
+    df_v = pl.read_csv(
+        format_path_out("ords_lang_misses_validation", "csv", file_suffix)
     )[["sentence"]]
-    df_in = pd.concat([df_t, df_v])
-    df_out = df_in[(df_in["sentence"].apply(lambda s: len(str(s)) in range(0, 16)))]
-    df_out.to_csv(
-        format_path_out("ords_lang_misses_short", "csv", file_suffix), index=False
+    df_out = (
+        pl.concat([df_t, df_v])
+        .unique()
+        .with_columns(chars=pl.col("sentence").str.len_chars())
     )
-    logger.debug("misses short: {}".format(len(df_out.index)))
+    df_out.write_csv(format_path_out("ords_lang_misses_short", "csv", file_suffix))
+    logger.debug("misses short: {}".format(df_out.height))
+    logger.debug(
+        df_out.describe(
+            percentiles=[0.1, 0.3, 0.5, 0.7, 0.9],
+        )
+    )
 
 
 def get_pipefile():
@@ -449,10 +435,10 @@ def get_options():
         0: "exit()",
         1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
         2: "do_training()",
-        3: "misses_report('training')",
+        3: "missing_problem_text('training')",
         4: "do_validation()",
-        5: "misses_report('validation')",
-        6: "short_misses_report()",
+        5: "missing_problem_text('validation')",
+        6: "misses_by_sentence_length()",
         7: "do_detection()",
         8: "experiment()",
     }
