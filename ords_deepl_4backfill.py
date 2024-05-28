@@ -16,28 +16,29 @@ Step 4: ords_deepl_4backfill.py
 """
 
 import deepl
-import polars as pl
+import pandas as pd
 from funcs import *
 
 dbfuncs.dbvars = cfg.get_dbvars()
 
 
 def find_existing_translation_for_col(problem, column):
-    sql = """
-    SELECT problem, {0}, COUNT(*) as records
+    sql = f"""
+    SELECT problem, {column}, COUNT(*) as records
     FROM ords_problem_translations
     WHERE problem = %(problem)s
-    AND {0} IS NOT NULL
-    GROUP BY problem, {0}
+    AND {column} IS NOT NULL
+    GROUP BY problem, {column}
     HAVING records > 1
     ORDER BY records DESC
     LIMIT 1;
-    """.format(
-        column
-    )
+    """
+    # .format(
+    #     column
+    # )
     work = pd.DataFrame(
-        dbfuncs.query_fetchall(
-            sql.format(tablename=cfg.get_envvar("ORDS_DATA")), {"problem": problem}
+        dbfuncs.mysql_query_fetchall(
+            sql, {"problem": problem}
         )
     )
     return work
@@ -60,10 +61,10 @@ def get_work_for_null_lang_vals(cols, max=100):
         )
         logger.debug(sql)
         work = pd.DataFrame(
-            dbfuncs.query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
+            dbfuncs.mysql_query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
         )
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
         work = pd.DataFrame()
     finally:
         return work
@@ -82,7 +83,7 @@ def translate_empty_only(data, langdict):
                     # The "detected" language is the known language
                     if row[column] == None:
                         t_lang = langdict[column]
-                        print("{} : {} : {}".format(i, row.id_ords, t_lang))
+                        print(f"{i} : {row.id_ords} : {t_lang}")
                         # Has a language been detected for this problem?
                         # Is the target language the same as the detected language?
                         if d_lang == t_lang:
@@ -90,7 +91,7 @@ def translate_empty_only(data, langdict):
                             text = row.problem
                         else:
                             # No existing translation so fetch from API.
-                            logger.debug("{} is new... translating".format(row.id_ords))
+                            logger.debug(f"{row.id_ords} is new... translating")
                             try:
                                 result = translator.translate_text(
                                     row.problem,
@@ -99,17 +100,17 @@ def translate_empty_only(data, langdict):
                                 )
                                 text = result.text
                             except deepl.DeepLException as error:
-                                print("exception: {}".format(error))
+                                print(f"Exception: {error}")
                                 return data
 
                         data.at[i, column] = text
                 else:
                     # Translation exists so copy from existing.
-                    logger.debug("{} exists... copying".format(row.id_ords))
+                    logger.debug(f"{row.id_ords} exists... copying")
                     data.at[i, column] = found[column].values[0]
 
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
     finally:
         return data
@@ -118,31 +119,31 @@ def translate_empty_only(data, langdict):
 # Default: replace entire row.
 # Or single element list e.g.: ['fr'], replace one column only.
 def insert_data(data, columns=[]):
-
+    tablename = "ords_problem_translations"
     if data.empty:
         print("No data to write.")
         return False
 
     if len(columns) == 1:
         column = columns.pop()
-        cfile = cfg.OUT_DIR + "/deepl_backfilled_lang_{}.csv".format(column)
+        cfile = f"{cfg.OUT_DIR}/deepl_backfilled_lang_{column}.csv"
         vals = list(zip(data[column], data["id_ords"]))
-        sql = """UPDATE `ords_problem_translations` SET `{}`=%s WHERE id_ords=%s"""
-        result = dbfuncs.executemany(sql.format(column), vals)
+        sql = f"""UPDATE {tablename} SET `{column}`=%s WHERE id_ords=%s"""
+        result = dbfuncs.mysql_executemany(sql, vals)
     else:
-        cfile = cfg.OUT_DIR + "/deepl_backfilled_lang_all.csv"
+        cfile = f"{cfg.OUT_DIR}/deepl_backfilled_lang_all.csv"
         vals = list(zip(*[data[col] for col in data]))
         logger.debug(vals)
-        sql = """REPLACE INTO `ords_problem_translations` (`{}`) VALUES ({})""".format(
+        sql = """REPLACE INTO `{}` (`{}`) VALUES ({})""".format(tablename,
             "`,`".join(data.columns), ",".join(["%s"] * len(data.columns))
         )
         logger.debug(sql)
-        result = dbfuncs.executemany(sql, vals)
+        result = dbfuncs.mysql_executemany(sql, vals)
 
-    logger.debug("{} updated in {}".format(result, "ords_problem_translations"))
+    logger.debug(f"{result} updated in {tablename}")
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
-    print("New data written to {}".format(cfile))
+    print(f"New data written to {cfile}")
 
     return True
 
@@ -171,9 +172,7 @@ if __name__ == "__main__":
     columns = deeplfuncs.deeplWrapper.get_columns()
     limit = 10000
     work = get_work_for_null_lang_vals(columns, limit)
-    print(work.count())
-    logger.debug(work.count())
-    work.to_csv(cfg.OUT_DIR + "/deepl_backfill_work.csv", index=False)
+    work.to_csv("f{cfg.OUT_DIR}/deepl_backfill_work.csv", index=False)
 
     if limit_reached:
         exit()
@@ -181,7 +180,7 @@ if __name__ == "__main__":
         # Backfilling any empty columns: deeplfuncs.deeplWrapper.langdict
         # Backfilling one column only, e.g. Danish: {'da':'da'}
         data = translate_empty_only(work, deeplfuncs.deeplWrapper.langdict)
-        data.to_csv(cfg.OUT_DIR + "/deepl_backfill_latest.csv", index=False)
+        data.to_csv(f"{cfg.OUT_DIR}/deepl_backfill_latest.csv", index=False)
         if not mock:
             insert_data(data, columns)
             dbfuncs.dump_table_to_csv("ords_problem_translations", cfg.DATA_DIR)

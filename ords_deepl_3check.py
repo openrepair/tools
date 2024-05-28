@@ -15,7 +15,7 @@ Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
 
-import polars as pl
+import pandas as pd
 from funcs import *
 
 dbfuncs.dbvars = cfg.get_dbvars()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         GROUP BY language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
 
     # Outlier languages detected.
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         GROUP BY language_known, language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
 
     # Detected language does not match "known" language.
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         GROUP BY language_known, language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
     sql = """
         SELECT id_ords, language_known, language_detected, problem
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         WHERE language_detected != language_known
         ORDER BY language_known, language_detected
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)
 
     # Identical translations across languages.
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         AND `es` = `problem`
         AND `da` = `problem`)
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)
 
     # Missing translations across languages.
@@ -106,5 +106,5 @@ if __name__ == "__main__":
         WHERE CONCAT(`en`,`de`,`nl`,`fr`,`it`,`es`,`da`) IS NULL
         OR (`en` = '' OR `de` = '' OR `nl` = '' OR `fr` = '' OR `it` = '' OR `es` = '' OR `da` = '');
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)

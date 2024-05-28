@@ -19,7 +19,7 @@ Step 4: ords_deepl_4backfill.py
 import re
 from joblib import load
 import deepl
-import polars as pl
+import pandas as pd
 from funcs import *
 
 dbfuncs.dbvars = cfg.get_dbvars()
@@ -55,7 +55,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     """
     args = {"limit": max, "chars": minlen}
     work = pd.DataFrame(
-        dbfuncs.query_fetchall(
+        dbfuncs.mysql_query_fetchall(
             sql.format(tablename=cfg.get_envvar("ORDS_DATA"), clause=clause), args
         )
     )
@@ -155,7 +155,7 @@ def translate(data, mock=True):
         # For each record fetch a translation for each target language.
         for i, row in data.iterrows():
             # Is there already a translation for this text?
-            found = pd.DataFrame(dbfuncs.query_fetchall(sql, {"problem": row.problem}))
+            found = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql, {"problem": row.problem}))
             if found.empty:
                 # No existing translation so fetch from API.
                 d_lang = None
@@ -250,7 +250,7 @@ def detect_language(data):
     lang_obj_path = cfg.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
         print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
-        print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
+        print("TO FIX THIS .mysql_execute: ords_lang_training_sentence.py")
         exit()
 
     model = load(lang_obj_path)
@@ -280,17 +280,17 @@ def detect_language(data):
 def check_requirements():
 
     sql = "SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
-    ok = dbfuncs.query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
+    ok = dbfuncs.mysql_query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
     if not ok:
         print("DATABASE ERROR: {}".format(cfg.get_envvar("ORDS_DATA")))
-        print("TO FIX THIS EXECUTE: ords_db_mysql_setup.py")
+        print("TO FIX THIS .mysql_execute: ords_db_mysql_setup.py")
     else:
         print("OK: table exists {}".format(cfg.get_envvar("ORDS_DATA")))
 
-    ok = dbfuncs.query_fetchall(sql.format(tablename="ords_problem_translations"))
+    ok = dbfuncs.mysql_query_fetchall(sql.format(tablename="ords_problem_translations"))
     if not ok:
         print("DATABASE ERROR: {}".format("ords_problem_translations"))
-        print("TO FIX THIS EXECUTE: ords_deepl1_setup.py")
+        print("TO FIX THIS .mysql_execute: ords_deepl1_setup.py")
     else:
         print("OK: table exists {}".format("ords_problem_translations"))
 
@@ -350,7 +350,7 @@ def get_options():
     lang = "en"
     print("Mock={}".format(mock))
     # Maximum no. of records to process, 10000 recommended for live run.
-    max = 10000
+    max = 10
     # Exclude records with problem text having characters less than this value.
     minlen = 16
     return {
