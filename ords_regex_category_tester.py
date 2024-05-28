@@ -28,9 +28,9 @@ def get_matches(category, term, lang, rx):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    rexes = pl.read_csv(ordsfuncs.DATA_DIR + "/product_category_regexes.csv")
+    rexes = pl.read_csv(cfg.DATA_DIR + "/product_category_regexes.csv")
 
     # Pre-compile the regexes
     rexes = rexes.with_columns(
@@ -40,11 +40,11 @@ if __name__ == "__main__":
     )
 
     # Changes to the ORDS categories will require updates to the regexes.
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
     # A set of real-world product term translations.
     allterms = pl.read_csv(
-        ordsfuncs.DATA_DIR + "/ords_testdata_multilingual_products.csv"
+        cfg.DATA_DIR + "/ords_testdata_multilingual_products.csv"
     )
     langs = ["en", "nl", "fr", "de"]
     results = []
@@ -79,4 +79,4 @@ if __name__ == "__main__":
         },
     )
 
-    results.write_csv(ordsfuncs.OUT_DIR + "/product_category_regex_test_results.csv")
+    results.write_csv(cfg.OUT_DIR + "/product_category_regex_test_results.csv")

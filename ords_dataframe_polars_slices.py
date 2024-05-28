@@ -149,7 +149,7 @@ def slice_item_types(df):
 # Countries and groups.
 def slice_countries(df):
 
-    countries = pl.read_csv(ordsfuncs.DATA_DIR + "/iso_country_codes.csv").sort("iso")
+    countries = pl.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv").sort("iso")
     logger.debug(countries)
     dfsub = (
         df.select(
@@ -180,14 +180,16 @@ def write_to_files(df, suffix, sample=0):
     if sample:
         df = df.sample(frac=sample, with_replacement=False)
 
-    path = "{}/{}_{}".format(ordsfuncs.OUT_DIR, envfuncs.get_var("ORDS_DATA"), suffix)
+    path = "{}/{}_{}".format(cfg.OUT_DIR, cfg.get_envvar("ORDS_DATA"), suffix)
     df.write_csv(path + ".csv")
+    print(path + ".csv")
     df.write_json(path + ".json", row_oriented=True, pretty=True)
+    print(path + ".json")
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     dt = {
         "product_category_id": pl.Int64,
@@ -198,7 +200,7 @@ if __name__ == "__main__":
         "event_date": pl.Date,
     }
     df = pl.read_csv(
-        "dat/ords/" + envfuncs.get_var("ORDS_DATA") + ".csv",
+        "dat/ords/" + cfg.get_envvar("ORDS_DATA") + ".csv",
         try_parse_dates=True,
         dtypes=dt,
         infer_schema_length=0,

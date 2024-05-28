@@ -15,8 +15,10 @@ Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
 
+import polars as pl
 from funcs import *
-import pandas as pd
+
+dbfuncs.dbvars = cfg.get_dbvars()
 
 
 def backup_only():
@@ -26,7 +28,7 @@ def backup_only():
         FROM ords_problem_translations
         """
         df = pd.DataFrame(dbfuncs.query_fetchall(sql))
-        path_to_csv = pathfuncs.OUT_DIR + "/ords_problem_translations_{}.csv".format(
+        path_to_csv = cfg.OUT_DIR + "/ords_problem_translations_{}.csv".format(
             datefuncs.format_curr_datetime()
         )
         pathfuncs.rm_file(path_to_csv)
@@ -43,7 +45,7 @@ def backup_only():
 
 def setup_database():
 
-    path_to_csv = pathfuncs.DATA_DIR + "/ords_problem_translations.csv"
+    path_to_csv = cfg.DATA_DIR + "/ords_problem_translations.csv"
 
     if not pathfuncs.check_path(path_to_csv):
         print("ERROR: FILE NOT FOUND! {}".format(path_to_csv))
@@ -54,7 +56,7 @@ def setup_database():
 
     # Get translations table schema.
     path_to_sql = pathfuncs.get_path(
-        [pathfuncs.DATA_DIR + "/tableschema_translations_mysql.sql"]
+        [cfg.DATA_DIR + "/tableschema_translations_mysql.sql"]
     )
     print(path_to_sql)
     logger.debug("Reading sql from file {}".format(path_to_sql))
@@ -74,7 +76,7 @@ def setup_database():
 
 def backup_and_replace_file():
     path_to_csv_new = backup_only()
-    path_to_csv_old = pathfuncs.DATA_DIR + "/ords_problem_translations.csv"
+    path_to_csv_old = cfg.DATA_DIR + "/ords_problem_translations.csv"
     pathfuncs.copy_file(path_to_csv_new, path_to_csv_old)
 
 
@@ -108,6 +110,6 @@ def get_options():
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     exec_opt(get_options())

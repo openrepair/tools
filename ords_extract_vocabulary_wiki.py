@@ -46,16 +46,16 @@ def fetch_text(url):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     tokenizer = LemmaTokenizer()
 
     # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
     # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
     # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-    stopfile1 = open(ordsfuncs.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
     # ORDS corpus custom stopwords.
-    stopfile2 = open(ordsfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     vocab = {"term": tv.vocabulary_.keys(), "idx": tv.vocabulary_.values()}
     df = pl.DataFrame(data=vocab, schema={"term": pl.String, "idx": pl.Int64})
 
-    path = ordsfuncs.OUT_DIR + "/ords_vocabulary_wiki_Vacuum.csv"
+    path = cfg.OUT_DIR + "/ords_vocabulary_wiki_Vacuum.csv"
     df.write_csv(path)

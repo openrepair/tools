@@ -10,7 +10,7 @@ from funcs import *
 
 # Using English language records (assumed by country).
 def get_data():
-    return ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA")).filter(
+    return ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).filter(
         pl.col("country").is_in(["USA"]),
         pl.col("problem").str.len_chars() > 24,
     )
@@ -48,7 +48,7 @@ def get_products(data, category):
 def fit_products(data):
 
     logger.debug("*** PRODUCT TfidfVectorizer ***")
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     for id, category in categories.iter_rows():
         logger.debug("**** {} ****".format(data, category))
         strings = get_products(data, category)
@@ -80,7 +80,7 @@ def fit_products(data):
 def fit_problem_text(data):
 
     logger.debug("*** PROBLEM ***")
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     logger.debug("*** TfidfVectorizer ***")
     for id, category in categories.iter_rows():
         logger.debug("**** {} ****".format(category))
@@ -136,7 +136,7 @@ def fit_problem_text(data):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     data = get_data()
     fit_products(data)

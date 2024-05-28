@@ -16,12 +16,12 @@ from funcs import *
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     DetectorFactory.seed = 0
 
     data = (
-        ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+        ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
         .drop_nulls(subset="problem")
     )
     data = data.filter(pl.col("problem").str.len_chars() > 64).sample(10)
@@ -30,4 +30,4 @@ if __name__ == "__main__":
             lambda p: detect(p), return_dtype=pl.String
         ))
     logger.debug(data)
-    data.write_csv(ordsfuncs.OUT_DIR + "/ords_lang_detect.csv")
+    data.write_csv(cfg.OUT_DIR + "/ords_lang_detect.csv")

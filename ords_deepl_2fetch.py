@@ -16,11 +16,13 @@ Step 4: ords_deepl_4backfill.py
 """
 
 
-from funcs import *
-from joblib import load
-import pandas as pd
-import deepl
 import re
+from joblib import load
+import deepl
+import polars as pl
+from funcs import *
+
+dbfuncs.dbvars = cfg.get_dbvars()
 
 
 # Fetch problem text that has not yet been translated.
@@ -54,7 +56,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     args = {"limit": max, "chars": minlen}
     work = pd.DataFrame(
         dbfuncs.query_fetchall(
-            sql.format(tablename=envfuncs.get_var("ORDS_DATA"), clause=clause), args
+            sql.format(tablename=cfg.get_envvar("ORDS_DATA"), clause=clause), args
         )
     )
 
@@ -110,7 +112,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
             dff.language_expected = filterlangs[i]
             work.update(dff)
             dff.to_csv(
-                pathfuncs.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False
+                cfg.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False
             )
 
     logger.debug("*** AFTER FILTERS ***")
@@ -136,7 +138,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     else:
         work = detect_language(data=work)
     logger.debug(work)
-    work.to_csv(pathfuncs.OUT_DIR + "/deepl_work.csv", index=False)
+    work.to_csv(cfg.OUT_DIR + "/deepl_work.csv", index=False)
     return work
 
 
@@ -223,7 +225,7 @@ def insert_data(data):
     if "mismatch" in data.columns:
         data.drop(["mismatch"], axis=1, inplace=True)
 
-    cfile = pathfuncs.OUT_DIR + "/deepl_latest.csv"
+    cfile = cfg.OUT_DIR + "/deepl_latest.csv"
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
     print("New data written to {}".format(cfile))
@@ -245,7 +247,7 @@ def insert_data(data):
 # This should be more accurate than DeepL's language detection, though model still being refined.
 def detect_language(data):
 
-    lang_obj_path = pathfuncs.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
+    lang_obj_path = cfg.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
         print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
         print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
@@ -262,7 +264,7 @@ def detect_language(data):
 
     # Log the mismatches.
     miss = data.loc[data["mismatch"] == True]
-    miss.to_csv(pathfuncs.OUT_DIR + "/deepl_work_lang_mismatch.csv", index=False)
+    miss.to_csv(cfg.OUT_DIR + "/deepl_work_lang_mismatch.csv", index=False)
     # Count the mismatches.
     grp = (
         miss.groupby("country")
@@ -278,12 +280,12 @@ def detect_language(data):
 def check_requirements():
 
     sql = "SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
-    ok = dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var("ORDS_DATA")))
+    ok = dbfuncs.query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
     if not ok:
-        print("DATABASE ERROR: {}".format(envfuncs.get_var("ORDS_DATA")))
+        print("DATABASE ERROR: {}".format(cfg.get_envvar("ORDS_DATA")))
         print("TO FIX THIS EXECUTE: ords_db_mysql_setup.py")
     else:
-        print("OK: table exists {}".format(envfuncs.get_var("ORDS_DATA")))
+        print("OK: table exists {}".format(cfg.get_envvar("ORDS_DATA")))
 
     ok = dbfuncs.query_fetchall(sql.format(tablename="ords_problem_translations"))
     if not ok:
@@ -311,7 +313,7 @@ def do_deepl(mock=True, max=10, minlen=16, clause=1, lang=None):
     data = translate(work, mock)
     if not mock:
         insert_data(data)
-        dbfuncs.dump_table_to_csv("ords_problem_translations", pathfuncs.DATA_DIR)
+        dbfuncs.dump_table_to_csv("ords_problem_translations", cfg.DATA_DIR)
     else:
         logger.debug(data)
     exit()
@@ -366,6 +368,6 @@ def get_options():
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     exec_opt(get_options())

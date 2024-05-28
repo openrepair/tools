@@ -19,7 +19,7 @@ def get_matches(category, row, rx):
 # Split the partner_product_category string.
 def get_item_types():
 
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     data = (
         df.with_columns(
             pl.col("partner_product_category")
@@ -39,9 +39,9 @@ def get_item_types():
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    rexes = pl.read_csv(ordsfuncs.DATA_DIR + "/product_category_regexes.csv")
+    rexes = pl.read_csv(cfg.DATA_DIR + "/product_category_regexes.csv")
 
     # Pre-compile the regexes
     rexes = rexes.with_columns(
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     )
 
     # Changes to the ORDS categories will require updates to the regexes.
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
     itemtypes = get_item_types()
     results = []
@@ -86,4 +86,4 @@ if __name__ == "__main__":
             "match": pl.String,
         },
     )
-    results.write_csv(ordsfuncs.OUT_DIR + "/ords_regex_category_item_types.csv")
+    results.write_csv(cfg.OUT_DIR + "/ords_regex_category_item_types.csv")

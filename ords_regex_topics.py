@@ -26,7 +26,7 @@ def get_item_types(df):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     topics = pl.DataFrame(
         data={
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         rx=pl.col("patt").map_elements(lambda x: re.compile(x), return_dtype=pl.Object)
     )
 
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     itemtypes = get_item_types(df)
     for row in topics.iter_rows():
         topic = row[0]
@@ -142,5 +142,5 @@ if __name__ == "__main__":
         logger.debug(pattern)
         results = df.filter(pl.col("partner_product_category").str.contains(pattern))
         results.write_csv(
-            ordsfuncs.OUT_DIR + "/ords_regex_topic_{}.csv".format(topic),
+            cfg.OUT_DIR + "/ords_regex_topic_{}.csv".format(topic),
         )

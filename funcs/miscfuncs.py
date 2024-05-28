@@ -17,28 +17,6 @@ def build_regex_string(terms, pre=True, aft=True):
     return result
 
 
-def write_data_to_files(dfsub, file, index=False):
-    result = []
-    try:
-        #csv
-        dfsub.to_csv(file + '.csv', index=index)
-        result.append(file + '.csv')
-        # json
-        if not index:
-            dict = dfsub.to_dict('records')
-        else:
-            dict = dfsub.groupby(level=0).apply(
-                lambda x: x.to_dict('records')).to_dict()
-        with open(file + '.json', 'w') as f:
-            json.dump(dict, f, indent=4, ensure_ascii=False)
-        result.append(file + '.json')
-    except Exception as error:
-        print("Exception: {}".format(error))
-    finally:
-        return result
-
-
-
 def randstr(len=0, lo=False, up=False, ws=False, nums=False, punct=False):
     if len == 0:
         len = random.randint(6,12)

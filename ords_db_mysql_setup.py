@@ -3,18 +3,16 @@
 # Creates and populates MYSQL tables with ORDS data.
 
 from funcs import *
-import pandas as pd
-
 
 def log_tables():
     try:
-        row = dbfuncs.show_create_table(table_cats)
+        row = dbfuncs.mysql_show_create_table(table_cats)
         if row:
             logger.debug(row)
             print("See logfile for table structure: {}".format(table_cats))
         else:
             print("Table not found: {}".format(table_cats))
-        row = dbfuncs.show_create_table(table_data)
+        row = dbfuncs.mysql_show_create_table(table_data)
         if row:
             logger.debug(row)
             print("See logfile for table structure: {}".format(table_data))
@@ -26,23 +24,23 @@ def log_tables():
 
 def drop_table(table):
     try:
-        dbfuncs.execute("DROP TABLE IF EXISTS `{}`".format(table))
+        dbfuncs.mysql_execute("DROP TABLE IF EXISTS `{}`".format(table))
     except Exception as error:
         print("Exception: {}".format(error))
 
 
 def put_table(table, sql, indices):
     try:
-        dbfuncs.execute(sql)
+        dbfuncs.mysql_execute(sql)
         for idx in indices:
-            dbfuncs.execute("ALTER TABLE `{}` ADD KEY (`{}`)".format(table, idx))
+            dbfuncs.mysql_execute("ALTER TABLE `{}` ADD KEY (`{}`)".format(table, idx))
     except Exception as error:
         print("Exception: {}".format(table))
         print(error)
 
 
 def get_schemas():
-    schemas = dbfuncs.table_schemas()
+    schemas = ordsfuncs.table_schemas()
     for name, stru in schemas.items():
         sql = """ CREATE TABLE `{}` (""".format(name)
         for field in stru["fields"]:
@@ -68,17 +66,15 @@ def get_schemas():
     return schemas
 
 
-def import_data(table):
+def import_data(tablename, df):
 
-    path = pathfuncs.get_path([pathfuncs.ORDS_DIR, table + ".csv"])
-    logger.debug('Reading file "{}"'.format(path))
-    df = pd.read_csv(path)
-    logger.debug('{} rows to write to table "{}"'.format(len(df), table))
-    rows = df.to_sql(
-        name=table, con=dbfuncs.alchemy_eng(), if_exists="append", index=False
+    logger.debug('{} rows to write to table "{}"'.format(len(df), tablename))
+    rows = df.to_pandas(use_pyarrow_extension_array=True).to_sql(
+        name=tablename, con=dbfuncs.alchemy_eng(), if_exists="append", index=False
     )
-    logger.debug('{} rows written to table "{}"'.format(rows, table))
-    for row in dbfuncs.query_fetchall("SELECT * FROM `{}` LIMIT 1".format(table)):
+
+    logger.debug('{} rows written to table "{}"'.format(rows, tablename))
+    for row in dbfuncs.mysql_query_fetchall("SELECT * FROM `{}` LIMIT 1".format(tablename)):
         print(row)
 
 
@@ -107,16 +103,16 @@ def create_from_schema(schema="json"):
             ]
             logger.debug(schemas[table_data]["sql"])
             put_table(table_data, schemas[table_data]["sql"], indices)
-            dbfuncs.execute(
+            dbfuncs.mysql_execute(
                 "ALTER TABLE `{}` ADD FULLTEXT KEY (`problem`)".format(table_data)
             )
         elif schema == "sql":
             path = pathfuncs.get_path(
-                [pathfuncs.DATA_DIR, "tableschema_ords_mysql.sql"]
+                [cfg.DATA_DIR, "tableschema_ords_mysql.sql"]
             )
             logger.debug('Reading file "{}"'.format(path))
             sql = path.read_text().format(table_cats, table_data)
-            dbfuncs.execute(sql)
+            dbfuncs.mysql_execute(sql)
         log_tables()
     except Exception as error:
         print("Exception: {}".format(error))
@@ -124,13 +120,15 @@ def create_from_schema(schema="json"):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    table_cats = envfuncs.get_var("ORDS_CATS")
-    table_data = envfuncs.get_var("ORDS_DATA")
+    dbfuncs.dbvars = cfg.get_dbvars()
+
+    table_cats = cfg.get_envvar("ORDS_CATS")
+    table_data = cfg.get_envvar("ORDS_DATA")
 
     drop_table(table_cats)
     drop_table(table_data)
     create_from_schema("json")
-    import_data(table_cats)
-    import_data(table_data)
+    import_data(table_cats, ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS")))
+    import_data(table_data, ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")))

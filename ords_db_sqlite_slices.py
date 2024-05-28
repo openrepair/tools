@@ -5,9 +5,10 @@
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
 
+import polars as pl
 from funcs import *
-import pandas as pd
 
+dbfuncs.dbvars = cfg.get_dbvars()
 
 # Events - date range is arbitrary, amend or omit.
 def slice_events():
@@ -125,7 +126,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(pathfuncs.DATA_DIR + "/iso_country_codes.csv")
+    countries = pd.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv")
 
     sql = """
     SELECT
@@ -154,7 +155,7 @@ def write_to_files(dfsub, suffix, index=False, sample=0):
     if sample:
         dfsub = dfsub.sample(frac=sample, replace=False, random_state=1)
 
-    path = "{}/{}_{}".format(pathfuncs.OUT_DIR, tablename, suffix)
+    path = "{}/{}_{}".format(cfg.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(dfsub, path, index)
     for result in results:
         print(result)
@@ -162,9 +163,9 @@ def write_to_files(dfsub, suffix, index=False, sample=0):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    tablename = envfuncs.get_var("ORDS_DATA")
+    tablename = cfg.get_envvar("ORDS_DATA")
     con = dbfuncs.sqlite_connect()
 
     slice_events()

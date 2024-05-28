@@ -10,10 +10,10 @@ from funcs import *
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    testterms = pl.read_csv(ordsfuncs.DATA_DIR + "/ords_testdata_common_products.csv")
-    rxelems = pl.read_csv(ordsfuncs.DATA_DIR + "/product_category_regex_elements.csv")
+    testterms = pl.read_csv(cfg.DATA_DIR + "/ords_testdata_common_products.csv")
+    rxelems = pl.read_csv(cfg.DATA_DIR + "/product_category_regex_elements.csv")
 
     regs = []
     for category in rxelems.columns:
@@ -38,4 +38,4 @@ if __name__ == "__main__":
         schema={"product_category": pl.String, "lang": pl.String, "regex": pl.String},
     )
     logger.debug(results)
-    results.write_csv(ordsfuncs.OUT_DIR + "/product_category_regexes.csv")
+    results.write_csv(cfg.OUT_DIR + "/product_category_regexes.csv")

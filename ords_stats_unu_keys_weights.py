@@ -11,16 +11,16 @@ from funcs import *
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    tablename = envfuncs.get_var("ORDS_DATA")
+    tablename = cfg.get_envvar("ORDS_DATA")
 
     # The data file (roughly) maps categories and average weight estimates between ORDS and UNU-KEYS.
     # See dat/README.md for more details.
-    weights = pl.read_csv(ordsfuncs.DATA_DIR + "/ords_product_category_unu_key_map.csv")
+    weights = pl.read_csv(cfg.DATA_DIR + "/ords_product_category_unu_key_map.csv")
 
     data = (
-        ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+        ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
         .filter(pl.col("repair_status") == pl.lit("Fixed"))
         .join(weights, on="product_category", how="left")
         .group_by(["product_category"])
@@ -32,4 +32,4 @@ if __name__ == "__main__":
             pl.col("unu_2011").sum().round(1).alias("unu_2011_total"),
             pl.col("unu_2012").sum().round(1).alias("unu_2012_total"),
         )
-    ).write_csv(ordsfuncs.OUT_DIR + "/{}_stats_unu_keys_weights.csv".format(tablename))
+    ).write_csv(cfg.OUT_DIR + "/{}_stats_unu_keys_weights.csv".format(tablename))

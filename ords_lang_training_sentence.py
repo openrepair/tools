@@ -20,9 +20,8 @@ import nltk
 import polars as pl
 from funcs import *
 
-
 def format_path_out(filename, ext="csv", suffix=""):
-    return "{}/{}_{}.{}".format(ordsfuncs.OUT_DIR, filename, suffix, ext)
+    return "{}/{}_{}.{}".format(cfg.OUT_DIR, filename, suffix, ext)
 
 
 # Use this to check for best value and set it as default
@@ -59,7 +58,7 @@ def get_alpha(data, labels, vects, search=False):
 
 # In the case of repair data, ignore acronyms and jargon.
 def get_stopwords():
-    stopfile = open(ordsfuncs.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
+    stopfile = open(cfg.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
     stoplist = list(stopfile.read().replace("\n", " "))
     stopfile.close()
     return stoplist
@@ -81,7 +80,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         "da": "danish",
     }
     # Read input DataFrame.
-    df_in = pl.read_csv(ordsfuncs.DATA_DIR + "/ords_problem_translations.csv").filter(
+    df_in = pl.read_csv(cfg.DATA_DIR + "/ords_problem_translations.csv").filter(
         pl.col("language_known") != pl.lit("??")
     )
     logger.debug("Total translation records: {}".format(df_in.height))
@@ -312,7 +311,7 @@ def do_validation(pipeline=True):
 # Use model on untrained data, with either pipeline or vect/class objects.
 def do_detection(pipeline=True):
 
-    data = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     column = data["problem"]
 
     logger.debug("** DETECT : using pipeline - {}".format(pipeline))
@@ -336,6 +335,8 @@ def do_detection(pipeline=True):
 # Requires database with latest translations.
 # To Do: refactor for dataframe.
 def missing_problem_text(type):
+
+    dbfuncs.dbvars = cfg.get_dbvars()
 
     logger.debug("misses_report: {}".format(type))
     # problem_orig,problem,sentence,language,country,prediction
@@ -448,7 +449,7 @@ if __name__ == "__main__":
 
     # Enable selected funcs from this file to be imported from other files.
     file_suffix = "sentence"
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     nltk.download("punkt")
     exec_opt(get_options())

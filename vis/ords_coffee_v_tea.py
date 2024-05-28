@@ -4,20 +4,32 @@
 # Standalone script to dump a JSON dataset for use in data visualisation.
 
 import mysql.connector
+import ast
 import os
 import json
 import pandas as pd
 from dotenv import load_dotenv
 
 
+def get_dbvars(con="ORDS_DB_CONN"):
+
+    try:
+        dbstr = os.environ.get("ORDS_DB_CONN")
+        return dbdict
+    except Exception as error:
+        print("Exception: {}".format(error))
+        return False
+
+
 def query_fetchall(sql):
     result = False
     try:
+        dbvars = ast.literal_eval(os.environ.get("ORDS_DB_CONN"))
         dbh = mysql.connector.connect(
-            host=os.environ["ORDS_DB_HOST"],
-            database=os.environ["ORDS_DB_DATABASE"],
-            user=os.environ["ORDS_DB_USER"],
-            password=os.environ["ORDS_DB_PWD"],
+            host=dbvars["host"],
+            database=dbvars["database"],
+            user=dbvars["user"],
+            password=dbvars["pwd"],
         )
         cursor = dbh.cursor(dictionary=True)
         cursor.execute(sql)
@@ -48,10 +60,24 @@ if __name__ == "__main__":
         ORDER BY country, product_category, records DESC;
         """
     dfsub = pd.DataFrame(query_fetchall(sql.format(os.environ["ORDS_DATA"])))
-    with open("vis/ords_coffee_v_tea.json", "w") as f:
+
+    dict = (
+        dfsub.set_index("country")
+        .groupby(level=0)
+        .apply(lambda x: x.to_dict("records"))
+        .to_dict()
+    )
+
+    file = "vis/ords_coffee_v_tea"
+    with open(file + ".json", "w") as f:
         json.dump(
-            dfsub.set_index("country").to_dict("records"),
+            dict,
             f,
             indent=4,
             ensure_ascii=False,
         )
+    with open(file + ".json", "r") as f:
+        data = f.read()
+
+    with open(file + ".js", "w") as f:
+        f.write("data=" + data)

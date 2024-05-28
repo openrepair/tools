@@ -52,10 +52,10 @@ def log_vectors(title):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     docs = list(
-        pl.read_csv(ordsfuncs.DATA_DIR + "/quests/vacuums/dustup.csv")
+        pl.read_csv(cfg.DATA_DIR + "/quests/vacuums/dustup.csv")
         .filter(pl.col("country") == pl.lit("USA"))
         .select(
             pl.col("id_ords"),

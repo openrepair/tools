@@ -28,6 +28,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
+  <script src="ords_coffee_v_tea.js"></script>
   <script>
 
     // https://www.chartjs.org/
@@ -35,11 +36,12 @@
     document.addEventListener("DOMContentLoaded", function (event) {
 
       console.log('ready');
-
+      console.log(data)
+      draw(data)
       // Load the dataset produced by the Python script.
-      fetch('ords_coffee_v_tea.json')
-        .then((response) => response.json())
-        .then((data) => draw(data));
+      // fetch('ords_coffee_v_tea.json')
+      //   .then((response) => response.json())
+      //   .then((data) => draw(data));
 
     });
 

@@ -12,7 +12,7 @@ from funcs import *
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     nltk.download("punkt")
     nltk.download("stopwords")
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     # Filter for small subset with English language text.
     # Filter for decent length strings in the `problem` column.
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     df_data = df.filter(
         pl.col("country") == pl.lit("USA"),
         pl.col("problem").str.len_chars() > 24,
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         )
     )
 
-    df_cats = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    df_cats = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
     for i, category in df_cats.iter_rows():
         logger.debug("**** {} ****".format(category))

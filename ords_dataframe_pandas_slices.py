@@ -99,7 +99,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(ordsfuncs.DATA_DIR + "/iso_country_codes.csv")
+    countries = pd.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv")
 
     dfsub = df.reindex(columns=["country", "group_identifier"]).rename(
         columns={"country": "iso", "group_identifier": "group"}
@@ -120,7 +120,7 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    path = "{}/{}_{}".format(ordsfuncs.OUT_DIR, tablename, suffix)
+    path = "{}/{}_{}".format(cfg.OUT_DIR, tablename, suffix)
     results = miscfuncs.write_data_to_files(df, path, index)
     for result in results:
         print(result)
@@ -128,14 +128,14 @@ def write_to_files(df, suffix, index=False, sample=0):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Get the name of the data file from the .env file.
-    tablename = envfuncs.get_var("ORDS_DATA")
+    tablename = cfg.get_envvar("ORDS_DATA")
 
     # Read the data file as type string with na values set to empty string.
     df = pd.read_csv(
-        ordsfuncs.csv_path_ords(envfuncs.get_var("ORDS_DATA")),
+        ordsfuncs.csv_path_ords(cfg.get_envvar("ORDS_DATA")),
         dtype=str,
         keep_default_na=False,
         na_values="",

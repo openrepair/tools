@@ -174,8 +174,8 @@ class LemmaTokenizer:
 
 
 def get_stopwords():
-    stopfile1 = open(ordsfuncs.DATA_DIR + "/stopwords-english.txt", "r")
-    stopfile2 = open(ordsfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -302,12 +302,12 @@ def do_test(data, category, countries):
 
 
 def format_path(filename, ext="csv"):
-    return "{}/{}_{}.{}".format(ordsfuncs.OUT_DIR, filename, quest, ext)
+    return "{}/{}_{}.{}".format(cfg.OUT_DIR, filename, quest, ext)
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Available quest datasets.
     # See dat/quests for details.
@@ -323,7 +323,7 @@ if __name__ == "__main__":
     # Select a dataset 0 to 5.
     quest, path, category = quests[5]
 
-    logger = logfuncs.init_logger("ords_quest_training_" + quest)
+    logger = cfg.init_logger("ords_quest_training_" + quest)
 
     # Path to the classifier and vectoriser objects for dump/load.
     clsfile = format_path("ords_quest_obj_nbcl", "joblib")
@@ -341,7 +341,7 @@ if __name__ == "__main__":
     # See `ords_extract_vocabulary.py`
     vocabulary = False
     # vocabulary = list(
-    #     pl.read_csv(ordsfuncs.OUT_DIR + "/ords_vocabulary_problem.csv")
+    #     pl.read_csv(cfg.OUT_DIR + "/ords_vocabulary_problem.csv")
     #     .filter(pl.col("product_category") == category)
     #     .group_by(["term"])
     # )
@@ -383,7 +383,7 @@ if __name__ == "__main__":
         do_validation(data)
 
     # Read the entire ORDS export.
-    data = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     # The function will filter the data for the appropriate product_category.
     # The subset will contain the training and validation data
     # but does not have a fault_type column and id_ords may not match.

@@ -20,7 +20,7 @@ from funcs import *
 
 def get_data():
 
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA"))
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     df = (
         df.drop_nulls(subset=["year_of_manufacture"])
         .filter(
@@ -98,11 +98,11 @@ def process_age_data(data):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Read the timeline data.
     df_ref = pl.read_csv(
-        ordsfuncs.DATA_DIR + "/consumer_electronics_timeline.csv"
+        cfg.DATA_DIR + "/consumer_electronics_timeline.csv"
     ).drop_nulls(subset=["earliest"])
 
     # Read the ORDS data.
@@ -118,14 +118,14 @@ if __name__ == "__main__":
         (pl.col("is_vintage") == True) | (pl.col("is_antique") == True)
     ).sort("product_category")
     df_1.write_csv(
-        ordsfuncs.OUT_DIR
-        + "/{}_product_ages_vintage.csv".format(envfuncs.get_var("ORDS_DATA")),
+        cfg.OUT_DIR
+        + "/{}_product_ages_vintage.csv".format(cfg.get_envvar("ORDS_DATA")),
     )
 
     df_2 = df_out.filter(
         (pl.col("is_impossible") == True) | (pl.col("is_mistake") == True)
     ).sort("product_category")
     df_2.write_csv(
-        ordsfuncs.OUT_DIR
-        + "/{}_product_ages_impossible.csv".format(envfuncs.get_var("ORDS_DATA")),
+        cfg.OUT_DIR
+        + "/{}_product_ages_impossible.csv".format(cfg.get_envvar("ORDS_DATA")),
     )

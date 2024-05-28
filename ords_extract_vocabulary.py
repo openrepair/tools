@@ -31,9 +31,9 @@ def get_vectorizer():
     # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
     # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
     # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-    stopfile1 = open(ordsfuncs.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
     # ORDS corpus custom stopwords.
-    stopfile2 = open(ordsfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -50,7 +50,7 @@ def get_vectorizer():
 # Using English language records (assumed by country).
 def get_products(category):
 
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA")).filter(
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).filter(
         pl.col("product_category") == category,
         pl.col("country").is_in(["USA", "GBR", "AUS", "IRL", "JEY", "NZL"]),
     )
@@ -64,7 +64,7 @@ def get_products(category):
 
 def get_problem_text(category):
 
-    df = ordsfuncs.get_data(envfuncs.get_var("ORDS_DATA")).filter(
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).filter(
         pl.col("product_category") == category,
         pl.col("country").is_in(["USA", "GBR", "AUS", "IRL", "JEY", "NZL"]),
     )
@@ -79,7 +79,7 @@ def fit_products():
 
     logger.debug("*** ITEM TYPE ***")
     # Changes to the ORDS categories will require updates to the regexes.
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     tv = get_vectorizer()
 
     df_out = pl.DataFrame(
@@ -111,17 +111,17 @@ def fit_products():
         df_out.extend(df_tmp)
         logger.debug(df_out.height)
 
-    df_out.write_csv(ordsfuncs.OUT_DIR + "/ords_vocabulary_products.csv")
+    df_out.write_csv(cfg.OUT_DIR + "/ords_vocabulary_products.csv")
 
     df_out.group_by(["term"]).len(name="records").sort(
         "records", descending=True
-    ).write_csv(ordsfuncs.OUT_DIR + "/ords_vocabulary_products_freq.csv")
+    ).write_csv(cfg.OUT_DIR + "/ords_vocabulary_products_freq.csv")
 
 
 def fit_problem_text():
 
     logger.debug("*** PROBLEM ***")
-    categories = ordsfuncs.get_categories(envfuncs.get_var("ORDS_CATS"))
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     tv = get_vectorizer()
     df_out = pl.DataFrame(
         schema={
@@ -152,16 +152,16 @@ def fit_problem_text():
         df_out.extend(df_tmp)
         logger.debug(df_out.height)
 
-    df_out.write_csv(ordsfuncs.OUT_DIR + "/ords_vocabulary_problem.csv")
+    df_out.write_csv(cfg.OUT_DIR + "/ords_vocabulary_problem.csv")
 
     df_out.group_by(["term"]).len(name="records").sort(
         "records", descending=True
-    ).write_csv(ordsfuncs.OUT_DIR + "/ords_vocabulary_problem_freq.csv")
+    ).write_csv(cfg.OUT_DIR + "/ords_vocabulary_problem_freq.csv")
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     fit_products()
     fit_problem_text()

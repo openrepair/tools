@@ -15,9 +15,11 @@ Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
 
-from funcs import *
-import pandas as pd
 import deepl
+import polars as pl
+from funcs import *
+
+dbfuncs.dbvars = cfg.get_dbvars()
 
 
 def find_existing_translation_for_col(problem, column):
@@ -35,7 +37,7 @@ def find_existing_translation_for_col(problem, column):
     )
     work = pd.DataFrame(
         dbfuncs.query_fetchall(
-            sql.format(tablename=envfuncs.get_var("ORDS_DATA")), {"problem": problem}
+            sql.format(tablename=cfg.get_envvar("ORDS_DATA")), {"problem": problem}
         )
     )
     return work
@@ -58,7 +60,7 @@ def get_work_for_null_lang_vals(cols, max=100):
         )
         logger.debug(sql)
         work = pd.DataFrame(
-            dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var("ORDS_DATA")))
+            dbfuncs.query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
         )
     except Exception as error:
         print("Exception: {}".format(error))
@@ -123,12 +125,12 @@ def insert_data(data, columns=[]):
 
     if len(columns) == 1:
         column = columns.pop()
-        cfile = pathfuncs.OUT_DIR + "/deepl_backfilled_lang_{}.csv".format(column)
+        cfile = cfg.OUT_DIR + "/deepl_backfilled_lang_{}.csv".format(column)
         vals = list(zip(data[column], data["id_ords"]))
         sql = """UPDATE `ords_problem_translations` SET `{}`=%s WHERE id_ords=%s"""
         result = dbfuncs.executemany(sql.format(column), vals)
     else:
-        cfile = pathfuncs.OUT_DIR + "/deepl_backfilled_lang_all.csv"
+        cfile = cfg.OUT_DIR + "/deepl_backfilled_lang_all.csv"
         vals = list(zip(*[data[col] for col in data]))
         logger.debug(vals)
         sql = """REPLACE INTO `ords_problem_translations` (`{}`) VALUES ({})""".format(
@@ -147,7 +149,7 @@ def insert_data(data, columns=[]):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Allows for trial and error without using up API credits.
     # Should create a test and use mock there, ideally.
@@ -171,7 +173,7 @@ if __name__ == "__main__":
     work = get_work_for_null_lang_vals(columns, limit)
     print(work.count())
     logger.debug(work.count())
-    work.to_csv(pathfuncs.OUT_DIR + "/deepl_backfill_work.csv", index=False)
+    work.to_csv(cfg.OUT_DIR + "/deepl_backfill_work.csv", index=False)
 
     if limit_reached:
         exit()
@@ -179,9 +181,9 @@ if __name__ == "__main__":
         # Backfilling any empty columns: deeplfuncs.deeplWrapper.langdict
         # Backfilling one column only, e.g. Danish: {'da':'da'}
         data = translate_empty_only(work, deeplfuncs.deeplWrapper.langdict)
-        data.to_csv(pathfuncs.OUT_DIR + "/deepl_backfill_latest.csv", index=False)
+        data.to_csv(cfg.OUT_DIR + "/deepl_backfill_latest.csv", index=False)
         if not mock:
             insert_data(data, columns)
-            dbfuncs.dump_table_to_csv("ords_problem_translations", pathfuncs.DATA_DIR)
+            dbfuncs.dump_table_to_csv("ords_problem_translations", cfg.DATA_DIR)
         else:
             logger.debug(data)
