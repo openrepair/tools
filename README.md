@@ -63,25 +63,23 @@ It is compiled and published by the [Open Repair Alliance (ORA)](https://openrep
 * Python with venv module.
 * Optional MySQL 8.x and libmysqlclient-dev.
 
-### Working copy
-
-```git clone git@github.com:openrepair/tools.git ./ords-tools```
-
 ### Virtual environment
 
 ```python3 -m venv ords-tools```
 
 ```cd ords-tools```
 
+```git init```
+
+```git remote add origin git@github.com:openrepair/tools.git```
+
+```git pull origin main```
+
+```git branch --set-upstream-to=origin/main main```
+
 ```source bin/activate```
 
-To install the requirements.
-
 ```pip install -r requirements.txt```
-
-To upgrade to the newest requirements.
-
-```pip install -r requirements.txt --upgrade```
 
 ### Data
 
@@ -92,8 +90,6 @@ Grab the [Aggregated Open Repair Data files](https://openrepair.org/open-data/do
 Copy ```.env.example``` to ```.env``` and edit as necessary.
 
 ```.env``` is in .gitignore, do not add it to this repo.
-
-[.env file documentation](https://saurabh-kumar.com/python-dotenv/#file-format)
 
 ## Links
 
@@ -107,17 +103,7 @@ Copy ```.env.example``` to ```.env``` and edit as necessary.
 
 ### Python
 
-[Python and Virtual Environments](https://csguide.cs.princeton.edu/software/virtualenv#scm)
-
-[Using Python environments in VS Code](https://code.visualstudio.com/docs/python/environments)
-
 [Python](https://docs.python.org/)
-
-[W3 Schools Python](https://www.w3schools.com/python/)
-
-[Numpy](https://numpy.org/)
-
-[Pandas](https://pandas.pydata.org/)
 
 [Scikit-learn](https://scikit-learn.org/)
 
@@ -129,14 +115,4 @@ Copy ```.env.example``` to ```.env``` and edit as necessary.
 
 [MySQL 8.0 Reference Manual](https://dev.mysql.com/doc/refman/8.0/en/)
 
-[OpenRefine](https://openrefine.org/)
-
-[R](https://www.r-project.org/)
-
-[Apache OpenNLP](https://opennlp.apache.org/)
-
 [Solr](https://solr.apache.org/)
-
-[Data-Driven Documents (D3)](https://d3js.org/)
-
-[Orange](https://orangedatamining.com/)
