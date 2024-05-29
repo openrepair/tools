@@ -28,7 +28,7 @@ class LemmaTokenizer:
 
 def log_vectors(title):
 
-    logger.debug("**** {} ****".format(title))
+    logger.debug(f"**** {title} ****")
 
     logger.debug("** STOP WORDS **")
     logger.debug(vectorizer.get_stop_words())
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     logger = cfg.init_logger(__file__)
 
     docs = list(
-        pl.read_csv(cfg.DATA_DIR + "/quests/vacuums/dustup.csv")
+        pl.read_csv(f"{cfg.DATA_DIR}/quests/vacuums/dustup.csv")
         .filter(pl.col("country") == pl.lit("USA"))
         .select(
             pl.col("id_ords"),

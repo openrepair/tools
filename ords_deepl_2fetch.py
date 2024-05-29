@@ -34,31 +34,27 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     if lang != None:
         langdict = deeplfuncs.deeplWrapper.langdict
         if lang not in langdict.keys():
-            print("INVALID LANGUAGE CODE {}".format(lang))
+            print(f"INVALID LANGUAGE CODE {lang}")
             exit()
-
-    sql = """
-    SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
-    SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
-    FROM `{tablename}` t1
-    LEFT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
-    UNION ALL
-    SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
-    FROM `{tablename}` t1
-    RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
-    ) t3
-    WHERE t3.id_ords IS NULL
-    AND LENGTH(TRIM(t3.problem)) >= %(chars)s
-    AND {clause}
-    ORDER BY t3.country
-    LIMIT %(limit)s
-    """
+    tablename = cfg.get_envvar("ORDS_DATA")
+    sql = f"""
+SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
+SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
+FROM `{tablename}` t1
+LEFT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
+UNION ALL
+SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
+FROM `{tablename}` t1
+RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
+) t3
+WHERE t3.id_ords IS NULL
+AND LENGTH(TRIM(t3.problem)) >= %(chars)s
+AND {clause}
+ORDER BY t3.country
+LIMIT %(limit)s
+"""
     args = {"limit": max, "chars": minlen}
-    work = pd.DataFrame(
-        dbfuncs.mysql_query_fetchall(
-            sql.format(tablename=cfg.get_envvar("ORDS_DATA"), clause=clause), args
-        )
-    )
+    work = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql, args))
 
     # "Nonsense" strings with only punctuation or weights/codes dropped.
     # Assumptions!
@@ -111,7 +107,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
         if dff.size > 0:
             dff.language_expected = filterlangs[i]
             work.update(dff)
-            dff.to_csv(cfg.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False)
+            dff.to_csv(f"{cfg.OUT_DIR}/deepl_work_filter_{i}.csv", index=False)
 
     logger.debug("*** AFTER FILTERS ***")
     logger.debug(work)
@@ -136,19 +132,18 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     else:
         work = detect_language(data=work)
     logger.debug(work)
-    work.to_csv(cfg.OUT_DIR + "/deepl_work.csv", index=False)
+    work.to_csv(f"{cfg.OUT_DIR}/deepl_work.csv", index=False)
     return work
 
 
 def translate(data, mock=True):
     translator = deeplfuncs.deeplWrapper(mock)
     langdict = deeplfuncs.deeplWrapper.langdict
-    sql = """
-    SELECT *
-    FROM ords_problem_translations
-    WHERE problem = %(problem)s
-    LIMIT 1
-    """
+    sql = """SELECT *
+FROM ords_problem_translations
+WHERE problem = %(problem)s
+LIMIT 1
+"""
     try:
         # For each record fetch a translation for each target language.
         for i, row in data.iterrows():
@@ -168,7 +163,7 @@ def translate(data, mock=True):
                 for column in langdict.keys():
                     # Get the target language for Deepl.
                     t_lang = langdict[column]
-                    print("{} : {} : {} : {}".format(i, row.id_ords, k_lang, t_lang))
+                    print(f"{i} : {row.id_ords} : {k_lang} : {t_lang}")
                     # Has a language been detected for this problem?
                     # Is the target language the same as the known language?
                     if column == k_lang:
@@ -176,7 +171,7 @@ def translate(data, mock=True):
                         text = row.problem
                     else:
                         # No existing translation so fetch from API.
-                        logger.debug("{} is new... translating".format(row.id_ords))
+                        logger.debug(f"{row.id_ords} is new... translating")
                         try:
                             result = translator.translate_text(
                                 row.problem, target_lang=t_lang, source_lang=k_lang
@@ -193,7 +188,7 @@ def translate(data, mock=True):
                     data.at[i, column] = text
             else:
                 # Translation exists so copy from existing.
-                logger.debug("{} exists... copying".format(row.id_ords))
+                logger.debug(f"{row.id_ords} exists... copying")
                 data.at[i, "language_known"] = found.language_known.values[0]
                 data.at[i, "translator"] = found.translator.values[0]
                 data.at[i, "language_detected"] = found.language_detected.values[0]
@@ -225,20 +220,18 @@ def insert_data(data):
     if "mismatch" in data.columns:
         data.drop(["mismatch"], axis=1, inplace=True)
 
-    cfile = cfg.OUT_DIR + "/deepl_latest.csv"
+    cfile = f"{cfg.OUT_DIR}/deepl_latest.csv"
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
-    print("New data written to {}".format(cfile))
-
+    print(f"New data written to {cfile}")
+    tablename = "ords_problem_translations"
     rows = data.to_sql(
-        name="ords_problem_translations",
+        name=tablename,
         con=dbfuncs.alchemy_eng(),
         if_exists="append",
         index=False,
     )
-    logger.debug(
-        "{} rows written to table {}".format(rows, "ords_problem_translations")
-    )
+    logger.debug(f"{rows} rows written to table {tablename}")
 
     return True
 
@@ -247,9 +240,9 @@ def insert_data(data):
 # This should be more accurate than DeepL's language detection, though model still being refined.
 def detect_language(data):
 
-    lang_obj_path = cfg.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
+    lang_obj_path = f"{cfg.OUT_DIR}/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
-        print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
+        print(f"LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {lang_obj_path}")
         print("TO FIX THIS .mysql_execute: ords_lang_training_sentence.py")
         exit()
 
@@ -264,7 +257,7 @@ def detect_language(data):
 
     # Log the mismatches.
     miss = data.loc[data["mismatch"] == True]
-    miss.to_csv(cfg.OUT_DIR + "/deepl_work_lang_mismatch.csv", index=False)
+    miss.to_csv(f"{cfg.OUT_DIR}/deepl_work_lang_mismatch.csv", index=False)
     # Count the mismatches.
     grp = (
         miss.groupby("country")
@@ -336,7 +329,7 @@ if __name__ == "__main__":
     # Set a hard-coded language e.g. assuming all GBR recs are English.
     # else leave blank for language detection.
     lang = "en"
-    print("Mock={}".format(mock))
+    print(f"Mock={mock}")
     # Maximum no. of records to process, 10000 recommended for live run.
     max = 10
     # Exclude records with problem text having characters less than this value.

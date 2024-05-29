@@ -29,10 +29,10 @@ def backup_only():
         pathfuncs.rm_file(path_to_csv)
         df.write_csv(path_to_csv)
         if pathfuncs.check_path(path_to_csv):
-            print("Backup written to {}".format(path_to_csv))
+            print(r"Backup written to {path_to_csv}")
             return path_to_csv
         else:
-            print("Failed to write data to {}".format(path_to_csv))
+            print(f"Failed to write data to {path_to_csv}")
     except Exception as error:
         print(f"Exception: {error}")
         return False

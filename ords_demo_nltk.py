@@ -37,7 +37,7 @@ if __name__ == "__main__":
     df_cats = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
     for i, category in df_cats.iter_rows():
-        logger.debug("**** {} ****".format(category))
+        logger.debug(f"**** {category} ****")
 
         # Fetch a single string for demo purposes.
         data = df_data.filter(

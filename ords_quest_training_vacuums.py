@@ -100,9 +100,9 @@ def get_datasets(product_category_id, language="en"):
 # Requires that `ords_lang_training.py` has created the model object.
 def detect_language(data):
 
-    lang_obj_path = cfg.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
+    lang_obj_path = f"{cfg.OUT_DIR}/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
-        print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
+        print(f"LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {lang_obj_path}")
         print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
         data = data.with_columns(language=pl.lit("??"))
     else:
@@ -124,8 +124,8 @@ class LemmaTokenizer:
 
 
 def get_stopwords():
-    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
-    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile1 = open(f"{cfg.DATA_DIR}/stopwords-english.txt", "r")
+    stopfile2 = open(f"{cfg.DATA_DIR}/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -148,53 +148,46 @@ def do_training(questdata):
     pipe.fit(questdata["problem"], questdata["fault_type"])
     dump(pipe, pipefile)
     predictions = pipe.predict(questdata["problem"])
-    logger.debug(
-        "** TRAINING : F1 SCORE: {}".format(
-            metrics.f1_score(questdata["fault_type"], predictions, average="macro")
-        )
-    )
-
+    score = metrics.f1_score(questdata["fault_type"], predictions, average="macro")
+    logger.debug(f"** TRAINING : F1 SCORE: {score}")
     questdata = questdata.with_columns(prediction=predictions)
-    questdata.write_csv(cfg.OUT_DIR + "/ords_quest_vacuum_training_results.csv")
+    questdata.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_training_results.csv")
 
     logger.debug("** TRAINING MISSES **")
     misses = questdata.filter(pl.col("language") != pl.col("prediction"))
     logger.debug(misses)
-    misses.write_csv(cfg.OUT_DIR + "/ords_quest_vacuum_training_misses.csv")
+    misses.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_training_misses.csv")
 
 
 def do_validation(valdata):
 
     pipe = load(pipefile)
     predictions = pipe.predict(valdata["problem"])
-    logger.debug(
-        "** VALIDATION : F1 SCORE: {}".format(
-            metrics.f1_score(valdata["fault_type"], predictions, average="macro")
-        )
-    )
+    score = metrics.f1_score(valdata["fault_type"], predictions, average="macro")
+    logger.debug(f"** VALIDATION : F1 SCORE: {score}")
     logger.debug(metrics.classification_report(valdata["fault_type"], predictions))
 
     valdata = valdata.with_columns(prediction=predictions)
-    valdata.write_csv(cfg.OUT_DIR + "/ords_quest_vacuum_validation_results.csv")
+    valdata.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_validation_results.csv")
 
     logger.debug("** VALIDATION MISSES **")
     misses = valdata.filter(pl.col("fault_type") != pl.col("prediction"))
     logger.debug(misses)
-    misses.write_csv(cfg.OUT_DIR + "/ords_quest_vacuum_validation_misses.csv")
+    misses.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_validation_misses.csv")
 
 
 def do_test(data):
 
     pipe = load(pipefile)
     data = data.with_columns(prediction=pipe.predict(data["problem"]))
-    data.write_csv(cfg.OUT_DIR + "/ords_quest_vacuum_test_results.csv")
+    data.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_test_results.csv")
 
 
 if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
 
-    pipefile = cfg.OUT_DIR + "/ords_quest_vacuum_obj_tfidf_cls.joblib"
+    pipefile = f"{cfg.OUT_DIR}/ords_quest_vacuum_obj_tfidf_cls.joblib"
 
     datasets = get_datasets(product_category_id=34, language="en")
 

@@ -33,14 +33,7 @@ def find_existing_translation_for_col(problem, column):
     ORDER BY records DESC
     LIMIT 1;
     """
-    # .format(
-    #     column
-    # )
-    work = pd.DataFrame(
-        dbfuncs.mysql_query_fetchall(
-            sql, {"problem": problem}
-        )
-    )
+    work = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql, {"problem": problem}))
     return work
 
 
@@ -50,19 +43,16 @@ def find_existing_translation_for_col(problem, column):
 def get_work_for_null_lang_vals(cols, max=100):
     try:
         print("*** FETCHING WORK FOR EMPTY LANGUAGE VALUES ***")
-        sql = """
-        SELECT *
-        FROM ords_problem_translations
-        WHERE language_known <> '??'
-        AND CONCAT({}) IS NULL
-        LIMIT {}
-        """.format(
+        sql = """SELECT *
+FROM ords_problem_translations
+WHERE language_known <> '??'
+AND CONCAT({}) IS NULL
+LIMIT {}
+""".format(
             ",".join(cols), max
         )
         logger.debug(sql)
-        work = pd.DataFrame(
-            dbfuncs.mysql_query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
-        )
+        work = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     except Exception as error:
         print(f"Exception: {error}")
         work = pd.DataFrame()
@@ -134,8 +124,8 @@ def insert_data(data, columns=[]):
         cfile = f"{cfg.OUT_DIR}/deepl_backfilled_lang_all.csv"
         vals = list(zip(*[data[col] for col in data]))
         logger.debug(vals)
-        sql = """REPLACE INTO `{}` (`{}`) VALUES ({})""".format(tablename,
-            "`,`".join(data.columns), ",".join(["%s"] * len(data.columns))
+        sql = """REPLACE INTO `{}` (`{}`) VALUES ({})""".format(
+            tablename, "`,`".join(data.columns), ",".join(["%s"] * len(data.columns))
         )
         logger.debug(sql)
         result = dbfuncs.mysql_executemany(sql, vals)
@@ -172,7 +162,7 @@ if __name__ == "__main__":
     columns = deeplfuncs.deeplWrapper.get_columns()
     limit = 10000
     work = get_work_for_null_lang_vals(columns, limit)
-    work.to_csv("f{cfg.OUT_DIR}/deepl_backfill_work.csv", index=False)
+    work.to_csv(f"{cfg.OUT_DIR}/deepl_backfill_work.csv", index=False)
 
     if limit_reached:
         exit()

@@ -10,7 +10,7 @@ from funcs import *
 
 
 def write_poem(lang="en", lines=5, verses=12):
-    df = pl.read_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
+    df = pl.read_csv(f"{cfg.DATA_DIR}/ords_poetry_lines.csv")
     df = df.filter(
         pl.col("language") == pl.lit(lang),
     )
@@ -25,7 +25,7 @@ def write_poem(lang="en", lines=5, verses=12):
 
 def test_poems():
     langs = get_langs()
-    df = pl.read_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
+    df = pl.read_csv(f"{cfg.DATA_DIR}/ords_poetry_lines.csv")
     for key in langs.keys():
         logger.debug(f"*** {langs[key]} ***")
         print(f"*** {langs[key]} ***")
@@ -41,7 +41,7 @@ def test_poems():
 
 # Split translations into sentences labelled with language.
 def dump_data(minchars=2, maxchars=32):
-    df_in = pl.read_csv(cfg.DATA_DIR + "/ords_problem_translations.csv")
+    df_in = pl.read_csv(f"{cfg.DATA_DIR}/ords_problem_translations.csv")
     logger.debug(f"Total translation records: {len(df_in)}")
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
     df_all = pl.DataFrame(
@@ -109,12 +109,12 @@ def dump_data(minchars=2, maxchars=32):
         logger.debug(f"Total usable sentences for lang {lang} : {df_lang.height}")
         df_all = pl.concat([df_all, df_lang])
 
-    df_all.write_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
+    df_all.write_csv(f"{cfg.DATA_DIR}/ords_poetry_lines.csv")
 
 
 # Split data into lists labelled with language.
 def dump_json():
-    df_in = pl.read_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
+    df_in = pl.read_csv(f"{cfg.DATA_DIR}/ords_poetry_lines.csv")
     langs = get_langs()
     dict = {}
     for lang in langs.keys():

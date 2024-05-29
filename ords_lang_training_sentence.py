@@ -57,7 +57,7 @@ def get_alpha(data, labels, vects, search=False):
 
 # In the case of repair data, ignore acronyms and jargon.
 def get_stopwords():
-    stopfile = open(cfg.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
+    stopfile = open(f"{cfg.DATA_DIR}/ords_lang_training_stopwords.txt", "r")
     stoplist = list(stopfile.read().replace("\n", " "))
     stopfile.close()
     return stoplist
@@ -79,7 +79,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         "da": "danish",
     }
     # Read input DataFrame.
-    df_in = pl.read_csv(cfg.DATA_DIR + "/ords_problem_translations.csv").filter(
+    df_in = pl.read_csv(f"{cfg.DATA_DIR}/ords_problem_translations.csv").filter(
         pl.col("language_known") != pl.lit("??")
     )
     logger.debug(f"Total translation records: {df_in.height}")
@@ -144,9 +144,11 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         # Take % of the data for validation.
         df_train_tmp, df_valid_tmp = train_test_split(df_lang, test_size=sample)
         logger.debug(
-            f"Validation data for lang {lang}: {df_valid_tmp.height} ({df_valid_tmp.height / df_lang.height})")
+            f"Validation data for lang {lang}: {df_valid_tmp.height} ({df_valid_tmp.height / df_lang.height})"
+        )
         logger.debug(
-            f"Training data for lang {lang}: {df_train_tmp.height} ({df_train_tmp.height / df_lang.height})")
+            f"Training data for lang {lang}: {df_train_tmp.height} ({df_train_tmp.height / df_lang.height})"
+        )
 
         df_valid.extend(df_valid_tmp)
         df_train.extend(df_train_tmp)
@@ -165,65 +167,6 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
     # Save the data to the 'out' directory in csv format for use later.
     df_train.write_csv(format_path_out("ords_lang_data_training", "csv", file_suffix))
     df_valid.write_csv(format_path_out("ords_lang_data_validation", "csv", file_suffix))
-
-
-# Experiment with classifier/vectorizer.
-def experiment():
-    data = pl.read_csv(
-        format_path_out("ords_lang_data_training", "csv", file_suffix)
-    ).drop_nulls(subset="sentence")
-    stopwords = get_stopwords()
-    column = data["sentence"]
-    labels = data["language"]
-
-    vectorizer = TfidfVectorizer()
-    if stopwords != False:
-        vectorizer.set_params(stop_words=stopwords)
-    feature_vects = vectorizer.fit_transform(column)
-
-    # Get the alpha value.
-    # Use search=True to find a good value, or False for default.
-    # If a better value than default is found, replace default with it.
-    alpha = get_alpha(column, labels, feature_vects, search=True)
-    logger.debug("** TRAIN : vectorizer ~ shape **")
-    logger.debug(feature_vects.shape)
-    logger.debug("** TRAIN : vectorizer ~ feature names **")
-    logger.debug(vectorizer.get_feature_names_out())
-
-    # Other classifiers are available!
-    # https://scikit-learn.org/stable/modules/naive_bayes.html
-    # Tuning different classifiers could sway results.
-
-    classifier = MultinomialNB(force_alpha=True, alpha=alpha)
-
-    # Fit the data.
-    classifier.fit(feature_vects, labels)
-    logger.debug("** TRAIN : classifier: params **")
-    logger.debug(classifier.get_params())
-
-    # Get predictions on own features.
-    predictions = classifier.predict(feature_vects)
-    logger.debug(
-        f"** TRAIN : classifier: F1 SCORE: {metrics.f1_score(labels, predictions, average="macro")}")
-    logger.debug(predictions)
-
-    # Save the classifier and vectoriser objects for re-use.
-    dump(classifier, get_clsfile())
-    dump(vectorizer, get_tdffile())
-
-    # Save predictions to 'out' directory in csv format.
-    data.loc[:, "prediction"] = predictions
-    data.to_csv(
-        format_path_out("ords_lang_results_training_tests", "csv", file_suffix),
-        index=False,
-    )
-
-    # Save prediction misses.
-    misses = data[(data["language"] != data["prediction"])]
-    misses.to_csv(
-        format_path_out("ords_lang_misses_training_tests", "csv", file_suffix),
-        index=False,
-    )
 
 
 def do_training():
@@ -295,7 +238,7 @@ def do_validation(pipeline=True):
 # Use model on untrained data, with either pipeline or vect/class objects.
 def do_detection(pipeline=True):
 
-    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
+    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).drop_nulls(subset="problem")
     column = data["problem"]
 
     logger.debug(f"** DETECT : using pipeline - {pipeline}")
@@ -324,9 +267,7 @@ def missing_problem_text(type):
 
     logger.debug(f"misses_report: {type}")
     # problem_orig,problem,sentence,language,country,prediction
-    df_in = pl.read_csv(
-        format_path_out(f"ords_lang_misses_{type}", "csv", file_suffix)
-    )
+    df_in = pl.read_csv(format_path_out(f"ords_lang_misses_{type}", "csv", file_suffix))
     cols = df_in.columns
     language = cols.index("language")
     problem = cols.index("problem")
@@ -346,10 +287,7 @@ WHERE `problem` = %(problem)s
 ORDER BY id_ords
 """
     for row in df_in.iter_rows():
-        db_res = dbfuncs.mysql_query_fetchall(
-            sql.format(row[language], row[prediction]),
-            {"problem": row[problem]},
-        )
+        db_res = dbfuncs.mysql_query_fetchall(sql.format(row[language], row[prediction]), {"problem": row[problem]})
         if (not db_res) or len(db_res) == 0:
             logger.debug(f"NOT FOUND: {row[problem_orig]}")
         else:
@@ -419,7 +357,6 @@ if __name__ == "__main__":
                     "missing_problem_text('validation')",
                     "misses_by_sentence_length()",
                     "do_detection()",
-                    "experiment()",
                 ]
             )
         )

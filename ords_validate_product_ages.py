@@ -72,7 +72,7 @@ def process_age_data(data):
         data = data.with_columns(
             year_curr=pl.lit(curr_year).cast(pl.Int64),
             year_recent=pl.lit(curr_year - 10).cast(pl.Int64),
-            year_event=pl.col("event_date").dt.year().cast(pl.Int64),
+            year_event=pl.col("event_date").cast(pl.Date).dt.year().cast(pl.Int64),
             year_decade=pl.col("year_of_manufacture")
             .cast(pl.String)
             .str.replace(r"([\d]{3})([0-9])", "${1}0")
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     # Read the timeline data.
     df_ref = pl.read_csv(
-        cfg.DATA_DIR + "/consumer_electronics_timeline.csv"
+        f"{cfg.DATA_DIR}/consumer_electronics_timeline.csv"
     ).drop_nulls(subset=["earliest"])
 
     # Read the ORDS data.
@@ -111,21 +111,14 @@ if __name__ == "__main__":
     # Join the two frames.
     data = df_in.join(df_ref, on="product_category_id", how="left")
 
-    #
     df_out = process_age_data(data)
 
     df_1 = df_out.filter(
         (pl.col("is_vintage") == True) | (pl.col("is_antique") == True)
     ).sort("product_category")
-    df_1.write_csv(
-        cfg.OUT_DIR
-        + "/{}_product_ages_vintage.csv".format(cfg.get_envvar("ORDS_DATA")),
-    )
+    df_1.write_csv(f"{cfg.OUT_DIR}/{cfg.get_envvar('ORDS_DATA')}_product_ages_vintage.csv")
 
     df_2 = df_out.filter(
         (pl.col("is_impossible") == True) | (pl.col("is_mistake") == True)
     ).sort("product_category")
-    df_2.write_csv(
-        cfg.OUT_DIR
-        + "/{}_product_ages_impossible.csv".format(cfg.get_envvar("ORDS_DATA")),
-    )
+    df_2.write_csv(f"{cfg.OUT_DIR}/{cfg.get_envvar('ORDS_DATA')}_product_ages_impossible.csv")

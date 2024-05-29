@@ -151,9 +151,7 @@ def get_alpha(data, labels, vects, search=False, refit=False):
             verbose=2,
         )
         multinomial_nb_grid.fit(vects, labels)
-        msg = "** TRAIN {}: classifier best alpha value(s): {}".format(
-            quest, multinomial_nb_grid.best_params_
-        )
+        msg = f"** TRAIN {quest}: classifier best alpha value(s): {multinomial_nb_grid.best_params_}"
         logger.debug(msg)
         print(msg)
         return multinomial_nb_grid.best_params_["alpha"]
@@ -174,8 +172,8 @@ class LemmaTokenizer:
 
 
 def get_stopwords():
-    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
-    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile1 = open(f"{cfg.DATA_DIR}/stopwords-english.txt", "r")
+    stopfile2 = open(f"{cfg.DATA_DIR}/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -226,11 +224,8 @@ def do_training(data, tokenizer=False, stopwords=False, vocabulary=False):
 
     # Get predictions.
     preds = nb_classifier.predict(feature_vects)
-    logger.debug(
-        "** TRAIN : nb_classifier: F1 SCORE: {}".format(
-            metrics.f1_score(labels, preds, average="macro")
-        )
-    )
+    score = metrics.f1_score(labels, preds, average="macro")
+    logger.debug(f"** TRAIN : nb_classifier: F1 SCORE: {score}")
     logger.debug(preds)
 
     # Save the classifier and vectoriser objects for use later.
@@ -254,18 +249,15 @@ def do_validation(data):
 
     # Get the classifier and vectoriser that were fitted for this task.
     nb_classifier = load(clsfile)
-    logger.debug("** VAL : classifier {}".format(type(nb_classifier)))
+    logger.debug(f"** VAL : classifier {type(nb_classifier)}")
     vectorizer = load(tdffile)
-    logger.debug("** VAL : vectorizer {}".format(type(vectorizer)))
+    logger.debug(f"** VAL : vectorizer {type(vectorizer)}")
 
     # Get the predictions
     feature_vects = vectorizer.transform(column)
     preds = nb_classifier.predict(feature_vects)
-    logger.debug(
-        "** VAL : nb_classifier: F1 SCORE: {}".format(
-            metrics.f1_score(labels, preds, average="macro")
-        )
-    )
+    score = metrics.f1_score(labels, preds, average="macro")
+    logger.debug(f"** VAL : nb_classifier: F1 SCORE: {score}")
     logger.debug(metrics.classification_report(labels, preds))
 
     # Predictions output for inspection.
@@ -280,7 +272,7 @@ def do_validation(data):
 
 def do_test(data, category, countries):
 
-    data.filter(
+    data = data.filter(
         (pl.col("product_category") == category) & (pl.col("country").is_in(countries))
     ).drop_nulls(subset="problem")
 
@@ -288,9 +280,9 @@ def do_test(data, category, countries):
 
     # Get the classifier and vectoriser that were fitted for this task.
     nb_classifier = load(clsfile)
-    logger.debug("** TEST : classifier {}".format(type(nb_classifier)))
+    logger.debug(f"** TEST : classifier {type(nb_classifier)}")
     vectorizer = load(tdffile)
-    logger.debug("** TEST : vectorizer {}".format(type(vectorizer)))
+    logger.debug(f"** TEST : vectorizer {type(vectorizer)}")
 
     # Get the predictions.
     feature_vects = vectorizer.transform(column)
@@ -302,7 +294,7 @@ def do_test(data, category, countries):
 
 
 def format_path(filename, ext="csv"):
-    return "{}/{}_{}.{}".format(cfg.OUT_DIR, filename, quest, ext)
+    return f"{cfg.OUT_DIR}/{filename}_{quest}.{ext}"
 
 
 if __name__ == "__main__":
@@ -341,7 +333,7 @@ if __name__ == "__main__":
     # See `ords_extract_vocabulary.py`
     vocabulary = False
     # vocabulary = list(
-    #     pl.read_csv(cfg.OUT_DIR + "/ords_vocabulary_problem.csv")
+    #     pl.read_csv(f"{cfg.OUT_DIR}/ords_vocabulary_problem.csv")
     #     .filter(pl.col("product_category") == category)
     #     .group_by(["term"])
     # )
@@ -363,13 +355,13 @@ if __name__ == "__main__":
     # If validating, take a fraction of corpus, e.g. 0.3
     sample = 0
 
-    logger.debug("*** quest={} ***".format(quest))
-    logger.debug("*** countries={} ***".format(iso_list))
-    logger.debug("*** validate={} ***".format(validate))
-    logger.debug("*** splitval={} ***".format(sample))
-    logger.debug("*** vocabulary={} ***".format(vocabulary))
-    logger.debug("*** stopwords={} ***".format(stopwords))
-    logger.debug("*** tokenizer={} ***".format(tokenizer))
+    logger.debug(f"*** quest={quest} ***")
+    logger.debug(f"*** countries={iso_list} ***")
+    logger.debug(f"*** validate={validate} ***")
+    logger.debug(f"*** splitval={sample} ***")
+    logger.debug(f"*** vocabulary={vocabulary} ***")
+    logger.debug(f"*** stopwords={stopwords} ***")
+    logger.debug(f"*** tokenizer={tokenizer} ***")
 
     dump_data(data, iso_list, sample)
 

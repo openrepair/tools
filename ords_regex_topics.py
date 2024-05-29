@@ -128,7 +128,7 @@ if __name__ == "__main__":
     for row in topics.iter_rows():
         topic = row[0]
         rx = row[1]
-        logger.debug("*** {} ***".format(topic))
+        logger.debug(f"*** {topic} ***")
         logger.debug(rx)
         matched = []
         for item in itemtypes.iter_rows():

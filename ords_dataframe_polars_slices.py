@@ -149,7 +149,7 @@ def slice_item_types(df):
 # Countries and groups.
 def slice_countries(df):
 
-    countries = pl.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv").sort("iso")
+    countries = pl.read_csv(f"{cfg.DATA_DIR}/iso_country_codes.csv").sort("iso")
     logger.debug(countries)
     dfsub = (
         df.select(
@@ -180,7 +180,7 @@ def write_to_files(df, suffix, sample=0):
     if sample:
         df = df.sample(frac=sample, with_replacement=False)
 
-    path = f"{cfg.OUT_DIR}/{cfg.get_envvar("ORDS_DATA")}_{suffix}"
+    path = f"{cfg.OUT_DIR}/{cfg.get_envvar('ORDS_DATA')}_{suffix}"
     df.write_csv(path + ".csv")
     print(path + ".csv")
     df.write_json(path + ".json", row_oriented=True, pretty=True)

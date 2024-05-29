@@ -5,6 +5,7 @@
 # Writes the dataframes to csv and json format files.
 
 import pandas as pd
+import json
 from funcs import *
 
 
@@ -99,7 +100,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv")
+    countries = pd.read_csv(f"{cfg.DATA_DIR}/iso_country_codes.csv")
 
     dfsub = df.reindex(columns=["country", "group_identifier"]).rename(
         columns={"country": "iso", "group_identifier": "group"}
@@ -120,10 +121,21 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    path = "f{cfg.OUT_DIR}/{tablename}_{suffix}"
-    results = miscfuncs.write_data_to_files(df, path, index)
-    for result in results:
-        print(result)
+    path = f"{cfg.OUT_DIR}/{tablename}_{suffix}"
+    try:
+        # csv
+        df.to_csv(path + ".csv", index=index)
+        print(path + ".csv")
+        # json
+        if not index:
+            dict = df.to_dict("records")
+        else:
+            dict = df.groupby(level=0).apply(lambda x: x.to_dict("records")).to_dict()
+        with open(path + ".json", "w") as f:
+            json.dump(dict, f, indent=4, ensure_ascii=False)
+        print(path + ".json")
+    except Exception as error:
+        print("Exception: {}".format(error))
 
 
 if __name__ == "__main__":

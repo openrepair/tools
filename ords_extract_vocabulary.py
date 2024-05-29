@@ -31,9 +31,9 @@ def get_vectorizer():
     # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
     # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
     # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-    stopfile1 = open(cfg.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile1 = open(f"{cfg.DATA_DIR}/stopwords-english.txt", "r")
     # ORDS corpus custom stopwords.
-    stopfile2 = open(cfg.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile2 = open(f"{cfg.DATA_DIR}/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -90,7 +90,7 @@ def fit_products():
         },
     )
     for id, category in categories.iter_rows():
-        logger.debug("**** {} ****".format(category))
+        logger.debug(f"**** {category} ****")
         strings = get_products(category)
         if len(strings) == 0:
             continue
@@ -111,11 +111,11 @@ def fit_products():
         df_out.extend(df_tmp)
         logger.debug(df_out.height)
 
-    df_out.write_csv(cfg.OUT_DIR + "/ords_vocabulary_products.csv")
+    df_out.write_csv(f"{cfg.OUT_DIR}/ords_vocabulary_products.csv")
 
     df_out.group_by(["term"]).len(name="records").sort(
         "records", descending=True
-    ).write_csv(cfg.OUT_DIR + "/ords_vocabulary_products_freq.csv")
+    ).write_csv(f"{cfg.OUT_DIR}/ords_vocabulary_products_freq.csv")
 
 
 def fit_problem_text():
@@ -131,7 +131,7 @@ def fit_problem_text():
         },
     )
     for id, category in categories.iter_rows():
-        logger.debug("**** {} ****".format(category))
+        logger.debug(f"**** {category} ****")
         strings = get_problem_text(category)
         if len(strings) == 0:
             continue
@@ -152,11 +152,11 @@ def fit_problem_text():
         df_out.extend(df_tmp)
         logger.debug(df_out.height)
 
-    df_out.write_csv(cfg.OUT_DIR + "/ords_vocabulary_problem.csv")
+    df_out.write_csv(f"{cfg.OUT_DIR}/ords_vocabulary_problem.csv")
 
     df_out.group_by(["term"]).len(name="records").sort(
         "records", descending=True
-    ).write_csv(cfg.OUT_DIR + "/ords_vocabulary_problem_freq.csv")
+    ).write_csv(f"{cfg.OUT_DIR}/ords_vocabulary_problem_freq.csv")
 
 
 if __name__ == "__main__":

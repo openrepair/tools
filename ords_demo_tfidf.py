@@ -50,7 +50,7 @@ def fit_products(data):
     logger.debug("*** PRODUCT TfidfVectorizer ***")
     categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     for id, category in categories.iter_rows():
-        logger.debug("**** {} ****".format(data, category))
+        logger.debug(f"**** {category} ****")
         strings = get_products(data, category)
         if len(strings) == 0:
             continue
@@ -83,7 +83,7 @@ def fit_problem_text(data):
     categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     logger.debug("*** TfidfVectorizer ***")
     for id, category in categories.iter_rows():
-        logger.debug("**** {} ****".format(category))
+        logger.debug(f"**** {category} ****")
         # strings = get_problem_text(data, category)
 
         strings = list(

@@ -9,8 +9,8 @@ from funcs import *
 
 # Just a little debug helper.
 def log_info(category, lang, term):
-    logger.debug("*** {} {} {} ***".format(category, lang, term))
-    print("*** {} {} {} ***".format(category, lang, term))
+    logger.debug(f"*** {category} {lang} {term} ***")
+    print(f"*** {category} {lang} {term} ***")
 
 
 # Return regex matching information for a given term.
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
 
-    rexes = pl.read_csv(cfg.DATA_DIR + "/product_category_regexes.csv")
+    rexes = pl.read_csv(f"{cfg.DATA_DIR}/product_category_regexes.csv")
 
     # Pre-compile the regexes
     rexes = rexes.with_columns(
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     # A set of real-world product term translations.
     allterms = pl.read_csv(
-        cfg.DATA_DIR + "/ords_testdata_multilingual_products.csv"
+        f"{cfg.DATA_DIR}/ords_testdata_multilingual_products.csv"
     )
     langs = ["en", "nl", "fr", "de"]
     results = []
@@ -79,4 +79,4 @@ if __name__ == "__main__":
         },
     )
 
-    results.write_csv(cfg.OUT_DIR + "/product_category_regex_test_results.csv")
+    results.write_csv(f"{cfg.OUT_DIR}/product_category_regex_test_results.csv")

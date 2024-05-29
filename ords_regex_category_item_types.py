@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
 
-    rexes = pl.read_csv(cfg.DATA_DIR + "/product_category_regexes.csv")
+    rexes = pl.read_csv(f"{cfg.DATA_DIR}/product_category_regexes.csv")
 
     # Pre-compile the regexes
     rexes = rexes.with_columns(
@@ -57,8 +57,8 @@ if __name__ == "__main__":
     results = []
     for id, category in categories.iter_rows():
 
-        logger.debug("*** {} ***".format(category))
-        print("*** {} ***".format(category))
+        logger.debug(f"*** {category} ***")
+        print(f"*** {category} ***")
 
         regex = rexes.filter((pl.col("product_category") == category)).select(
             pl.col("obj")
@@ -86,4 +86,4 @@ if __name__ == "__main__":
             "match": pl.String,
         },
     )
-    results.write_csv(cfg.OUT_DIR + "/ords_regex_category_item_types.csv")
+    results.write_csv(f"{cfg.OUT_DIR}/ords_regex_category_item_types.csv")

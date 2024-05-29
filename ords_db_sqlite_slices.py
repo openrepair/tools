@@ -124,7 +124,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pl.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv")
+    countries = pl.read_csv(f"{cfg.DATA_DIR}/iso_country_codes.csv")
 
     sql = f"""
     SELECT

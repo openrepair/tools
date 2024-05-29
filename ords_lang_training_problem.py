@@ -40,9 +40,7 @@ def get_alpha(data, labels, vects, search=False):
             verbose=2,
         )
         multinomial_nb_grid.fit(vects, labels)
-        msg = "** TRAIN: classifier best alpha value(s): {}".format(
-            multinomial_nb_grid.best_params_
-        )
+        msg = f"** TRAIN: classifier best alpha value(s): {multinomial_nb_grid.best_params_}"
         logger.debug(msg)
         print(msg)
         return multinomial_nb_grid.best_params_["alpha"]
@@ -72,7 +70,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
         .with_columns(problem_orig=pl.col("problem"))
     )
 
-    logger.debug("Total translation records: {}".format(df_in.height))
+    logger.debug(f"Total translation records: {df_in.height}")
 
     df_in = textfuncs.clean_text(df_in, "problem").filter(
         pl.col("problem").str.len_chars().is_between(minchars, maxchars + 1)
@@ -163,7 +161,7 @@ def do_validation(pipeline=True):
 # Use model on untrained data, with either pipeline or vect/class objects.
 def do_detection(pipeline=True):
 
-    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
+    data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).drop_nulls(subset="problem")
     column = data["problem"]
 
     logger.debug(f"** DETECT : using pipeline - {pipeline}")
@@ -190,7 +188,7 @@ def missing_problem_text(type):
 
     dbfuncs.dbvars = cfg.get_dbvars()
 
-    logger.debug("misses_report: {}".format(type))
+    logger.debug(f"misses_report: {type}")
     # problem_orig,problem,sentence,language,country,prediction
     df_in = pl.read_csv(format_path_out(f"ords_lang_misses_{type}", "csv", file_suffix))
     cols = df_in.columns
@@ -226,59 +224,6 @@ ORDER BY id_ords
     logger.debug(f"misses: {df_out.height}")
 
 
-# Check char by char using differ.
-# Useful in case of export version diffs.
-# Requires database.
-def charcheck():
-
-    dbfuncs.dbvars = cfg.get_dbvars()
-
-    import difflib
-
-    d = difflib.Differ()
-
-    langs = {
-        "en": "english",
-        "de": "german",
-        "nl": "dutch",
-        "fr": "french",
-        "it": "italian",
-        "es": "spanish",
-        "da": "danish",
-    }
-
-    sql = """SELECT
-`id_ords`,
-`language_known`,
-1 as what,
-'' as diff,
-`problem`,
-`{0}` as trans
-FROM `ords_problem_translations`
-WHERE `language_known` = '{0}'
-AND(
-LENGTH(`{0}`) <> LENGTH(`problem`)
-OR REGEXP_REPLACE(LOWER(`{0}`), ' ', '') <> REGEXP_REPLACE(LOWER(`problem`), ' ', '')
-)
-"""
-    df = pl.DataFrame()
-    for lang in langs.keys():
-        df_res = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(lang)))
-        df = pl.concat([df, df_res])
-    diffs = []
-    wt = []
-    for row in df.iter_rows():
-        p = row[5]
-        t = row[6]
-        diff = list(set([s for s in list(d.compare(p, t)) if s[0] in ["-", "+"]]))
-        diffs.append(",".join(diff))
-        if (len(diff) == 1) & (diff[0].strip() == "-"):
-            wt.append(0)
-    df = df.with_colums(diff=diffs, what=wt)
-    df.sort(by=["what", "problem"])
-    df.write_csv(format_path_out("ords_lang_training_charcheck", "csv", file_suffix))
-
-
 def get_pipefile():
     return format_path_out("ords_lang_obj_tfidf_cls", "joblib", file_suffix)
 
@@ -311,7 +256,6 @@ if __name__ == "__main__":
                     "do_validation()",
                     "missing_problem_text('validation')",
                     "do_detection()",
-                    "charcheck()",
                 ]
             )
         )

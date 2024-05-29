@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # Note that "known" language could be incorrect.
     # Log summary and write to csv file.
     logger.debug("*** MISMATCHED LANGUAGE DETECTION ***")
-    path = cfg.OUT_DIR + "/deepl_misdetect.csv"
+    path = f"{cfg.OUT_DIR}/deepl_misdetect.csv"
     logger.debug("See " + path)
     sql = """
         SELECT language_known, language_detected, COUNT(*) as records
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # Could be bad language detected or malformed problem text.
     # Write results to csv file.
     logger.debug("*** IDENTICAL TRANSLATIONS ***")
-    path = cfg.OUT_DIR + "/deepl_mistranslate.csv"
+    path = f"{cfg.OUT_DIR}/deepl_mistranslate.csv"
     logger.debug("See " + path)
     sql = """
         SELECT id_ords, language_known, language_detected,
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     # Could have run out of DeepL credits before lang set completion.
     # Write results to csv file.
     logger.debug("*** MISSING TRANSLATIONS ***")
-    path = cfg.OUT_DIR + "/deepl_missing.csv"
+    path = f"{cfg.OUT_DIR}/deepl_missing.csv"
     logger.debug("See " + path)
     sql = """
         SELECT id_ords, language_known, language_detected,

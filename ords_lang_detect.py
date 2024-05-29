@@ -30,4 +30,4 @@ if __name__ == "__main__":
             lambda p: detect(p), return_dtype=pl.String
         ))
     logger.debug(data)
-    data.write_csv(cfg.OUT_DIR + "/ords_lang_detect.csv")
+    data.write_csv(f"{cfg.OUT_DIR}/ords_lang_detect.csv")

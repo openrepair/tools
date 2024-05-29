@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     # The data file (roughly) maps categories and average weight estimates between ORDS and UNU-KEYS.
     # See dat/README.md for more details.
-    weights = pl.read_csv(cfg.DATA_DIR + "/ords_product_category_unu_key_map.csv")
+    weights = pl.read_csv(f"{cfg.DATA_DIR}/ords_product_category_unu_key_map.csv")
 
     data = (
         ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
@@ -32,4 +32,4 @@ if __name__ == "__main__":
             pl.col("unu_2011").sum().round(1).alias("unu_2011_total"),
             pl.col("unu_2012").sum().round(1).alias("unu_2012_total"),
         )
-    ).write_csv(cfg.OUT_DIR + "/{}_stats_unu_keys_weights.csv".format(tablename))
+    ).write_csv(f"{cfg.OUT_DIR}/{tablename}_stats_unu_keys_weights.csv")
