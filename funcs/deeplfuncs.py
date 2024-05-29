@@ -48,9 +48,11 @@ class deeplWrapper:
             return True
         return False
 
+    @staticmethod
     def get_languages():
         return list(deeplWrapper.langdict.values())
 
+    @staticmethod
     def get_columns():
         return list(deeplWrapper.langdict.keys())
 
@@ -62,7 +64,7 @@ class mockDeepLTranslator:
         self.detected_source_lang = mockDeepLTranslator.mockTranslation(
             len=2, up=True)
         self.text = mockDeepLTranslator.mockTranslation()
-        return self
+        return self.text
 
     def get_usage(self):
         return mockDeepLUsage()

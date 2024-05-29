@@ -22,9 +22,6 @@ import deepl
 import pandas as pd
 from funcs import *
 
-dbfuncs.dbvars = cfg.get_dbvars()
-
-
 # Fetch problem text that has not yet been translated.
 # Ignore the more useless values.
 # Guess the language for sanity checks later.
@@ -318,6 +315,8 @@ def do_deepl(mock=True, max=10, minlen=16, clause=1, lang=None):
 if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
+
+    dbfuncs.dbvars = cfg.get_dbvars()
 
     # Check requirements first!
     # "mock=True" allows for trial and error without using up API credits.
