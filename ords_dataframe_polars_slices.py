@@ -180,7 +180,7 @@ def write_to_files(df, suffix, sample=0):
     if sample:
         df = df.sample(frac=sample, with_replacement=False)
 
-    path = "{}/{}_{}".format(cfg.OUT_DIR, cfg.get_envvar("ORDS_DATA"), suffix)
+    path = f"{cfg.OUT_DIR}/{cfg.get_envvar("ORDS_DATA")}_{suffix}"
     df.write_csv(path + ".csv")
     print(path + ".csv")
     df.write_json(path + ".json", row_oriented=True, pretty=True)

@@ -11,19 +11,19 @@ from funcs import *
 # Events - date range is arbitrary, amend or omit.
 def slice_events():
 
-    sql = """
+    sql = f"""
     SELECT
     id,
     data_provider,
     event_date,
     group_identifier,
     country
-    FROM `{}`
-    WHERE event_date BETWEEN '{}' AND '{}'
+    FROM `{tablename}`
+    WHERE event_date BETWEEN '2018' AND '2022'
     ORDER BY event_date, id
     """
     dfsub = pl.DataFrame(
-        dbfuncs.mysql_query_fetchall(sql.format(tablename, "2018", "2022"))
+        dbfuncs.mysql_query_fetchall(sql)
     )
     write_to_files(dfsub, "events")
 
@@ -31,35 +31,35 @@ def slice_events():
 # Products and repairs.
 def slice_repairs():
 
-    sql = """
+    sql = f"""
     SELECT
     id,
     product_age,
     year_of_manufacture,
     repair_status,
     repair_barrier_if_end_of_life
-    FROM `{}`
+    FROM `{tablename}`
     WHERE `product_age` > 0
     ORDER BY product_age, id
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename))).fill_null("")
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql)).fill_null("")
     write_to_files(dfsub, "repairs")
 
 
 # Year of manufacture.
 def slice_year_of_manufacture():
-    sql = """
+    sql = f"""
     SELECT
     product_category,
     MIN(year_of_manufacture) AS 'earliest',
     MAX(year_of_manufacture) AS 'latest',
     ROUND(AVG(year_of_manufacture),0) AS 'average'
-    FROM `{}`
+    FROM `{tablename}`
     WHERE year_of_manufacture > ''
     GROUP BY product_category
     ORDER BY product_category
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename)))
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     write_to_files(dfsub, "year_of_manufacture", sample=0)
 
 
@@ -67,40 +67,40 @@ def slice_year_of_manufacture():
 # 0 usually means < 1 year old.
 # Value can be float, e.g. 1.5 = 1 year and 6 months.
 def slice_product_age():
-    sql = """
+    sql = f"""
     SELECT
     product_category,
     MIN(product_age) AS 'newest',
     MAX(product_age) AS 'oldest',
     ROUND(AVG(product_age),1) AS 'average'
-    FROM `{}`
+    FROM `{tablename}`
     WHERE product_age > 0
     GROUP BY product_category
     ORDER BY product_category
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename)))
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     write_to_files(dfsub, "product_age", sample=0)
 
 
 # Product categories.
 def slice_categories():
 
-    sql = """
+    sql = f"""
     SELECT
     id,
     partner_product_category,
     product_category,
     repair_status
-    FROM `{}`
+    FROM `{tablename}`
     ORDER BY product_category, id
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename)))
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     write_to_files(dfsub, "categories")
 
 
 # Item types.
 def slice_item_types():
-    sql = """
+    sql = f"""
     SELECT
     t1.product_category,
     t1.item_type,
@@ -111,12 +111,12 @@ def slice_item_types():
     TRIM(IF(INSTR(partner_product_category, '~'),
     SUBSTRING_INDEX(partner_product_category, '~', -1),
     partner_product_category)) as item_type
-    FROM `{}`
+    FROM `{tablename}`
     ) t1
     GROUP BY product_category, item_type
     ORDER BY product_category, records DESC
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename)))
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     write_to_files(dfsub, "item_types")
 
 
@@ -125,16 +125,16 @@ def slice_countries():
 
     countries = pl.read_csv(cfg.DATA_DIR + "/iso_country_codes.csv")
 
-    sql = """
+    sql = f"""
     SELECT
     country as iso,
     group_identifier as `group`,
     COUNT(*) as records
-    FROM `{}`
+    FROM `{tablename}`
     GROUP BY country, group_identifier
     ORDER BY country, group_identifier
     """
-    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql.format(tablename)))
+    dfsub = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     dfsub = dfsub.join(countries, on="iso", how="left")
     write_to_files(dfsub, "countries")
 

@@ -9,72 +9,72 @@ def log_tables():
         row = dbfuncs.mysql_show_create_table(table_cats)
         if row:
             logger.debug(row)
-            print("See logfile for table structure: {}".format(table_cats))
+            print(f"See logfile for table structure: {table_cats}")
         else:
-            print("Table not found: {}".format(table_cats))
+            print(f"Table not found: {table_cats}")
         row = dbfuncs.mysql_show_create_table(table_data)
         if row:
             logger.debug(row)
-            print("See logfile for table structure: {}".format(table_data))
+            print(f"See logfile for table structure: {table_data}")
         else:
-            print("Table not found: {}".format(table_data))
+            print(f"Table not found: {table_data}")
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
 
 def drop_table(table):
     try:
-        dbfuncs.mysql_execute("DROP TABLE IF EXISTS `{}`".format(table))
+        dbfuncs.mysql_execute(f"DROP TABLE IF EXISTS `{table}`")
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
 
 def put_table(table, sql, indices):
     try:
         dbfuncs.mysql_execute(sql)
         for idx in indices:
-            dbfuncs.mysql_execute("ALTER TABLE `{}` ADD KEY (`{}`)".format(table, idx))
+            dbfuncs.mysql_execute(f"ALTER TABLE `{table}` ADD KEY (`{idx}`)")
     except Exception as error:
-        print("Exception: {}".format(table))
+        print("Exception: {table}")
         print(error)
 
 
 def get_schemas():
     schemas = ordsfuncs.table_schemas()
     for name, stru in schemas.items():
-        sql = """ CREATE TABLE `{}` (""".format(name)
+        sql = f" CREATE TABLE `{name}` ("
         for field in stru["fields"]:
-            if field["type"] == "string":
-                if field["name"] != "problem":
-                    sql += "\n`{}` varchar(255) DEFAULT NULL,".format(field["name"])
-                elif field["name"] == "problem":
-                    sql += "\n`{}` text".format(field["name"])
-            elif field["type"] == "integer":
-                sql += "\n`{}` int DEFAULT NULL,".format(field["name"])
-            elif field["type"] == "number":
-                sql += "\n`{}` float DEFAULT 0,".format(field["name"])
-            elif field["type"] == "date":
-                sql += "\n`{}` varchar(10) DEFAULT NULL,".format(field["name"])
+            fieldname = field["name"]
+            fieldtype = field["type"]
+            if fieldtype == "string":
+                if fieldname != "problem":
+                    sql += f"\n`{fieldname}` varchar(255) DEFAULT NULL,"
+                elif fieldname == "problem":
+                    sql += f"\n`{fieldname}` text"
+            elif fieldtype == "integer":
+                sql += f"\n`{fieldname}` int DEFAULT NULL,"
+            elif fieldtype == "number":
+                sql += f"\n`{fieldname}` float DEFAULT 0,"
+            elif fieldtype == "date":
+                sql += f"\n`{fieldname}` varchar(10) DEFAULT NULL,"
         sql = (
             sql.strip(",")
-            + """\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"""
+            + "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
         )
-        sql += """\nALTER TABLE `{}` ADD PRIMARY KEY (`{}`);""".format(
-            name, stru["pkey"]
-        )
+        sql += f"\nALTER TABLE `{name}` ADD PRIMARY KEY (`{stru['pkey']}`);"
         schemas[name]["sql"] = sql
     return schemas
 
 
 def import_data(tablename, df):
 
-    logger.debug('{} rows to write to table "{}"'.format(len(df), tablename))
+    logger.debug(f"{len(df)} rows to write to table {tablename}")
     rows = df.to_pandas(use_pyarrow_extension_array=True).to_sql(
         name=tablename, con=dbfuncs.alchemy_eng(), if_exists="append", index=False
     )
 
-    logger.debug('{} rows written to table "{}"'.format(rows, tablename))
-    for row in dbfuncs.mysql_query_fetchall("SELECT * FROM `{}` LIMIT 1".format(tablename)):
+    logger.debug(f"{rows} rows written to table {tablename}")
+    for row in dbfuncs.mysql_query_fetchall(f"SELECT * FROM `{tablename}` LIMIT 1"):
         print(row)
 
 
@@ -104,18 +104,18 @@ def create_from_schema(schema="json"):
             logger.debug(schemas[table_data]["sql"])
             put_table(table_data, schemas[table_data]["sql"], indices)
             dbfuncs.mysql_execute(
-                "ALTER TABLE `{}` ADD FULLTEXT KEY (`problem`)".format(table_data)
+                f"ALTER TABLE `{table_data}` ADD FULLTEXT KEY (`problem`)"
             )
         elif schema == "sql":
             path = pathfuncs.get_path(
                 [cfg.DATA_DIR, "tableschema_ords_mysql.sql"]
             )
-            logger.debug('Reading file "{}"'.format(path))
+            logger.debug(f"Reading file {path}")
             sql = path.read_text().format(table_cats, table_data)
             dbfuncs.mysql_execute(sql)
         log_tables()
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
 
 if __name__ == "__main__":

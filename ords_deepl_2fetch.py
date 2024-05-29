@@ -184,7 +184,7 @@ def translate(data, mock=True):
                             d_lang = result.detected_source_lang.lower()
                             text = result.text
                         except deepl.DeepLException as error:
-                            print("exception: {}".format(error))
+                            print(f"Exception: {error}")
                             data.at[i, "language_detected"] = ""
                             return data
 
@@ -201,7 +201,7 @@ def translate(data, mock=True):
                     data.at[i, column] = found[column].values[0]
 
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
     finally:
         return data

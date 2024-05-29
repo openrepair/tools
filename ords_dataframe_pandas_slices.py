@@ -120,7 +120,7 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    path = "{}/{}_{}".format(cfg.OUT_DIR, tablename, suffix)
+    path = "f{cfg.OUT_DIR}/{tablename}_{suffix}"
     results = miscfuncs.write_data_to_files(df, path, index)
     for result in results:
         print(result)
