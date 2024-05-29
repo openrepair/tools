@@ -1,1 +1,10 @@
-__all__ = ["pathfuncs", "envfuncs", "logfuncs", "dbfuncs", "datefuncs", "miscfuncs", "textfuncs", "deeplfuncs"]
+__all__ = [
+    "cfg",
+    "pathfuncs",
+    "dbfuncs",
+    "datefuncs",
+    "miscfuncs",
+    "ordsfuncs",
+    "textfuncs",
+    "deeplfuncs",
+]

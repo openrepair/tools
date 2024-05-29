@@ -3,14 +3,14 @@
 
 # Extract a vocabulary from a restarters.net wiki page for an ORDS category (Vacuum).
 
-from funcs import *
-import pandas as pd
+import polars as pl
 import re
 import requests
 from html.parser import HTMLParser
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk import word_tokenize
+from funcs import *
 
 
 class LemmaTokenizer:
@@ -31,7 +31,6 @@ class WikiHTMLParser(HTMLParser):
 
     def handle_data(self, data):
         if self.lasttag == "p":
-            print(data)
             line = data.strip()
             if line > "":
                 self.lines.append(line)
@@ -47,16 +46,16 @@ def fetch_text(url):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     tokenizer = LemmaTokenizer()
 
     # [Using stop words](https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words)
     # [Stop Word Lists in Free Open-source Software Packages](https://aclanthology.org/W18-2502/)
     # [Stopword Lists for 19 Languages](https://www.kaggle.com/datasets/rtatman/stopword-lists-for-19-languages)
-    stopfile1 = open(pathfuncs.DATA_DIR + "/stopwords-english.txt", "r")
+    stopfile1 = open(f"{cfg.DATA_DIR}/stopwords-english.txt", "r")
     # ORDS corpus custom stopwords.
-    stopfile2 = open(pathfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile2 = open(f"{cfg.DATA_DIR}/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -76,8 +75,8 @@ if __name__ == "__main__":
     logger.debug("** VOCABULARY **")
     logger.debug(tv.vocabulary_)
 
-    df = pd.DataFrame({"term": tv.vocabulary_.keys(), "idx": tv.vocabulary_.values()})
-    df.sort_values(by=["idx", "term"], ascending=True, inplace=True, ignore_index=True)
+    vocab = {"term": tv.vocabulary_.keys(), "idx": tv.vocabulary_.values()}
+    df = pl.DataFrame(data=vocab, schema={"term": pl.String, "idx": pl.Int64})
 
-    path = pathfuncs.OUT_DIR + "/ords_vocabulary_wiki_Vacuum.csv"
-    df.to_csv(path, index=False)
+    path = f"{cfg.OUT_DIR}/ords_vocabulary_wiki_Vacuum.csv"
+    df.write_csv(path)

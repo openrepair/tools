@@ -15,13 +15,14 @@ Step 4: ords_deepl_4backfill.py
     Translate missing values for given languages.
 """
 
-from funcs import *
 import pandas as pd
+from funcs import *
 
+dbfuncs.dbvars = cfg.get_dbvars()
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Language detection stats.
     logger.debug("*** DETECTED ***")
@@ -31,7 +32,7 @@ if __name__ == "__main__":
         GROUP BY language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
 
     # Outlier languages detected.
@@ -43,14 +44,14 @@ if __name__ == "__main__":
         GROUP BY language_known, language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
 
     # Detected language does not match "known" language.
     # Note that "known" language could be incorrect.
     # Log summary and write to csv file.
     logger.debug("*** MISMATCHED LANGUAGE DETECTION ***")
-    path = pathfuncs.OUT_DIR + "/deepl_misdetect.csv"
+    path = f"{cfg.OUT_DIR}/deepl_misdetect.csv"
     logger.debug("See " + path)
     sql = """
         SELECT language_known, language_detected, COUNT(*) as records
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         GROUP BY language_known, language_detected
         ORDER BY records DESC
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     logger.debug(df)
     sql = """
         SELECT id_ords, language_known, language_detected, problem
@@ -67,14 +68,14 @@ if __name__ == "__main__":
         WHERE language_detected != language_known
         ORDER BY language_known, language_detected
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)
 
     # Identical translations across languages.
     # Could be bad language detected or malformed problem text.
     # Write results to csv file.
     logger.debug("*** IDENTICAL TRANSLATIONS ***")
-    path = pathfuncs.OUT_DIR + "/deepl_mistranslate.csv"
+    path = f"{cfg.OUT_DIR}/deepl_mistranslate.csv"
     logger.debug("See " + path)
     sql = """
         SELECT id_ords, language_known, language_detected,
@@ -89,14 +90,14 @@ if __name__ == "__main__":
         AND `es` = `problem`
         AND `da` = `problem`)
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)
 
     # Missing translations across languages.
     # Could have run out of DeepL credits before lang set completion.
     # Write results to csv file.
     logger.debug("*** MISSING TRANSLATIONS ***")
-    path = pathfuncs.OUT_DIR + "/deepl_missing.csv"
+    path = f"{cfg.OUT_DIR}/deepl_missing.csv"
     logger.debug("See " + path)
     sql = """
         SELECT id_ords, language_known, language_detected,
@@ -105,5 +106,5 @@ if __name__ == "__main__":
         WHERE CONCAT(`en`,`de`,`nl`,`fr`,`it`,`es`,`da`) IS NULL
         OR (`en` = '' OR `de` = '' OR `nl` = '' OR `fr` = '' OR `it` = '' OR `es` = '' OR `da` = '');
         """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql))
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)

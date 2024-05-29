@@ -2,31 +2,38 @@
 
 # Multi-lingual regex search for random themes within the ORDS `partner_product_category` values.
 
-from funcs import *
-import pandas as pd
+import polars as pl
 import re
+from funcs import *
 
 
 # Split the partner_product_category string.
 def get_item_types(df):
-    dfp = df["partner_product_category"].reset_index(drop=True).squeeze()
-    np_res = dfp.str.split("~").str.get(1).str.strip().dropna().unique()
-    return np_res
+    data = (
+        df.select(pl.col("partner_product_category"))
+        .with_columns(
+            pl.col("partner_product_category")
+            .str.split("~")
+            .list.last()
+            .str.strip_chars()
+            .alias("item_type")
+        )
+        .drop_nulls()
+        .unique()
+    )
+    return data
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    df = pd.read_csv(pathfuncs.path_to_ords_csv())
-    df.dropna(subset="partner_product_category", inplace=True, ignore_index=True)
-
-    topics = pd.DataFrame(
+    topics = pl.DataFrame(
         data={
             "topic": ["Christmas", "Bake-Off", "Entertainment"],
-            "rxcmp": [None, None, None],
-            "rxstr": [
-                miscfuncs.build_regex_string(
+            "rx": [None, None, None],
+            "patt": [
+                textfuncs.build_regex_string(
                     [
                         "[yj]ule?",
                         "(christ|x)mas",
@@ -60,7 +67,7 @@ if __name__ == "__main__":
                         "weihnacht",
                     ]
                 ),
-                miscfuncs.build_regex_string(
+                textfuncs.build_regex_string(
                     [
                         "[wv]a[f]+[el]{2}",
                         "bisc(ui|o)t(t[io])?",
@@ -87,7 +94,7 @@ if __name__ == "__main__":
                         "tort([ea]|ita)",
                     ]
                 ),
-                miscfuncs.build_regex_string(
+                textfuncs.build_regex_string(
                     [
                         "[ck]assette",
                         "dis[ck][ -]?man",
@@ -112,25 +119,26 @@ if __name__ == "__main__":
         }
     )
 
-    for i, row in topics.iterrows():
-        logger.debug(row.topic)
-        logger.debug(row.rxstr)
-        topics.at[i, "rxcmp"] = re.compile(row.rxstr)
+    topics = topics.with_columns(
+        rx=pl.col("patt").map_elements(lambda x: re.compile(x), return_dtype=pl.Object)
+    )
 
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     itemtypes = get_item_types(df)
-    for i, row in topics.iterrows():
+    for row in topics.iter_rows():
+        topic = row[0]
+        rx = row[1]
+        logger.debug(f"*** {topic} ***")
+        logger.debug(rx)
         matched = []
-        logger.debug("*** {} ***".format(row.topic))
-        for item in itemtypes:
-            matches = row.rxcmp.search(item)
+        for item in itemtypes.iter_rows():
+            item_type = item[1]
+            matches = rx.search(item_type)
             if matches != None:
                 logger.debug(matches.group())
-                matched.append(item)
+                matched.append(item_type)
 
-        pattern = "|".join(matched)
+        pattern = "|".join(list(set(matched)))
         logger.debug(pattern)
-        results = df.loc[df.partner_product_category.str.contains(pattern)]
-        results.to_csv(
-            pathfuncs.OUT_DIR + "/ords_regex_topic_{}.csv".format(row.topic),
-            index=False,
-        )
+        results = df.filter(pl.col("partner_product_category").str.contains(pattern))
+        results.write_csv(f"{cfg.OUT_DIR}/ords_regex_topic_{topic}.csv")

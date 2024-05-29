@@ -4,9 +4,9 @@
 # Slices the data to produce useful subsets for, e.g., data viz.
 # Writes the dataframes to csv and json format files.
 
-
-from funcs import *
 import pandas as pd
+import json
+from funcs import *
 
 
 # Events
@@ -100,7 +100,7 @@ def slice_item_types():
 # Countries and groups.
 def slice_countries():
 
-    countries = pd.read_csv(pathfuncs.DATA_DIR + "/iso_country_codes.csv")
+    countries = pd.read_csv(f"{cfg.DATA_DIR}/iso_country_codes.csv")
 
     dfsub = df.reindex(columns=["country", "group_identifier"]).rename(
         columns={"country": "iso", "group_identifier": "group"}
@@ -121,22 +121,36 @@ def write_to_files(df, suffix, index=False, sample=0):
     if sample:
         df = df.sample(frac=sample, replace=False, random_state=1)
 
-    path = "{}/{}_{}".format(pathfuncs.OUT_DIR, tablename, suffix)
-    results = miscfuncs.write_data_to_files(df, path, index)
-    for result in results:
-        print(result)
+    path = f"{cfg.OUT_DIR}/{tablename}_{suffix}"
+    try:
+        # csv
+        df.to_csv(path + ".csv", index=index)
+        print(path + ".csv")
+        # json
+        if not index:
+            dict = df.to_dict("records")
+        else:
+            dict = df.groupby(level=0).apply(lambda x: x.to_dict("records")).to_dict()
+        with open(path + ".json", "w") as f:
+            json.dump(dict, f, indent=4, ensure_ascii=False)
+        print(path + ".json")
+    except Exception as error:
+        print("Exception: {}".format(error))
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
     # Get the name of the data file from the .env file.
-    tablename = envfuncs.get_var("ORDS_DATA")
+    tablename = cfg.get_envvar("ORDS_DATA")
 
     # Read the data file as type string with na values set to empty string.
     df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
+        ordsfuncs.csv_path_ords(cfg.get_envvar("ORDS_DATA")),
+        dtype=str,
+        keep_default_na=False,
+        na_values="",
     )
 
     # Convert some of the dtypes as appropriate.

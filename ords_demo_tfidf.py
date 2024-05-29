@@ -1,47 +1,62 @@
 #!/usr/bin/env python3
 
-
 # Demonstration of extracting vocabulary, features and "bag of words" using TfidfVectorizer.
 
-from funcs import *
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+import polars as pl
+from funcs import *
 
 
-def get_item_types(category):
-
-    sr = (
-        df.loc[df.product_category == category]["partner_product_category"]
-        .reset_index(drop=True)
-        .squeeze()
+# Using English language records (assumed by country).
+def get_data():
+    return ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")).filter(
+        pl.col("country").is_in(["USA"]),
+        pl.col("problem").str.len_chars() > 24,
     )
-    if sr.empty:
-        logger.debug("No records for catgegory")
-        return sr
-
-    return sr.str.rsplit("~").str.get(0).str.strip().dropna().unique()
 
 
-def get_problem_text(category):
+def get_problem_text(data, category):
 
-    sr = df.loc[df.product_category == category]["problem"].dropna()
-    if sr.empty:
-        logger.debug("No records for catgegory")
+    return list(
+        data.filter(
+            pl.col("product_category") == category,
+        ).select(
+            pl.col(
+                "problem",
+            )
+        )["problem"]
+    )
 
-    return sr
+
+# Split the partner_product_category string.
+def get_products(data, category):
+
+    return list(
+        ordsfuncs.extract_products(
+            data.filter(
+                pl.col("product_category") == category,
+            )
+        )
+        .select(pl.col("product"))
+        .drop_nulls()
+        .unique()["product"]
+    )
 
 
-def fit_item_types():
+# Using derived `item_type` values.
+def fit_products(data):
 
-    logger.debug("*** ITEM TYPE TfidfVectorizer ***")
-    # Using derived `item_type` values.
-    for n in range(0, len(categories)):
-        category = categories.iloc[n].product_category
-        logger.debug("**** {} ****".format(category))
-        strings = get_item_types(category)
-        if not strings.any():
+    logger.debug("*** PRODUCT TfidfVectorizer ***")
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
+    for id, category in categories.iter_rows():
+        logger.debug(f"**** {category} ****")
+        strings = get_products(data, category)
+        if len(strings) == 0:
             continue
+
+        tv = TfidfVectorizer()
+        cv = CountVectorizer()
 
         tv_fit = tv.fit_transform(strings).toarray()
         cv_fit = cv.fit_transform(strings).toarray()
@@ -62,17 +77,30 @@ def fit_item_types():
         # logger.debug(cv_fit)
 
 
-def fit_problem_text():
+def fit_problem_text(data):
 
     logger.debug("*** PROBLEM ***")
-
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
     logger.debug("*** TfidfVectorizer ***")
-    for n in range(0, len(categories)):
-        category = categories.iloc[n].product_category
-        logger.debug("**** {} ****".format(category))
-        strings = get_problem_text(category)
-        if not strings.any():
+    for id, category in categories.iter_rows():
+        logger.debug(f"**** {category} ****")
+        # strings = get_problem_text(data, category)
+
+        strings = list(
+            data.filter(
+                pl.col("product_category") == category,
+            ).select(
+                pl.col(
+                    "problem",
+                )
+            )["problem"]
+        )
+
+        if len(strings) == 0:
             continue
+
+        tv = TfidfVectorizer()
+        cv = CountVectorizer()
 
         tv_fit = tv.fit_transform(strings).toarray()
         cv_fit = cv.fit_transform(strings).toarray()
@@ -108,21 +136,8 @@ def fit_problem_text():
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    # Read the data file as type string with na values set to empty string.
-    df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
-    )
-    # Filter for small subset with English language text.
-    df = df[df["country"].isin(["USA"])]
-
-    categories = pd.read_csv(
-        pathfuncs.ORDS_DIR + "/{}.csv".format(envfuncs.get_var("ORDS_CATS"))
-    )
-
-    tv = TfidfVectorizer()
-    cv = CountVectorizer()
-
-    fit_item_types()
-    fit_problem_text()
+    data = get_data()
+    fit_products(data)
+    fit_problem_text(data)

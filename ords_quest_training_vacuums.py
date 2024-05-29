@@ -8,9 +8,6 @@ as only English is supported by the stopwords and tokenizer.
 It cleans the input and uses a pipeline and manually created validation dataset.
 """
 
-from funcs import *
-import pandas as pd
-import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -20,76 +17,81 @@ from nltk import word_tokenize
 from joblib import dump
 from joblib import load
 import nltk
+import re
+import polars as pl
+from funcs import *
 
-# nltk.download('punkt')
 nltk.download("wordnet")
-# nltk.download('stopwords')
 
 
 def get_datasets(product_category_id, language="en"):
 
     # This is the latest entire ORDS dataset.
     logger.debug("*** ALL ORDS DATA ***")
-    alldata = pd.read_csv(pathfuncs.path_to_ords_csv())
-    alldata = alldata.loc[alldata["product_category_id"] == product_category_id]
-    alldata.dropna(axis="rows", subset=["problem"], inplace=True, ignore_index=True)
-    alldata = alldata.reindex(columns=["id", "problem"])
+    alldata = (
+        ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
+        .filter(pl.col("product_category_id") == product_category_id)
+        .drop_nulls(subset="problem")
+        .select(pl.col("id", "problem"))
+    )
 
     # This file holds the results of the quest.
     logger.debug("*** QUEST DATA ***")
-    questdata = pd.read_csv(pathfuncs.DATA_DIR + "/quests/vacuums/dustup.csv")
-    questdata.rename(columns={"id_ords": "id"}, inplace=True)
-    questdata = questdata.reindex(columns=["id", "fault_type"])
+    questdata = pl.read_csv(ordsfuncs.csv_path_quests("vacuums/dustup")).rename(
+        {"id_ords": "id"}
+    )
     logger.debug(questdata)
 
     # This file was created by manual review of some records not included in the quest.
     logger.debug("*** VALIDATION DATA ***")
-    valdata = pd.read_csv(pathfuncs.DATA_DIR + "/quests/vacuums/dustup_validate_en.csv")
-    valdata = valdata.reindex(columns=["id", "fault_type"])
+    valdata = pl.read_csv(ordsfuncs.csv_path_quests("vacuums/dustup_validate_en"))
     logger.debug(valdata)
 
     # Join the datasets.
     logger.debug("*** JOINED DATA ***")
     jdata = (
-        alldata.set_index("id")
-        .join(questdata.set_index("id"))
-        .join(valdata.set_index("id"), lsuffix="_q", rsuffix="_v")
+        alldata.join(questdata, on="id", how="left")
+        .join(valdata, on="id", how="left", suffix="_v")
+        .rename({"fault_type": "fault_type_q"})
     )
-    logger.debug(jdata)
+    logger.debug(jdata.select(pl.col("id", "fault_type_q", "fault_type_v")))
 
     logger.debug("*** NEW DATA ***")
-    data = detect_language(
-        textfuncs.clean_text(
-            jdata.loc[(jdata.fault_type_q.isna()) & (jdata.fault_type_v.isna())],
-            "problem",
-        )
+    foo = textfuncs.clean_text(
+        jdata.filter(
+            (pl.col("fault_type_q").is_null()) & (pl.col("fault_type_v").is_null())
+        ),
+        "problem",
     )
-    data = data.loc[data.language == language]
-    data.drop(columns=["fault_type_q", "fault_type_v"], inplace=True)
-    logger.debug(data)
+    newdata = detect_language(foo).filter(pl.col("language") == language)
+    logger.debug(newdata)
 
     logger.debug("*** VAL DATA ***")
-    valdata = detect_language(
-        textfuncs.clean_text(jdata.loc[(jdata.fault_type_v.notna())])
+    valdata = (
+        detect_language(
+            textfuncs.clean_text(jdata.filter((pl.col("fault_type_v").is_not_null())))
+        )
+        .filter(pl.col("language") == language)
+        .rename({"fault_type_v": "fault_type"})
+        .drop("fault_type_q")
     )
-    valdata = valdata.loc[valdata.language == language]
-    valdata.rename(columns={"fault_type_v": "fault_type"}, inplace=True)
-    valdata.drop(columns="fault_type_q", inplace=True)
     logger.debug(valdata)
 
     logger.debug("*** QUEST DATA ***")
-    questdata = detect_language(
-        textfuncs.clean_text(jdata.loc[(jdata.fault_type_q.notna())])
+    questdata = (
+        detect_language(
+            textfuncs.clean_text(jdata.filter(pl.col("fault_type_q").is_not_null()))
+        )
+        .filter(pl.col("language") == language)
+        .rename({"fault_type_q": "fault_type"})
+        .drop("fault_type_v")
     )
-    questdata = questdata.loc[questdata.language == language]
-    questdata.rename(columns={"fault_type_q": "fault_type"}, inplace=True)
-    questdata.drop(columns="fault_type_v", inplace=True)
     logger.debug(questdata)
 
     return {
         "questdata": questdata,
         "valdata": valdata,
-        "data": data,
+        "data": newdata,
     }
 
 
@@ -98,14 +100,14 @@ def get_datasets(product_category_id, language="en"):
 # Requires that `ords_lang_training.py` has created the model object.
 def detect_language(data):
 
-    lang_obj_path = pathfuncs.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
+    lang_obj_path = f"{cfg.OUT_DIR}/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
-        print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
+        print(f"LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {lang_obj_path}")
         print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
-        data.loc[:, "language"] = "??"
+        data = data.with_columns(language=pl.lit("??"))
     else:
         model = load(lang_obj_path)
-        data.loc[:, "language"] = model.predict(data.problem)
+        data = data.with_columns(language=model.predict(data["problem"]))
 
     return data
 
@@ -122,8 +124,8 @@ class LemmaTokenizer:
 
 
 def get_stopwords():
-    stopfile1 = open(pathfuncs.DATA_DIR + "/stopwords-english.txt", "r")
-    stopfile2 = open(pathfuncs.DATA_DIR + "/stopwords-english-repair.txt", "r")
+    stopfile1 = open(f"{cfg.DATA_DIR}/stopwords-english.txt", "r")
+    stopfile2 = open(f"{cfg.DATA_DIR}/stopwords-english-repair.txt", "r")
     stoplist = stopfile1.read().replace("\n", " ") + stopfile2.read().replace("\n", " ")
     stopfile1.close()
     stopfile2.close()
@@ -143,64 +145,49 @@ def do_training(questdata):
             ("clf", MultinomialNB(force_alpha=True, alpha=0.01)),
         ]
     )
-    pipe.fit(questdata.problem, questdata.fault_type)
+    pipe.fit(questdata["problem"], questdata["fault_type"])
     dump(pipe, pipefile)
-    predictions = pipe.predict(questdata.problem)
-    logger.debug(
-        "** TRAINING : F1 SCORE: {}".format(
-            metrics.f1_score(questdata.fault_type, predictions, average="macro")
-        )
-    )
-
-    questdata.loc[:, "prediction"] = predictions
-    questdata.to_csv(
-        pathfuncs.OUT_DIR + "/ords_quest_vacuum_training_results.csv", index=False
-    )
+    predictions = pipe.predict(questdata["problem"])
+    score = metrics.f1_score(questdata["fault_type"], predictions, average="macro")
+    logger.debug(f"** TRAINING : F1 SCORE: {score}")
+    questdata = questdata.with_columns(prediction=predictions)
+    questdata.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_training_results.csv")
 
     logger.debug("** TRAINING MISSES **")
-    misses = questdata[(questdata["fault_type"] != questdata["prediction"])]
+    misses = questdata.filter(pl.col("language") != pl.col("prediction"))
     logger.debug(misses)
-    misses.to_csv(
-        pathfuncs.OUT_DIR + "/ords_quest_vacuum_training_misses.csv", index=False
-    )
+    misses.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_training_misses.csv")
 
 
 def do_validation(valdata):
 
     pipe = load(pipefile)
-    predictions = pipe.predict(valdata.problem)
-    logger.debug(
-        "** VALIDATION : F1 SCORE: {}".format(
-            metrics.f1_score(valdata.fault_type, predictions, average="macro")
-        )
-    )
-    logger.debug(metrics.classification_report(valdata.fault_type, predictions))
+    predictions = pipe.predict(valdata["problem"])
+    score = metrics.f1_score(valdata["fault_type"], predictions, average="macro")
+    logger.debug(f"** VALIDATION : F1 SCORE: {score}")
+    logger.debug(metrics.classification_report(valdata["fault_type"], predictions))
 
-    valdata.loc[:, "prediction"] = predictions
-    valdata.to_csv(
-        pathfuncs.OUT_DIR + "/ords_quest_vacuum_validation_results.csv", index=False
-    )
+    valdata = valdata.with_columns(prediction=predictions)
+    valdata.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_validation_results.csv")
 
     logger.debug("** VALIDATION MISSES **")
-    misses = valdata[(valdata["fault_type"] != valdata["prediction"])]
+    misses = valdata.filter(pl.col("fault_type") != pl.col("prediction"))
     logger.debug(misses)
-    misses.to_csv(
-        pathfuncs.OUT_DIR + "/ords_quest_vacuum_validation_misses.csv", index=False
-    )
+    misses.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_validation_misses.csv")
 
 
 def do_test(data):
 
     pipe = load(pipefile)
-    data.loc[:, "prediction"] = pipe.predict(data.problem)
-    data.to_csv(pathfuncs.OUT_DIR + "/ords_quest_vacuum_test_results.csv", index=False)
+    data = data.with_columns(prediction=pipe.predict(data["problem"]))
+    data.write_csv(f"{cfg.OUT_DIR}/ords_quest_vacuum_test_results.csv")
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    pipefile = pathfuncs.OUT_DIR + "/ords_quest_vacuum_obj_tfidf_cls.joblib"
+    pipefile = f"{cfg.OUT_DIR}/ords_quest_vacuum_obj_tfidf_cls.joblib"
 
     datasets = get_datasets(product_category_id=34, language="en")
 

@@ -2,103 +2,88 @@
 
 # Compile a table of common item types using multi-lingual regular expressions.
 
-from funcs import *
 import re
-import pandas as pd
-
-
-def get_data_from_db(category_id):
-    sql = """
-    SELECT
-    t1.item_type,
-    COUNT(*) as records
-    FROM (
-    SELECT
-    IF(INSTR(partner_product_category, '~'),
-    TRIM(SUBSTRING_INDEX(partner_product_category, '~', -1)),
-    partner_product_category) as item_type
-    FROM `{}`
-    WHERE product_category_id = {}
-    ) t1
-    GROUP BY item_type
-    ORDER BY records DESC
-    """
-    df = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename, category_id)))
-    logger.debug(df.columns)
-    return df
-
-
-# Fetch data from csv into frame.
-# ToDo: find why result differs slightly from get_data_from_db()
-def get_data_from_df(category_id):
-    df = pd.read_csv(
-        pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
-    )
-    df = df.loc[df["product_category_id"].astype("int64") == category_id]
-    df.partner_product_category = (
-        df.partner_product_category.str.split("~").str.get(1).str.strip()
-    )
-    df.rename(columns={"partner_product_category": "item_type"}, inplace=True)
-    logger.debug(df)
-    df = df.groupby(["item_type"]).size().reset_index(name="records")
-    logger.debug(df.columns)
-    df.sort_values(by=["records"], ascending=False, inplace=True, ignore_index=True)
-    return df
-
-
-# Fetch the regex for the given category.
-def get_regex(category):
-    regex = rexes.loc[(rexes.product_category == category)]
-    if not regex.empty and regex.product_category.count() == 1:
-        return regex.obj.iloc[0]
-    return False
+import polars as pl
+from funcs import *
 
 
 # Return regex matching information for a given term.
 def get_matches(category, row, rx):
     if rx:
-        matches = rx.search(row["item_type"])
+        matches = rx.search(row[0])
         if matches:
-            return [category, row["item_type"], row["records"], matches.group()]
+            return [category, row[0], row[1], matches.group()]
     return False
+
+
+# Split the partner_product_category string.
+def get_item_types():
+
+    df = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
+    data = (
+        df.with_columns(
+            pl.col("partner_product_category")
+            .str.split("~")
+            .list.last()
+            .str.strip_chars()
+            .alias("item_type")
+        )
+        .select(pl.col("product_category", "item_type"))
+        .drop_nulls()
+        .group_by(["product_category", "item_type"])
+        .len("records")
+    )
+
+    return data
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    # Create a structure to hold results.
-    mapcols = ["product_category", "term", "records", "matches"]
-    results = pd.DataFrame(columns=mapcols)
-
-    rexes = pd.read_csv(pathfuncs.DATA_DIR + "/product_category_regexes.csv")
-    # There should be no empty regex strings but just in case.
-    rexes.dropna(inplace=True)
+    rexes = pl.read_csv(f"{cfg.DATA_DIR}/product_category_regexes.csv")
 
     # Pre-compile the regexes
-    for n in range(0, len(rexes)):
-        rexes.loc[n, "obj"] = re.compile(rexes.iloc[n]["regex"], re.I)
+    rexes = rexes.with_columns(
+        obj=pl.col("regex").map_elements(
+            lambda x: re.compile(x, re.I), return_dtype=pl.Object
+        )
+    )
 
     # Changes to the ORDS categories will require updates to the regexes.
-    categories = pd.read_csv(
-        pathfuncs.ORDS_DIR + "/{}.csv".format(envfuncs.get_var("ORDS_CATS"))
-    )
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
-    tablename = envfuncs.get_var("ORDS_DATA")
-    # Main loop.
-    for n in range(0, len(categories)):
-        category = categories.iloc[n].product_category
-        logger.debug("*** {} ***".format(category))
-        print("*** {} ***".format(category))
-        data = get_data_from_db(categories.iloc[n].product_category_id)
-        rx = get_regex(category)
-        for i in range(0, len(data)):
-            logger.debug("{}".format(data.loc[i]))
-            matches = get_matches(category, data.loc[i], rx)
+    itemtypes = get_item_types()
+    results = []
+    for id, category in categories.iter_rows():
+
+        logger.debug(f"*** {category} ***")
+        print(f"*** {category} ***")
+
+        regex = rexes.filter((pl.col("product_category") == category)).select(
+            pl.col("obj")
+        )
+        if regex.height != 1:
+            continue
+
+        rx = regex["obj"].item()
+
+        terms = itemtypes.filter((pl.col("product_category") == category)).select(
+            pl.col("item_type", "records")
+        )
+
+        for row in terms.iter_rows():
+            matches = get_matches(category, row, rx)
             if matches:
-                results.loc[len(results)] = matches
+                results.append(matches)
 
-    # Write results to csv format file.
-    results.to_csv(
-        pathfuncs.OUT_DIR + "/ords_regex_category_item_types.csv", index=False
+    results = pl.DataFrame(
+        data=results,
+        schema={
+            "product_category": pl.String,
+            "item_type": pl.String,
+            "records": pl.Int64,
+            "match": pl.String,
+        },
     )
+    results.write_csv(f"{cfg.OUT_DIR}/ords_regex_category_item_types.csv")

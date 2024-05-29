@@ -2,29 +2,20 @@
 
 # Test compiled regular expressions agains a list of common item types.
 
-from funcs import *
 import re
-import pandas as pd
+import polars as pl
+from funcs import *
 
 
 # Just a little debug helper.
 def log_info(category, lang, term):
-    logger.debug("*** {} {} {} ***".format(category, lang, data.loc[i]))
-    print("*** {} {} {} ***".format(category, lang, data.loc[i]))
-
-
-# Fetch the regex for the given category.
-def get_regex(category):
-    regex = rexes.loc[(rexes.product_category == category)]
-    if not regex.empty and regex.product_category.count() == 1:
-        return regex.obj.iloc[0]
-    return False
+    logger.debug(f"*** {category} {lang} {term} ***")
+    print(f"*** {category} {lang} {term} ***")
 
 
 # Return regex matching information for a given term.
-def get_matches(category, term, lang):
+def get_matches(category, term, lang, rx):
     match = ""
-    rx = get_regex(category)
     if rx:
         matches = rx.search(term)
         if matches:
@@ -37,40 +28,55 @@ def get_matches(category, term, lang):
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    # Create a structure to hold results.
-    mapcols = ["product_category", "term", "lang", "match", "matches"]
-    results = pd.DataFrame(columns=mapcols)
-
-    rexes = pd.read_csv(pathfuncs.DATA_DIR + "/product_category_regexes.csv")
-    # There should be no empty regex strings but just in case.
-    rexes.dropna(inplace=True)
+    rexes = pl.read_csv(f"{cfg.DATA_DIR}/product_category_regexes.csv")
 
     # Pre-compile the regexes
-    for n in range(0, len(rexes)):
-        rexes.loc[n, "obj"] = re.compile(rexes.iloc[n]["regex"], re.I)
+    rexes = rexes.with_columns(
+        obj=pl.col("regex").map_elements(
+            lambda x: re.compile(x, re.I), return_dtype=pl.Object
+        )
+    )
 
     # Changes to the ORDS categories will require updates to the regexes.
-    categories = pd.read_csv(
-        pathfuncs.ORDS_DIR + "/{}.csv".format(envfuncs.get_var("ORDS_CATS"))
-    )
+    categories = ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS"))
 
     # A set of real-world product term translations.
-    terms = pd.read_csv(pathfuncs.DATA_DIR + "/ords_testdata_multilingual_products.csv")
-    langs = ["en", "nl", "fr", "de"]
-
-    for n in range(0, len(categories)):
-        category = categories.iloc[n].product_category
-        for lang in langs:
-            data = terms.loc[(terms.product_category == category)][lang]
-            data.reset_index(drop=True, inplace=True)
-            for i in range(0, len(data)):
-                log_info(category, lang, data.loc[i])
-                matches = get_matches(category, data.loc[i], lang)
-                results.loc[len(results)] = matches
-
-    # Write results to csv format file.
-    results.to_csv(
-        pathfuncs.OUT_DIR + "/product_category_regex_test_results.csv", index=False
+    allterms = pl.read_csv(
+        f"{cfg.DATA_DIR}/ords_testdata_multilingual_products.csv"
     )
+    langs = ["en", "nl", "fr", "de"]
+    results = []
+    for id, category in categories.iter_rows():
+
+        regex = rexes.filter((pl.col("product_category") == category)).select(
+            pl.col("obj")
+        )
+        if regex.height != 1:
+            continue
+
+        rx = regex["obj"].item()
+
+        for lang in langs:
+
+            terms = allterms.filter((pl.col("product_category") == category)).select(
+                pl.col(lang)
+            )
+            for term in terms.iter_rows():
+                log_info(category, lang, term[0])
+                matches = get_matches(category, term[0], lang, rx)
+                results.append(matches)
+
+    results = pl.DataFrame(
+        data=results,
+        schema={
+            "product_category": pl.String,
+            "term": pl.String,
+            "lang": pl.String,
+            "matched": pl.Boolean,
+            "match": pl.String,
+        },
+    )
+
+    results.write_csv(f"{cfg.OUT_DIR}/product_category_regex_test_results.csv")

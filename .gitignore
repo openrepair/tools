@@ -12,6 +12,8 @@ dat/ords/*.csv
 dat/backup*.*
 out/
 tmp/
+tmp.*
+*.tmp
 solr/solr-*
 pyvenv.cfg
 *.code-workspace

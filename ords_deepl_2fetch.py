@@ -16,12 +16,11 @@ Step 4: ords_deepl_4backfill.py
 """
 
 
-from funcs import *
-from joblib import load
-import pandas as pd
-import deepl
 import re
-
+from joblib import load
+import deepl
+import pandas as pd
+from funcs import *
 
 # Fetch problem text that has not yet been translated.
 # Ignore the more useless values.
@@ -32,31 +31,27 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     if lang != None:
         langdict = deeplfuncs.deeplWrapper.langdict
         if lang not in langdict.keys():
-            print("INVALID LANGUAGE CODE {}".format(lang))
+            print(f"INVALID LANGUAGE CODE {lang}")
             exit()
-
-    sql = """
-    SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
-    SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
-    FROM `{tablename}` t1
-    LEFT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
-    UNION ALL
-    SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
-    FROM `{tablename}` t1
-    RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
-    ) t3
-    WHERE t3.id_ords IS NULL
-    AND LENGTH(TRIM(t3.problem)) >= %(chars)s
-    AND {clause}
-    ORDER BY t3.country
-    LIMIT %(limit)s
-    """
+    tablename = cfg.get_envvar("ORDS_DATA")
+    sql = f"""
+SELECT t3.id as id_ords, t3.data_provider, t3.country, t3.problem FROM (
+SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
+FROM `{tablename}` t1
+LEFT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
+UNION ALL
+SELECT t2.id_ords, t1.id, t1.data_provider, t1.country, t1.problem
+FROM `{tablename}` t1
+RIGHT JOIN ords_problem_translations t2 ON t1.id = t2.id_ords
+) t3
+WHERE t3.id_ords IS NULL
+AND LENGTH(TRIM(t3.problem)) >= %(chars)s
+AND {clause}
+ORDER BY t3.country
+LIMIT %(limit)s
+"""
     args = {"limit": max, "chars": minlen}
-    work = pd.DataFrame(
-        dbfuncs.query_fetchall(
-            sql.format(tablename=envfuncs.get_var("ORDS_DATA"), clause=clause), args
-        )
-    )
+    work = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql, args))
 
     # "Nonsense" strings with only punctuation or weights/codes dropped.
     # Assumptions!
@@ -109,9 +104,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
         if dff.size > 0:
             dff.language_expected = filterlangs[i]
             work.update(dff)
-            dff.to_csv(
-                pathfuncs.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False
-            )
+            dff.to_csv(f"{cfg.OUT_DIR}/deepl_work_filter_{i}.csv", index=False)
 
     logger.debug("*** AFTER FILTERS ***")
     logger.debug(work)
@@ -136,24 +129,25 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
     else:
         work = detect_language(data=work)
     logger.debug(work)
-    work.to_csv(pathfuncs.OUT_DIR + "/deepl_work.csv", index=False)
+    work.to_csv(f"{cfg.OUT_DIR}/deepl_work.csv", index=False)
     return work
 
 
 def translate(data, mock=True):
     translator = deeplfuncs.deeplWrapper(mock)
     langdict = deeplfuncs.deeplWrapper.langdict
-    sql = """
-    SELECT *
-    FROM ords_problem_translations
-    WHERE problem = %(problem)s
-    LIMIT 1
-    """
+    sql = """SELECT *
+FROM ords_problem_translations
+WHERE problem = %(problem)s
+LIMIT 1
+"""
     try:
         # For each record fetch a translation for each target language.
         for i, row in data.iterrows():
             # Is there already a translation for this text?
-            found = pd.DataFrame(dbfuncs.query_fetchall(sql, {"problem": row.problem}))
+            found = pd.DataFrame(
+                dbfuncs.mysql_query_fetchall(sql, {"problem": row.problem})
+            )
             if found.empty:
                 # No existing translation so fetch from API.
                 d_lang = None
@@ -166,7 +160,7 @@ def translate(data, mock=True):
                 for column in langdict.keys():
                     # Get the target language for Deepl.
                     t_lang = langdict[column]
-                    print("{} : {} : {} : {}".format(i, row.id_ords, k_lang, t_lang))
+                    print(f"{i} : {row.id_ords} : {k_lang} : {t_lang}")
                     # Has a language been detected for this problem?
                     # Is the target language the same as the known language?
                     if column == k_lang:
@@ -174,7 +168,7 @@ def translate(data, mock=True):
                         text = row.problem
                     else:
                         # No existing translation so fetch from API.
-                        logger.debug("{} is new... translating".format(row.id_ords))
+                        logger.debug(f"{row.id_ords} is new... translating")
                         try:
                             result = translator.translate_text(
                                 row.problem, target_lang=t_lang, source_lang=k_lang
@@ -182,7 +176,7 @@ def translate(data, mock=True):
                             d_lang = result.detected_source_lang.lower()
                             text = result.text
                         except deepl.DeepLException as error:
-                            print("exception: {}".format(error))
+                            print(f"Exception: {error}")
                             data.at[i, "language_detected"] = ""
                             return data
 
@@ -191,7 +185,7 @@ def translate(data, mock=True):
                     data.at[i, column] = text
             else:
                 # Translation exists so copy from existing.
-                logger.debug("{} exists... copying".format(row.id_ords))
+                logger.debug(f"{row.id_ords} exists... copying")
                 data.at[i, "language_known"] = found.language_known.values[0]
                 data.at[i, "translator"] = found.translator.values[0]
                 data.at[i, "language_detected"] = found.language_detected.values[0]
@@ -199,7 +193,7 @@ def translate(data, mock=True):
                     data.at[i, column] = found[column].values[0]
 
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
 
     finally:
         return data
@@ -223,20 +217,18 @@ def insert_data(data):
     if "mismatch" in data.columns:
         data.drop(["mismatch"], axis=1, inplace=True)
 
-    cfile = pathfuncs.OUT_DIR + "/deepl_latest.csv"
+    cfile = f"{cfg.OUT_DIR}/deepl_latest.csv"
     pathfuncs.rm_file(cfile)
     data.to_csv(cfile, index=False)
-    print("New data written to {}".format(cfile))
-
+    print(f"New data written to {cfile}")
+    tablename = "ords_problem_translations"
     rows = data.to_sql(
-        name="ords_problem_translations",
+        name=tablename,
         con=dbfuncs.alchemy_eng(),
         if_exists="append",
         index=False,
     )
-    logger.debug(
-        "{} rows written to table {}".format(rows, "ords_problem_translations")
-    )
+    logger.debug(f"{rows} rows written to table {tablename}")
 
     return True
 
@@ -245,10 +237,10 @@ def insert_data(data):
 # This should be more accurate than DeepL's language detection, though model still being refined.
 def detect_language(data):
 
-    lang_obj_path = pathfuncs.OUT_DIR + "/ords_lang_obj_tfidf_cls_sentence.joblib"
+    lang_obj_path = f"{cfg.OUT_DIR}/ords_lang_obj_tfidf_cls_sentence.joblib"
     if not pathfuncs.check_path(lang_obj_path):
-        print("LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {}".format(lang_obj_path))
-        print("TO FIX THIS EXECUTE: ords_lang_training_sentence.py")
+        print(f"LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {lang_obj_path}")
+        print("TO FIX THIS .mysql_execute: ords_lang_training_sentence.py")
         exit()
 
     model = load(lang_obj_path)
@@ -262,7 +254,7 @@ def detect_language(data):
 
     # Log the mismatches.
     miss = data.loc[data["mismatch"] == True]
-    miss.to_csv(pathfuncs.OUT_DIR + "/deepl_work_lang_mismatch.csv", index=False)
+    miss.to_csv(f"{cfg.OUT_DIR}/deepl_work_lang_mismatch.csv", index=False)
     # Count the mismatches.
     grp = (
         miss.groupby("country")
@@ -277,27 +269,30 @@ def detect_language(data):
 
 def check_requirements():
 
-    sql = "SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
-    ok = dbfuncs.query_fetchall(sql.format(tablename=envfuncs.get_var("ORDS_DATA")))
+    tablename = cfg.get_envvar("ORDS_DATA")
+    sql = f"SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
+    ok = dbfuncs.mysql_query_fetchall(sql)
     if not ok:
-        print("DATABASE ERROR: {}".format(envfuncs.get_var("ORDS_DATA")))
-        print("TO FIX THIS EXECUTE: ords_db_mysql_setup.py")
+        print(f"DATABASE ERROR: {tablename}")
+        print("TO FIX THIS .mysql_execute: ords_db_mysql_setup.py")
     else:
-        print("OK: table exists {}".format(envfuncs.get_var("ORDS_DATA")))
+        print(f"OK: table exists {tablename}")
 
-    ok = dbfuncs.query_fetchall(sql.format(tablename="ords_problem_translations"))
+    tablename = "ords_problem_translations"
+    sql = f"SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
+    ok = dbfuncs.mysql_query_fetchall(sql)
     if not ok:
-        print("DATABASE ERROR: {}".format("ords_problem_translations"))
-        print("TO FIX THIS EXECUTE: ords_deepl1_setup.py")
+        print(f"DATABASE ERROR: {tablename}")
+        print("TO FIX THIS .mysql_execute: ords_deepl1_setup.py")
     else:
-        print("OK: table exists {}".format("ords_problem_translations"))
+        print(f"OK: table exists {tablename}")
 
     ok = deeplfuncs.check_api_key()
     if not ok:
         print("DEEPL ERROR: API KEY NOT FOUND")
         print("TO FIX THIS: add your DeepL API key to the .env file")
     else:
-        print("OK: {}".format("DeepL API key found"))
+        print("OK: DeepL API key found")
 
 
 def check_api_creds(mock=False):
@@ -311,31 +306,18 @@ def do_deepl(mock=True, max=10, minlen=16, clause=1, lang=None):
     data = translate(work, mock)
     if not mock:
         insert_data(data)
-        dbfuncs.dump_table_to_csv("ords_problem_translations", pathfuncs.DATA_DIR)
+        dbfuncs.dump_table_to_csv("ords_problem_translations", cfg.DATA_DIR)
     else:
         logger.debug(data)
     exit()
 
 
-def exec_opt(options):
-    while True:
-        for i, desc in options.items():
-            print("{} : {}".format(i, desc))
-        choice = input("Type a number: ")
-        try:
-            choice = int(choice)
-        except ValueError:
-            print("Invalid choice")
-        else:
-            if choice >= len(options):
-                print("Out of range")
-            else:
-                f = options[choice]
-                print(f)
-                eval(f)
+if __name__ == "__main__":
 
+    logger = cfg.init_logger(__file__)
 
-def get_options():
+    dbfuncs.dbvars = cfg.get_dbvars()
+
     # Check requirements first!
     # "mock=True" allows for trial and error without using up API credits.
     mock = True
@@ -346,26 +328,20 @@ def get_options():
     # Set a hard-coded language e.g. assuming all GBR recs are English.
     # else leave blank for language detection.
     lang = "en"
-    print("Mock={}".format(mock))
+    print(f"Mock={mock}")
     # Maximum no. of records to process, 10000 recommended for live run.
-    max = 10000
+    max = 10
     # Exclude records with problem text having characters less than this value.
     minlen = 16
-    return {
-        0: "exit()",
-        1: "check_requirements()",
-        2: "check_api_creds({})".format(mock),
-        3: "do_deepl(mock={}, max={}, minlen={}, clause='{}', lang='{}')".format(
-            mock, max, minlen, clause, lang
-        ),
-        4: "get_work(max={}, minlen={}, clause='{}', lang='{}')".format(
-            max, minlen, clause, lang
-        ),
-    }
 
-
-if __name__ == "__main__":
-
-    logger = logfuncs.init_logger(__file__)
-
-    exec_opt(get_options())
+    while True:
+        eval(
+            miscfuncs.exec_opt(
+                [
+                    "check_requirements()",
+                    f"check_api_creds({mock})",
+                    f"do_deepl(mock={mock}, max={max}, minlen={minlen}, clause='{clause}', lang='{lang}')",
+                    f"get_work(max={max}, minlen={minlen}, clause='{clause}', lang='{lang}')",
+                ]
+            )
+        )

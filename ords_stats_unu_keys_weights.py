@@ -1,68 +1,35 @@
 #!/usr/bin/env python3
 
-
 # This query exposes some issues with repair data, namely...
 # a) categorising products
 # b) estimating average weights
 # c) values that change over time
 
+import polars as pl
 from funcs import *
-import pandas as pd
-
-
-# fetchfrom = 'df' (DataFrame) or 'db' (Database).
-def get_data(fetchfrom="df"):
-
-    if fetchfrom == "df":
-        df = pd.read_csv(
-            pathfuncs.path_to_ords_csv(), dtype=str, keep_default_na=False, na_values=""
-        )
-        data = df[df.repair_status == "Fixed"].reindex(columns=["product_category"])
-        data = data.groupby(["product_category"]).size().reset_index(name="records")
-
-    elif fetchfrom == "db":
-        sql = """
-        SELECT
-        product_category,
-        COUNT(*) as records
-        FROM `{}`
-        WHERE repair_status = 'Fixed'
-        GROUP BY product_category
-        ORDER BY product_category
-        """
-        data = pd.DataFrame(dbfuncs.query_fetchall(sql.format(tablename)))
-
-    else:
-        print("I GIVE UP! GET DATA FROM WHERE EXACTLY?")
-        exit()
-
-    return data
 
 
 if __name__ == "__main__":
 
-    logger = logfuncs.init_logger(__file__)
+    logger = cfg.init_logger(__file__)
 
-    tablename = envfuncs.get_var("ORDS_DATA")
+    tablename = cfg.get_envvar("ORDS_DATA")
 
-    # The data file maps categories and average weight estimates between ORDS and UNU-KEYS.
+    # The data file (roughly) maps categories and average weight estimates between ORDS and UNU-KEYS.
     # See dat/README.md for more details.
-    weights = pd.read_csv(pathfuncs.DATA_DIR + "/ords_product_category_unu_key_map.csv")
+    weights = pl.read_csv(f"{cfg.DATA_DIR}/ords_product_category_unu_key_map.csv")
 
-    # Replace arg with 'db' if fetch from database preferred.
-    data = get_data("df")
-
-    data = data.set_index("product_category").join(
-        weights.set_index("product_category")
-    )
-    data["unu_1995_total"] = round(data.unu_1995 * data.records, 2)
-    data["unu_2000_total"] = round(data.unu_2000 * data.records, 2)
-    data["unu_2005_total"] = round(data.unu_2005 * data.records, 2)
-    data["unu_2010_total"] = round(data.unu_2010 * data.records, 2)
-    data["unu_2011_total"] = round(data.unu_2011 * data.records, 2)
-    data["unu_2012_total"] = round(data.unu_2012 * data.records, 2)
-    logger.debug(data)
-    data.to_csv(
-        pathfuncs.OUT_DIR + "/{}_stats_unu_keys_weights.csv".format(tablename),
-        index=True,
-    )
+    data = (
+        ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
+        .filter(pl.col("repair_status") == pl.lit("Fixed"))
+        .join(weights, on="product_category", how="left")
+        .group_by(["product_category"])
+        .agg(
+            pl.col("unu_1995").sum().round(1).alias("unu_1995_total"),
+            pl.col("unu_2000").sum().round(1).alias("unu_2000_total"),
+            pl.col("unu_2005").sum().round(1).alias("unu_2005_total"),
+            pl.col("unu_2010").sum().round(1).alias("unu_2010_total"),
+            pl.col("unu_2011").sum().round(1).alias("unu_2011_total"),
+            pl.col("unu_2012").sum().round(1).alias("unu_2012_total"),
+        )
+    ).write_csv(f"{cfg.OUT_DIR}/{tablename}_stats_unu_keys_weights.csv")
