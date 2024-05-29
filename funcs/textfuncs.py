@@ -4,6 +4,8 @@ import polars as pl
 
 def clean_text(df, column="problem", dropna=True, strip=True, dedupe=True):
 
+    df = clean_text_sentences(df, column)
+
     df = clean_text_html_tags(df, column)
 
     df = clean_text_html_symbols(df, column)
@@ -18,11 +20,9 @@ def clean_text(df, column="problem", dropna=True, strip=True, dedupe=True):
 
     df = clean_text_tabs_spaces(df, column)
 
-    df = clean_text_sentences(df, column)
-
     if strip:
         # Trim whitespace.
-        df = df.with_columns(pl.col(column).str.strip_chars())  # .alias(column))
+        df = df.with_columns(pl.col(column).str.strip_chars())
 
     if dropna:
         # Drop `problem` values that may be empty after the replacements and trimming.

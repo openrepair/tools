@@ -111,9 +111,7 @@ def get_work(max=10000, minlen=16, clause=1, lang=None):
         if dff.size > 0:
             dff.language_expected = filterlangs[i]
             work.update(dff)
-            dff.to_csv(
-                cfg.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False
-            )
+            dff.to_csv(cfg.OUT_DIR + "/deepl_work_filter_{}.csv".format(i), index=False)
 
     logger.debug("*** AFTER FILTERS ***")
     logger.debug(work)
@@ -155,7 +153,9 @@ def translate(data, mock=True):
         # For each record fetch a translation for each target language.
         for i, row in data.iterrows():
             # Is there already a translation for this text?
-            found = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql, {"problem": row.problem}))
+            found = pd.DataFrame(
+                dbfuncs.mysql_query_fetchall(sql, {"problem": row.problem})
+            )
             if found.empty:
                 # No existing translation so fetch from API.
                 d_lang = None
@@ -279,27 +279,30 @@ def detect_language(data):
 
 def check_requirements():
 
-    sql = "SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
-    ok = dbfuncs.mysql_query_fetchall(sql.format(tablename=cfg.get_envvar("ORDS_DATA")))
+    tablename = cfg.get_envvar("ORDS_DATA")
+    sql = f"SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
+    ok = dbfuncs.mysql_query_fetchall(sql)
     if not ok:
-        print("DATABASE ERROR: {}".format(cfg.get_envvar("ORDS_DATA")))
+        print(f"DATABASE ERROR: {tablename}")
         print("TO FIX THIS .mysql_execute: ords_db_mysql_setup.py")
     else:
-        print("OK: table exists {}".format(cfg.get_envvar("ORDS_DATA")))
+        print(f"OK: table exists {tablename}")
 
-    ok = dbfuncs.mysql_query_fetchall(sql.format(tablename="ords_problem_translations"))
+    tablename = "ords_problem_translations"
+    sql = f"SELECT COUNT(*) FROM `{tablename}` LIMIT 1"
+    ok = dbfuncs.mysql_query_fetchall(sql)
     if not ok:
-        print("DATABASE ERROR: {}".format("ords_problem_translations"))
+        print(f"DATABASE ERROR: {tablename}")
         print("TO FIX THIS .mysql_execute: ords_deepl1_setup.py")
     else:
-        print("OK: table exists {}".format("ords_problem_translations"))
+        print(f"OK: table exists {tablename}")
 
     ok = deeplfuncs.check_api_key()
     if not ok:
         print("DEEPL ERROR: API KEY NOT FOUND")
         print("TO FIX THIS: add your DeepL API key to the .env file")
     else:
-        print("OK: {}".format("DeepL API key found"))
+        print("OK: DeepL API key found")
 
 
 def check_api_creds(mock=False):
@@ -319,25 +322,10 @@ def do_deepl(mock=True, max=10, minlen=16, clause=1, lang=None):
     exit()
 
 
-def exec_opt(options):
-    while True:
-        for i, desc in options.items():
-            print("{} : {}".format(i, desc))
-        choice = input("Type a number: ")
-        try:
-            choice = int(choice)
-        except ValueError:
-            print("Invalid choice")
-        else:
-            if choice >= len(options):
-                print("Out of range")
-            else:
-                f = options[choice]
-                print(f)
-                eval(f)
+if __name__ == "__main__":
 
+    logger = cfg.init_logger(__file__)
 
-def get_options():
     # Check requirements first!
     # "mock=True" allows for trial and error without using up API credits.
     mock = True
@@ -353,21 +341,15 @@ def get_options():
     max = 10
     # Exclude records with problem text having characters less than this value.
     minlen = 16
-    return {
-        0: "exit()",
-        1: "check_requirements()",
-        2: "check_api_creds({})".format(mock),
-        3: "do_deepl(mock={}, max={}, minlen={}, clause='{}', lang='{}')".format(
-            mock, max, minlen, clause, lang
-        ),
-        4: "get_work(max={}, minlen={}, clause='{}', lang='{}')".format(
-            max, minlen, clause, lang
-        ),
-    }
 
-
-if __name__ == "__main__":
-
-    logger = cfg.init_logger(__file__)
-
-    exec_opt(get_options())
+    while True:
+        eval(
+            miscfuncs.exec_opt(
+                [
+                    "check_requirements()",
+                    f"check_api_creds({mock})",
+                    f"do_deepl(mock={mock}, max={max}, minlen={minlen}, clause='{clause}', lang='{lang}')",
+                    f"get_work(max={max}, minlen={minlen}, clause='{clause}', lang='{lang}')",
+                ]
+            )
+        )

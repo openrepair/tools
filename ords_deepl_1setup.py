@@ -20,24 +20,21 @@ from funcs import *
 
 
 def backup_only():
+
     try:
-        sql = """
-        SELECT *
-        FROM ords_problem_translations
-        """
-        df = pl.DataFrame(dbfuncs.mysql_query_fetchall(sql))
-        path_to_csv = cfg.OUT_DIR + "/ords_problem_translations_{}.csv".format(
-            datefuncs.format_curr_datetime()
+        df = pl.DataFrame(
+            dbfuncs.mysql_query_fetchall("SELECT * FROM ords_problem_translations")
         )
+        path_to_csv = f"{cfg.OUT_DIR}/ords_problem_translations_{datefuncs.format_curr_datetime()}.csv"
         pathfuncs.rm_file(path_to_csv)
-        df.to_csv(path_to_csv, index=False)
+        df.write_csv(path_to_csv)
         if pathfuncs.check_path(path_to_csv):
             print("Backup written to {}".format(path_to_csv))
             return path_to_csv
         else:
             print("Failed to write data to {}".format(path_to_csv))
     except Exception as error:
-        print("Exception: {}".format(error))
+        print(f"Exception: {error}")
         return False
 
 
@@ -71,37 +68,10 @@ def setup_database():
 
 
 def backup_and_replace_file():
+
     path_to_csv_new = backup_only()
     path_to_csv_old = f"{cfg.DATA_DIR}/ords_problem_translations.csv"
     pathfuncs.copy_file(path_to_csv_new, path_to_csv_old)
-
-
-# Select function to run.
-def exec_opt(options):
-    while True:
-        for i, desc in options.items():
-            print(f"{i} : {desc}")
-        choice = input("Type a number: ")
-        try:
-            choice = int(choice)
-        except ValueError:
-            print("Invalid choice")
-        else:
-            if choice >= len(options):
-                print("Out of range")
-            else:
-                f = options[choice]
-                print(f)
-                eval(f)
-
-
-def get_options():
-    return {
-        0: "exit()",
-        1: "backup_only()",
-        2: "backup_and_replace_file()",
-        3: "setup_database()",
-    }
 
 
 if __name__ == "__main__":
@@ -110,4 +80,9 @@ if __name__ == "__main__":
 
     dbfuncs.dbvars = cfg.get_dbvars()
 
-    exec_opt(get_options())
+    while True:
+        eval(
+            miscfuncs.exec_opt(
+                ["backup_only()", "backup_and_replace_file()", "setup_database()"]
+            )
+        )

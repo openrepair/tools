@@ -27,8 +27,8 @@ def test_poems():
     langs = get_langs()
     df = pl.read_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
     for key in langs.keys():
-        logger.debug("*** {} ***".format(langs[key]))
-        print("*** {} ***".format(langs[key]))
+        logger.debug(f"*** {langs[key]} ***")
+        print(f"*** {langs[key]} ***")
         rows = df.filter(
             pl.col("language") == pl.lit(key),
         ).sample(3)
@@ -42,14 +42,14 @@ def test_poems():
 # Split translations into sentences labelled with language.
 def dump_data(minchars=2, maxchars=32):
     df_in = pl.read_csv(cfg.DATA_DIR + "/ords_problem_translations.csv")
-    logger.debug("Total translation records: {}".format(len(df_in)))
+    logger.debug(f"Total translation records: {len(df_in)}")
     # Create output DataFrames, naming column `sentence` to remind that it is not the entire `problem` string.
     df_all = pl.DataFrame(
         schema={"sentence": pl.String, "language": pl.String}, orient="col"
     )
     langs = get_langs()
     for lang in langs.keys():
-        logger.debug("*** LANGUAGE {} ***".format(lang))
+        logger.debug(f"*** LANGUAGE {lang} ***")
         # Filter for non-empty unique strings in the `problem` column.
         data = (
             df_in.unique(subset=[lang], maintain_order=True)
@@ -63,9 +63,10 @@ def dump_data(minchars=2, maxchars=32):
             .rename({lang: "problem"})
             .with_columns(sentences=pl.lit(0))
         )
-        df_tmp = clean_problem(data)
-        logger.debug("Total problems for lang {} : {}".format(lang, df_tmp.height))
-        print("Splitting sentences for lang {}".format(lang))
+
+        df_tmp = textfuncs.clean_text(data, "problem")
+        logger.debug(f"Total problems for lang {lang} : {df_tmp.height}")
+        print(f"Splitting sentences for lang {lang}")
         sentlist = []
         for row in df_tmp.iter_rows(named=True):
             if len(row["problem"]) > 0:
@@ -81,15 +82,16 @@ def dump_data(minchars=2, maxchars=32):
                 except Exception as error:
                     print(error)
 
-        logger.debug("Total parsed rows for lang {} : {}".format(lang, df_tmp.height))
-        print("Appending sentences for lang {}".format(lang))
+        logger.debug(f"Total parsed rows for lang {lang} : {df_tmp.height}")
+        print(f"Appending sentences for lang {lang}")
         df_lang = pl.DataFrame(
             schema={"sentence": pl.String}, orient="col", data=[sentlist]
         )
-        df_lang = clean_sentence(df_lang)
-        logger.debug(
-            "Total cleaned sentences for lang {} : {}".format(lang, df_lang.height)
+
+        df_lang = textfuncs.clean_text(df_lang, "sentence").with_columns(
+            pl.col("sentence").str.strip_chars(".").str.strip_chars()
         )
+        logger.debug(f"Total cleaned sentences for lang {lang} : {df_lang.height}")
         # Reduce the results to comply with min/max sentence length.
         df_lang = (
             df_lang.filter(
@@ -104,69 +106,10 @@ def dump_data(minchars=2, maxchars=32):
                 language=pl.lit(lang),
             )
         )
-        logger.debug(
-            "Total usable sentences for lang {} : {}".format(lang, df_lang.height)
-        )
+        logger.debug(f"Total usable sentences for lang {lang} : {df_lang.height}")
         df_all = pl.concat([df_all, df_lang])
 
     df_all.write_csv(cfg.DATA_DIR + "/ords_poetry_lines.csv")
-
-
-def clean_problem(data, dedupe=True, dropna=True):
-    # 1.
-    p = r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"
-    s = "${2}. ${3}"
-    data = data.with_columns(pl.col("problem").str.replace(p, s))
-
-    # 2.
-    p = r"(?i)(([a-zß-ÿœ])\.([a-zß-ÿœ]))"
-    s = "\\2. \\3"
-    data = data.with_columns(pl.col("problem").str.replace(p, s))
-
-    # 3.Remove HTML symbols (&gt; features a lot).
-    p = r"(?i)(&[\w\s]+;)"
-    s = ""
-    data = data.with_columns(pl.col("problem").str.replace(p, s))
-
-    # Trim whitespace from `problem` strings.
-    data = data.with_columns(pl.col("problem").str.strip_chars())
-    if dropna:
-        # Drop `problem` values that may be empty after the replacements and trimming.
-        data = data.drop_nulls(subset=["problem"])
-    if dedupe:
-        # Dedupe the `problem` values.
-        data = data.unique(subset=["problem"], maintain_order=True)
-    return data
-
-
-def clean_sentence(data, dedupe=True, dropna=True):
-    # Remove weight only values. (0.5kg, 5kg, 5 kg0
-    # , .5kg etc.)
-    p = r"(?i)^(([0-9]+)?\.?[0-9\s]+kg\.?)$"
-    s = ""
-    data = data.with_columns(pl.col("sentence").str.replace(p, s))
-
-    # Remove numeric only values.
-    p = r"(?i)^(([0-9]+)?\.?[0-9\s]+\.?)$"
-    s = ""
-    data = data.with_columns(pl.col("sentence").str.replace(p, s))
-
-    # Remove short punctuation only values.
-    p = r"(?i)^([\d\W]{1,3}\.?)$"
-    s = ""
-    data = data.with_columns(pl.col("sentence").str.replace(p, s))
-
-    # Trim whitespace and periods from `sentence` strings.
-    data = data.with_columns(pl.col("sentence").str.strip_chars().str.strip_chars(".").str.strip_chars())
-
-    if dropna:
-        # Drop `sentence` values that may be empty after the replacements and trimming.
-        data = data.drop_nulls(subset=["sentence"])
-    if dedupe:
-        # Dedupe the `sentence` values.
-        data = data.unique(subset=["sentence"], maintain_order=True)
-
-    return data
 
 
 # Split data into lists labelled with language.
@@ -190,36 +133,6 @@ def dump_json():
         f.write("data=" + json.dumps(dict, indent=4, ensure_ascii=False))
 
 
-
-# Select function to run.
-def exec_opt(options):
-    while True:
-        for i, desc in options.items():
-            print("{} : {}".format(i, desc))
-        choice = input("Type a number: ")
-        try:
-            choice = int(choice)
-        except ValueError:
-            print("Invalid choice")
-        else:
-            if choice >= len(options):
-                print("Out of range")
-            else:
-                f = options[choice]
-                print(f)
-                eval(f)
-
-
-def get_options():
-    return {
-        0: "exit()",
-        1: "dump_data()",
-        2: "dump_json()",
-        3: "test_poems()",
-        4: "write_poem()",
-    }
-
-
 # Map ISO lang codes to the names of the nltk language models.
 def get_langs():
     return {
@@ -237,4 +150,9 @@ if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
 
-    exec_opt(get_options())
+    while True:
+        eval(
+            miscfuncs.exec_opt(
+                ["dump_data()", "dump_json()", "test_poems()", "write_poem()"]
+            )
+        )

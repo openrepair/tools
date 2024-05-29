@@ -13,8 +13,9 @@ from joblib import load
 import polars as pl
 from funcs import *
 
+
 def format_path_out(filename, ext="csv", suffix=""):
-    return "{}/{}_{}.{}".format(cfg.OUT_DIR, filename, suffix, ext)
+    return f"{cfg.OUT_DIR}/{filename}_{suffix}.{ext}"
 
 
 # Use this to check for best value and set it as default
@@ -51,7 +52,7 @@ def get_alpha(data, labels, vects, search=False):
 
 # In the case of repair data, ignore acronyms and jargon.
 def get_stopwords():
-    stopfile = open(cfg.DATA_DIR + "/ords_lang_training_stopwords.txt", "r")
+    stopfile = open(f"{cfg.DATA_DIR}/ords_lang_training_stopwords.txt", "r")
     stoplist = list(stopfile.read().replace("\n", " "))
     stopfile.close()
     return stoplist
@@ -64,7 +65,7 @@ def dump_data(sample=0.3, minchars=12, maxchars=65535):
 
     # Read input DataFrame.
     df_in = (
-        pl.read_csv(cfg.DATA_DIR + "/ords_problem_translations.csv")
+        pl.read_csv(f"{cfg.DATA_DIR}/ords_problem_translations.csv")
         .filter(pl.col("language_known") != pl.lit("??"))
         .select("language_known", "country", "problem")
         .rename({"language_known": "language"})
@@ -117,7 +118,7 @@ def do_training():
     dump(pipe, get_pipefile())
     predictions = pipe.predict(column)
     score = metrics.f1_score(labels, predictions, average="macro")
-    logger.debug("** TRAIN : F1 SCORE: {}".format(score))
+    logger.debug(f"** TRAIN : F1 SCORE: {score}")
 
     # Save predictions to 'out' directory in csv format.
     data = data.with_columns(prediction=predictions)
@@ -134,7 +135,7 @@ def do_validation(pipeline=True):
     column = data["problem"]
     labels = data["language"]
 
-    logger.debug("** VALIDATE : using pipeline - {}".format(pipeline))
+    logger.debug(f"** VALIDATE : using pipeline - {pipeline}")
     if pipeline:
         # Use the pipeline that was fitted for this task.
         pipe = load(get_pipefile())
@@ -147,7 +148,7 @@ def do_validation(pipeline=True):
         predictions = classifier.predict(feature_vects)
 
     score = metrics.f1_score(labels, predictions, average="macro")
-    logger.debug("** VALIDATE : F1 SCORE: {}".format(score))
+    logger.debug(f"** VALIDATE : F1 SCORE: {score}")
     logger.debug(metrics.classification_report(labels, predictions))
 
     # Predictions output for inspection.
@@ -165,7 +166,7 @@ def do_detection(pipeline=True):
     data = ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA"))
     column = data["problem"]
 
-    logger.debug("** DETECT : using pipeline - {}".format(pipeline))
+    logger.debug(f"** DETECT : using pipeline - {pipeline}")
     if pipeline:
         # Use the pipeline that was fitted for this task.
         pipe = load(get_pipefile())
@@ -191,9 +192,7 @@ def missing_problem_text(type):
 
     logger.debug("misses_report: {}".format(type))
     # problem_orig,problem,sentence,language,country,prediction
-    df_in = pl.read_csv(
-        format_path_out("ords_lang_misses_{}".format(type), "csv", file_suffix)
-    )
+    df_in = pl.read_csv(format_path_out(f"ords_lang_misses_{type}", "csv", file_suffix))
     cols = df_in.columns
     language = cols.index("language")
     problem = cols.index("problem")
@@ -201,31 +200,30 @@ def missing_problem_text(type):
     prediction = cols.index("prediction")
     results = []
     for row in df_in.iter_rows():
-        sql = """
-        SELECT
-        id_ords,
-        country,
-        language_known,
-        '{0}' as language_trans,
-        '{1}' as prediction,
-        `{0}` as problem_trans,
-        problem
-        FROM `ords_problem_translations`
-        WHERE `problem` = %(problem)s
-        ORDER BY id_ords
-        """
+        sql = f"""SELECT
+id_ords,
+country,
+language_known,
+'{row[language]}' as language_trans,
+'{row[prediction]}' as prediction,
+`{row[language]}` as problem_trans,
+problem
+FROM `ords_problem_translations`
+WHERE `problem` = %(problem)s
+ORDER BY id_ords
+"""
         db_res = dbfuncs.mysql_query_fetchall(
-            sql.format(row[language], row[prediction]),
+            sql,
             {"problem": row[problem]},
         )
         if (not db_res) or len(db_res) == 0:
-            logger.debug("NOT FOUND: {}".format(row[problem_orig]))
+            logger.debug(f"NOT FOUND: {row[problem_orig]}")
         else:
             results.extend(db_res)
 
     df_out = pl.DataFrame(data=results).sort("id_ords")
-    df_out.write_csv(format_path_out("ords_lang_misses_{}_ids".format(type), "csv"))
-    logger.debug("misses: {}".format(df_out.height))
+    df_out.write_csv(format_path_out(f"ords_lang_misses_{type}_ids", "csv"))
+    logger.debug(f"misses: {df_out.height}")
 
 
 # Check char by char using differ.
@@ -293,42 +291,27 @@ def get_tdffile():
     return format_path_out("ords_lang_obj_tdif", "joblib", file_suffix)
 
 
-# Select function to run.
-def exec_opt(options):
-    while True:
-        for i, desc in options.items():
-            print("{} : {}".format(i, desc))
-        choice = input("Type a number: ")
-        try:
-            choice = int(choice)
-        except ValueError:
-            print("Invalid choice")
-        else:
-            if choice >= len(options):
-                print("Out of range")
-            else:
-                f = options[choice]
-                print(f)
-                eval(f)
-
-
-def get_options():
-    return {
-        0: "exit()",
-        1: "dump_data(sample=0.3, minchars=12, maxchars=65535)",
-        2: "do_training()",
-        3: "missing_problem_text('training')",
-        4: "do_validation()",
-        5: "missing_problem_text('validation')",
-        6: "do_detection()",
-        7: "charcheck()",
-    }
-
-
 if __name__ == "__main__":
 
     # Enable selected funcs from this file to be imported from other files.
     file_suffix = "problem"
     logger = cfg.init_logger(__file__)
 
-    exec_opt(get_options())
+    sample = 0.3
+    minchars = 12
+    maxchars = 65535
+
+    while True:
+        eval(
+            miscfuncs.exec_opt(
+                [
+                    f"dump_data(sample={sample}, minchars={minchars}, maxchars={maxchars})",
+                    "do_training()",
+                    "missing_problem_text('training')",
+                    "do_validation()",
+                    "missing_problem_text('validation')",
+                    "do_detection()",
+                    "charcheck()",
+                ]
+            )
+        )
