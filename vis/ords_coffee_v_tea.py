@@ -11,16 +11,6 @@ import pandas as pd
 from dotenv import load_dotenv
 
 
-def get_dbvars(con="ORDS_DB_CONN"):
-
-    try:
-        dbstr = os.environ.get("ORDS_DB_CONN")
-        return dbdict
-    except Exception as error:
-        print("Exception: {}".format(error))
-        return False
-
-
 def query_fetchall(sql):
     result = False
     try:
@@ -35,7 +25,7 @@ def query_fetchall(sql):
         cursor.execute(sql)
         result = cursor.fetchall()
     except mysql.connector.Error as error:
-        print("MySQL exception: {}".format(error))
+        print(f"MySQL Exception: {error}")
 
     finally:
         if dbh.is_connected():
@@ -48,18 +38,24 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    sql = """
-        SELECT
-        country,
-        product_category as product,
-        COUNT(*) as records
-        FROM `{}`
-        WHERE product_category IN ('Kettle', 'Coffee Maker')
-        GROUP BY product_category, country
-        HAVING records > 50
-        ORDER BY country, product_category, records DESC;
-        """
-    dfsub = pd.DataFrame(query_fetchall(sql.format(os.environ["ORDS_DATA"])))
+    sql = f"""SELECT
+country,
+product_category as product,
+COUNT(*) as records
+FROM `{os.environ['ORDS_DATA']}`
+WHERE country IN ((
+    SELECT
+    country
+    FROM `{os.environ['ORDS_DATA']}`
+    WHERE product_category IN ('Kettle', 'Coffee Maker')
+    GROUP BY country
+    HAVING COUNT(*) > 100
+))
+AND product_category IN ('Kettle', 'Coffee Maker')
+GROUP BY country, product
+ORDER BY country, product
+    """
+    dfsub = pd.DataFrame(query_fetchall(sql))
 
     dict = (
         dfsub.set_index("country")

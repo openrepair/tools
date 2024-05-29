@@ -9,12 +9,6 @@ data={
             "records": 257
         }
     ],
-    "CAN": [
-        {
-            "product": "Kettle",
-            "records": 56
-        }
-    ],
     "DEU": [
         {
             "product": "Coffee maker",
@@ -55,12 +49,6 @@ data={
             "records": 930
         }
     ],
-    "ITA": [
-        {
-            "product": "Coffee maker",
-            "records": 51
-        }
-    ],
     "NLD": [
         {
             "product": "Coffee maker",
@@ -69,12 +57,6 @@ data={
         {
             "product": "Kettle",
             "records": 764
-        }
-    ],
-    "NZL": [
-        {
-            "product": "Kettle",
-            "records": 64
         }
     ]
 }
