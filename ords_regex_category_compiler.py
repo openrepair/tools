@@ -12,8 +12,8 @@ if __name__ == "__main__":
 
     logger = cfg.init_logger(__file__)
 
-    testterms = pl.read_csv(cfg.DATA_DIR + "/ords_testdata_common_products.csv")
-    rxelems = pl.read_csv(cfg.DATA_DIR + "/product_category_regex_elements.csv")
+    testterms = pl.read_csv(f"{cfg.DATA_DIR }/ords_testdata_common_products.csv")
+    rxelems = pl.read_csv(f"{cfg.DATA_DIR }/product_category_regex_elements.csv")
 
     regs = []
     for category in rxelems.columns:
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         logger.debug(category)
         data = rxelems.select(pl.col(category)).drop_nulls()
         logger.debug(data[category])
-        regex = miscfuncs.build_regex_string(data[category])
+        regex = textfuncs.build_regex_string(data[category])
         regs.append(regex)
         rx = re.compile(regex)
         tests = testterms.filter(pl.col("product_category") == category)
@@ -38,4 +38,4 @@ if __name__ == "__main__":
         schema={"product_category": pl.String, "lang": pl.String, "regex": pl.String},
     )
     logger.debug(results)
-    results.write_csv(cfg.OUT_DIR + "/product_category_regexes.csv")
+    results.write_csv(f"{cfg.OUT_DIR}/product_category_regexes.csv")

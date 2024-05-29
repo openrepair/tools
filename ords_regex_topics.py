@@ -33,7 +33,7 @@ if __name__ == "__main__":
             "topic": ["Christmas", "Bake-Off", "Entertainment"],
             "rx": [None, None, None],
             "patt": [
-                miscfuncs.build_regex_string(
+                textfuncs.build_regex_string(
                     [
                         "[yj]ule?",
                         "(christ|x)mas",
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                         "weihnacht",
                     ]
                 ),
-                miscfuncs.build_regex_string(
+                textfuncs.build_regex_string(
                     [
                         "[wv]a[f]+[el]{2}",
                         "bisc(ui|o)t(t[io])?",
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                         "tort([ea]|ita)",
                     ]
                 ),
-                miscfuncs.build_regex_string(
+                textfuncs.build_regex_string(
                     [
                         "[ck]assette",
                         "dis[ck][ -]?man",
@@ -141,6 +141,4 @@ if __name__ == "__main__":
         pattern = "|".join(list(set(matched)))
         logger.debug(pattern)
         results = df.filter(pl.col("partner_product_category").str.contains(pattern))
-        results.write_csv(
-            cfg.OUT_DIR + "/ords_regex_topic_{}.csv".format(topic),
-        )
+        results.write_csv(f"{cfg.OUT_DIR}/ords_regex_topic_{topic}.csv")

@@ -2,6 +2,20 @@ import re
 import polars as pl
 
 
+# Put together an "OR" regex string pattern from a list of lowercase terms.
+# With optional prefix/suffix captures of minimum length multilingual words.
+def build_regex_string(terms, pre=True, aft=True):
+    result = "(?i)("
+    if pre == True:
+        result += "([a-zß-ÿœ]{3,}[ -]?)?"
+    if len(terms) > 0:
+        result += "(" + "|".join(list(set(terms))) + ")"
+    if aft == True:
+        result += "([a-zß-ÿœ]{3,}[ -]?)?"
+    result += ")"
+    return result
+
+
 def clean_text(df, column="problem", dropna=True, strip=True, dedupe=True):
 
     df = clean_text_sentences(df, column)
