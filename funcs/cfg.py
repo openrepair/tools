@@ -16,7 +16,8 @@ def init_dirs():
         os.mkdir(OUT_DIR)
 
 
-ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+# ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT_DIR = sys.prefix
 DATA_DIR = os.path.join(ROOT_DIR, "dat", "")
 ORDS_DIR = os.path.join(ROOT_DIR, "dat/ords")
 LOG_DIR = os.path.join(ROOT_DIR, "log", "")
@@ -27,6 +28,7 @@ init_dirs()
 
 def init_logger(caller):
 
+    venv = sys.prefix != sys.base_prefix
     filename, file_ext = os.path.splitext(os.path.basename(caller))
     path = os.path.join(LOG_DIR, filename + ".log")
     logger = logging.getLogger()
@@ -34,8 +36,11 @@ def init_logger(caller):
     fh = logging.FileHandler(path, mode="w")
     fh.setLevel(logging.DEBUG)
     logger.addHandler(fh)
-    logger.debug(f"ROOT {ROOT_DIR}")
-    logger.debug(f"VENV? {sys.prefix != sys.base_prefix}")
+    logger.debug(f"VENV? {venv}")
+    logger.debug(f"ROOT_DIR {ROOT_DIR}")
+    logger.debug(f"DATA_DIR {DATA_DIR}")
+    logger.debug(f"LOG_DIR {LOG_DIR}")
+    logger.debug(f"OUT_DIR {OUT_DIR}")
     return logger
 
 
