@@ -16,7 +16,6 @@ def init_dirs():
         os.mkdir(OUT_DIR)
 
 
-# ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 ROOT_DIR = sys.prefix
 DATA_DIR = os.path.join(ROOT_DIR, "dat", "")
 ORDS_DIR = os.path.join(ROOT_DIR, "dat/ords")
