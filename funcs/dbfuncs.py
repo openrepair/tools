@@ -133,3 +133,20 @@ def sqlite_connection():
         print(f"Exception: {error}")
     finally:
         return con
+
+def dump_table_to_csv(table, path):
+    import os
+    import pandas as pd
+    sql = """
+    SELECT *
+    FROM {}
+    """.format(table)
+    df = pd.DataFrame(mysql_query_fetchall(sql))
+    path_to_csv = path + '/{}.csv'.format(table)
+    df.to_csv(path_to_csv, index=False)
+    if os.path.exists(path_to_csv):
+        print('Data dumped to {}'.format(path_to_csv))
+        return path_to_csv
+    else:
+        print('Failed to dump data to {}'.format(path_to_csv))
+        return False
