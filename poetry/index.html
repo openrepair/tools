@@ -71,6 +71,7 @@
             </p>
         </div>
     </footer>
+    <script src="data.js"></script>
     <script>
 
         document.addEventListener("DOMContentLoaded", function (event) {
@@ -78,7 +79,13 @@
             const data = {};
             fetch('data.json')
                 .then((response) => response.json())
-                .then((json) => assign(json));
+                .then((json) => {
+                    assign(json);
+                })
+                .catch(error => {
+                    assign(fallback);
+                });
+
             document.getElementById('go').addEventListener('click', function (e) {
                 e.preventDefault();
                 generate(document.getElementById('lang').value, Math.round(Math.random() * 5));

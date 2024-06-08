@@ -130,7 +130,7 @@ def dump_json():
         json.dump(dict, f, indent=4, ensure_ascii=False)
 
     with open(file + ".js", "w") as f:
-        f.write("data=" + json.dumps(dict, indent=4, ensure_ascii=False))
+        f.write("fallback=" + json.dumps(dict, indent=4, ensure_ascii=False))
 
 
 # Map ISO lang codes to the names of the nltk language models.
