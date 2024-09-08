@@ -49,8 +49,8 @@ if __name__ == "__main__":
         )
         if len(data) == 0:
             continue
-        text = data.item(1, 0)
 
+        text = data.item(0, 0)
         logger.debug("** TEXT **")
         logger.debug(text)
 

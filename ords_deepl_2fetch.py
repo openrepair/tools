@@ -294,6 +294,13 @@ def check_requirements():
     else:
         print("OK: DeepL API key found")
 
+    lang_obj_path = f"{cfg.OUT_DIR}/ords_lang_obj_tfidf_cls_sentence.joblib"
+    if not pathfuncs.check_path(lang_obj_path):
+        print(f"LANGUAGE DETECTOR ERROR: MODEL NOT FOUND at {lang_obj_path}")
+        print("TO FIX THIS .mysql_execute: ords_lang_training_sentence.py")
+    else:
+        print("OK: Language detector model found")
+
 
 def check_api_creds(mock=False):
     translator = deeplfuncs.deeplWrapper(mock)
@@ -320,7 +327,7 @@ if __name__ == "__main__":
 
     # Check requirements first!
     # "mock=True" allows for trial and error without using up API credits.
-    mock = True
+    mock = False
     # Create a clause to implement a filter.
     # e.g. clause = 'country = "GBR"'
     # clause = "TRUE"
@@ -330,7 +337,7 @@ if __name__ == "__main__":
     lang = "en"
     print(f"Mock={mock}")
     # Maximum no. of records to process, 10000 recommended for live run.
-    max = 10
+    max = 10000
     # Exclude records with problem text having characters less than this value.
     minlen = 16
 

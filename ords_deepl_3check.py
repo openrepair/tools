@@ -108,3 +108,20 @@ if __name__ == "__main__":
         """
     df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
     df.to_csv(path, index=False)
+
+    logger.debug("*** STATUS ***")
+    path = f"{cfg.OUT_DIR}/deepl_status.csv"
+    logger.debug("See " + path)
+    sql = f"""SELECT
+        COUNT(*) as recs,
+        LENGTH(o.problem) as chars,
+        o.problem,
+        t.problem
+        FROM `{cfg.get_envvar('ORDS_DATA')}` o
+        LEFT OUTER JOIN `ords_problem_translations` t ON t.id_ords = o.id
+        WHERE t.problem IS NULL AND LENGTH(o.problem) > 16
+        GROUP BY o.problem, t.problem
+        ORDER BY recs DESC, chars DESC;
+        """
+    df = pd.DataFrame(dbfuncs.mysql_query_fetchall(sql))
+    df.to_csv(path, index=False)

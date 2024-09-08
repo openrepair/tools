@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 
 dbvars = None
 
+
 def mysql_query_fetchall(sql, params=None):
     result = False
     try:
@@ -18,6 +19,19 @@ def mysql_query_fetchall(sql, params=None):
         if dbh.is_connected():
             cursor.close()
             dbh.close()
+        return result
+
+
+def mysql_execute_multi(sql):
+    result = []
+    try:
+        dbh = mysql_connection()
+        cursor = dbh.cursor()
+        for q in cursor.execute(sql, multi=True):
+            result.append([q.statement, q.rowcount])
+    except Exception as error:
+        print(f"MYSQL EXCEPTION: {error}")
+    finally:
         return result
 
 
@@ -134,19 +148,23 @@ def sqlite_connection():
     finally:
         return con
 
+
 def dump_table_to_csv(table, path):
     import os
     import pandas as pd
+
     sql = """
     SELECT *
     FROM {}
-    """.format(table)
+    """.format(
+        table
+    )
     df = pd.DataFrame(mysql_query_fetchall(sql))
-    path_to_csv = path + '/{}.csv'.format(table)
+    path_to_csv = path + "/{}.csv".format(table)
     df.to_csv(path_to_csv, index=False)
     if os.path.exists(path_to_csv):
-        print('Data dumped to {}'.format(path_to_csv))
+        print("Data dumped to {}".format(path_to_csv))
         return path_to_csv
     else:
-        print('Failed to dump data to {}'.format(path_to_csv))
+        print("Failed to dump data to {}".format(path_to_csv))
         return False
