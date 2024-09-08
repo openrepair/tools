@@ -330,11 +330,10 @@ if __name__ == "__main__":
     mock = False
     # Create a clause to implement a filter.
     # e.g. clause = 'country = "GBR"'
-    # clause = "TRUE"
-    clause = 'country = "GBR"'
+    clause = "TRUE"
     # Set a hard-coded language e.g. assuming all GBR recs are English.
     # else leave blank for language detection.
-    lang = "en"
+    lang = "nl"
     print(f"Mock={mock}")
     # Maximum no. of records to process, 10000 recommended for live run.
     max = 10000
