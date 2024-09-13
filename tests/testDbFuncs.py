@@ -38,6 +38,17 @@ class DbFuncsTestCase(unittest.TestCase):
         self.assertTrue(result.startswith("CREATE TABLE `testdbfuncs`"))
         self.assertIs(type(result), type("str"))
 
+    def test_mysql_executemulti(self):
+        dbfuncs.mysql_create_table(self._table_stru())
+        sql = [
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Two', 'desc two')",
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Three', 'desc three')",
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Four', 'desc four')",
+        ]
+        sql = ";\n".join(sql)
+        result = dbfuncs.mysql_execute_multi(sql)
+        self.assertEqual(3, len(result))
+
     def test_mysql_executemany(self):
         dbfuncs.mysql_create_table(self._table_stru())
         vals = [
