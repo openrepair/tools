@@ -105,36 +105,19 @@ def backup_and_replace_file():
 # Remove redundant translation records.
 # Put sql files in dat/tmp
 def cleanup_table():
-    """SELECT
-    t.id_ords, o.problem as problem_ords, t.problem as problem_trans
-    FROM `OpenRepairData_v0.3_aggregate_202407` o
-    JOIN  ords_problem_translations t ON o.id = t.id_ords
-    WHERE LENGTH(o.problem) < 6;
-    """
+
     logger.debug("*** cleanup_table() ***")
 
-    sqlcount = "SELECT COUNT(*) as recs FROM ords_problem_translations"
-    rows = dbfuncs.mysql_query_fetchall(sqlcount)
-    rows_bef = rows[0]["recs"]
-
     sqlfiles = pathfuncs.file_list(f"{cfg.DATA_DIR}tmp")
-
+    sqlfiles.sort()
     for sqlfile in sqlfiles:
         path = f"{sqlfile[0]}/{sqlfile[1]}"
+        print(path)
         logger.debug(path)
         with open(path) as f:
             sql = f.read()
-        rows = dbfuncs.mysql_execute_multi(sql)
-        if rows == None:
-            print(f"ERROR: {path} FAILED")
-            exit()
-        logger.debug(f"{rows} rows updated")
-
-    rows = dbfuncs.mysql_query_fetchall(sqlcount)
-    logger.debug(rows)
-    rows_aft = rows[0]["recs"]
-    rows_diff = rows_bef - rows_aft
-    logger.debug(f"Rows deleted: {rows_bef}-{rows_aft}={rows_diff}")
+        result = dbfuncs.mysql_execute_multi(sql)
+        logger.debug(result)
 
 
 if __name__ == "__main__":

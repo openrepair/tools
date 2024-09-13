@@ -16,7 +16,7 @@ def mysql_query_fetchall(sql, params=None):
     except mysql.connector.Error as error:
         print(f"MYSQL EXCEPTION: {error}")
     finally:
-        if dbh.is_connected():
+        if (dbh != None) & dbh.is_connected():
             cursor.close()
             dbh.close()
         return result
@@ -32,6 +32,10 @@ def mysql_execute_multi(sql):
     except Exception as error:
         print(f"MYSQL EXCEPTION: {error}")
     finally:
+        if (dbh != None) & dbh.is_connected():
+            dbh.commit()
+            cursor.close()
+            dbh.close()
         return result
 
 
@@ -50,7 +54,8 @@ def mysql_execute(sql, params=None, rowcount=True):
     except mysql.connector.Error as error:
         print(f"MYSQL EXCEPTION: {error}")
     finally:
-        if dbh.is_connected():
+        if (dbh != None) & dbh.is_connected():
+            dbh.commit()
             cursor.close()
             dbh.close()
         return result
@@ -70,30 +75,35 @@ def mysql_executemany(sql, params=None, rowcount=True):
             result = True
     except mysql.connector.Error as error:
         print(f"MYSQL EXCEPTION: {error}")
+        result = False
     finally:
-        if dbh.is_connected():
+        if (dbh != None) & dbh.is_connected():
+            dbh.commit()
             cursor.close()
             dbh.close()
         return result
 
 
 def mysql_create_table(sql):
+    result = None
     try:
         dbh = mysql_connection()
         cursor = dbh.cursor()
         cursor.execute(sql)
-        cursor._check_executed()
-        dbh.commit()
-        cursor.close()
-        dbh.close()
-        return True
+        result = True
     except mysql.connector.Error as error:
         print(f"MYSQL EXCEPTION: {error}")
-        return False
+        result = False
+    finally:
+        if (dbh != None) & dbh.is_connected():
+            dbh.commit()
+            cursor.close()
+            dbh.close()
+        return result
 
 
 def mysql_show_create_table(name):
-    result = False
+    result = None
     try:
         dbh = mysql_connection()
         cursor = dbh.cursor(dictionary=True)
@@ -103,9 +113,11 @@ def mysql_show_create_table(name):
         for row in rows:
             result = row["Create Table"]
     except Exception as error:
-        pass
+        print(f"MYSQL EXCEPTION: {error}")
+        result = False
     finally:
-        if dbh.is_connected():
+        if (dbh != None) & dbh.is_connected():
+            dbh.commit()
             cursor.close()
             dbh.close()
         return result
