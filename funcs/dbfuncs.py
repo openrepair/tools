@@ -29,7 +29,7 @@ def mysql_execute_multi(sql):
         cursor = dbh.cursor()
         for q in cursor.execute(sql, multi=True):
             result.append([q.statement, q.rowcount])
-    except Exception as error:
+    except mysql.connector.Error as error:
         print(f"MYSQL EXCEPTION: {error}")
     finally:
         if (dbh != None) & dbh.is_connected():
@@ -46,7 +46,6 @@ def mysql_execute(sql, params=None, rowcount=True):
         cursor = dbh.cursor()
         cursor.execute(sql, params)
         cursor._check_executed()
-        dbh.commit()
         if rowcount:
             result = cursor.rowcount
         else:
