@@ -64,7 +64,7 @@ class mockDeepLTranslator:
         self.detected_source_lang = mockDeepLTranslator.mockTranslation(
             len=2, up=True)
         self.text = mockDeepLTranslator.mockTranslation()
-        return self.text
+        return self
 
     def get_usage(self):
         return mockDeepLUsage()
