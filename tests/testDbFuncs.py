@@ -56,16 +56,13 @@ class DbFuncsTestCase(unittest.TestCase):
             ("Title Three", "desc three"),
             ("Title Four", "desc four"),
         ]
-        # sql = f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES (%s, %s)"
         result = dbfuncs.mysql_executemany(f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES (%s, %s)", vals)
         self.assertEqual(3, result)
 
     def test_mysql_query_fetchall(self):
         dbfuncs.mysql_create_table(self._table_stru())
-        # sql = f"INSERT INTO `{self.tablename}`  (`title`, `desc`) VALUES ('FOO', 'BAR')"
         result = dbfuncs.mysql_execute(f"INSERT INTO `{self.tablename}`  (`title`, `desc`) VALUES ('FOO', 'BAR')")
         self.assertEqual(1, result)
-        # sql = f"SELECT * FROM `{self.tablename}`"
         result = dbfuncs.mysql_query_fetchall(f"SELECT * FROM `{self.tablename}`")
         self.assertEqual(1, len(result))
 
