@@ -182,6 +182,7 @@ def do_pipeline(minlen, maxrows, mock):
     get_work(minlen, maxrows)
     translate(mock)
     write_translations(mock)
+    exit()
 
 
 if __name__ == "__main__":
