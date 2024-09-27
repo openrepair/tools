@@ -14,7 +14,7 @@ To Do:
 """
 
 
-def get_work(minlen=64, maxrows=1):
+def get_work(minlen=64, maxlen=512, maxrows=1):
 
     logger.debug("*** get_work ***")
 
@@ -38,7 +38,7 @@ def get_work(minlen=64, maxrows=1):
         country = elem["country"]
         providers = elem["providers"]
         df_tmp = df_ords.filter(
-            (pl.col("problem").str.len_chars() >= minlen)
+            (pl.col("problem").str.len_chars().is_between(minlen,maxlen))
             & (pl.col("country") == country)
         )
         if providers != None:
@@ -192,6 +192,7 @@ if __name__ == "__main__":
     # "mock=True" allows for trial and error without using up API credits.
     mock = False
     minlen = 64
+    maxlen = 128
     maxrows = 1000
 
     while True:
@@ -203,7 +204,7 @@ if __name__ == "__main__":
                     f"get_work(minlen={minlen}, maxrows={maxrows})",
                     f"translate(mock={mock})",
                     f"write_translations(mock={mock})",
-                    f"do_pipeline(minlen={minlen}, maxrows={maxrows}, mock={mock})",
+                    f"do_pipeline(minlen={minlen}, maxlen={maxlen}, maxrows={maxrows}, mock={mock})",
                 ]
             )
         )

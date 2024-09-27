@@ -81,17 +81,37 @@ def check_status(df_trans):
     logger.debug("*** STATUS ***")
     path = f"{cfg.OUT_DIR}/deepl_status.csv"
     logger.debug("See " + path)
-    df_ords = of.get_data("OpenRepairData_v0.3_aggregate_202407").drop_nulls(
-        subset="problem"
+    df_ords = (
+        of.get_data("OpenRepairData_v0.3_aggregate_202407")
+        .drop_nulls(subset="problem")
+        .filter(pl.col("country") != "KOR")
     )
     df = (
         df_ords.filter((pl.col("problem").str.len_chars() >= 16))
         .join(df_trans, left_on="id", right_on="id_ords", how="anti")
         .group_by(["problem"])
         .len()
+        .with_columns(charlen=pl.col("problem").str.len_chars())
         .sort("len", descending=True)
+        .unique()
     )
     df.write_csv(path)
+    logger.debug(df["charlen"].describe())
+    intervals = [16, 24, 32, 48, 64, 128, 255, 512, 1024, 2048]
+    for a in intervals:
+        x = intervals.index(a) + 1
+        if x < len(intervals):
+            b = intervals[x]
+            df_tmp = df.filter(pl.col("charlen").is_between(a, b))
+            logger.debug(f"{df_tmp.height} vals between {a} and {b} chars")
+        else:
+            df_tmp = df.filter(pl.col("charlen") > a)
+            logger.debug(f"{df_tmp.height} vals > {a} chars")
+
+    df_tmp = df_ords.filter(pl.col("problem").str.len_chars() > 2048).select(
+        ["id", "data_provider", "country", "problem"]
+    )
+    logger.debug(df_tmp)
 
 
 if __name__ == "__main__":
