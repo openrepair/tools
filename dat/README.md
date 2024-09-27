@@ -46,7 +46,6 @@ List of common abbreviations to filter out when training the repair language mod
 ### `ords_problem_translations.csv`
 
 Work-in-progress to translate the entire ORDS dataset into each of English, Dutch, German, French, Spanish, Danish and Italian.
-This file is updated monthly with new translations.
 
 ### `ords_product_category_item_type_translations.csv`
 

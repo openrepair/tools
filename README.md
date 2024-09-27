@@ -18,7 +18,6 @@ Some of the things you can do:
 * Slice the data up in various ways using Python DataFrames and/or MySQL/SQLite.
 * Investigate devices against the timeline of consumer electronics.
 * Calculate how much waste was prevented from going to landfill.
-* Detect languages in the text and translate using the DeepL API.
 * Muck about with regular expressions.
 * Try out some Natural Language Processing and even a little basic machine learning.
 * Generate [Open Repair Poetry](./poetry).
