@@ -10,7 +10,7 @@ Download the core data from the [Open Repair Alliance (ORA)](https://openrepair.
 
 The data is recorded by volunteers and participants at community repair events, it is collected by networks of organisers who are [members and allies](https://openrepair.org/members/) of the the [Open Repair Alliance](https://openrepair.org/). It comes from hundreds of community groups in over two dozen countries with multiple languages represented.
 
-Twice a year [The Restart Project](https://therestartproject.org/) gathers the contributed data and transforms it to comply with the Open Repair Standard. The results are published as Open Data, freely available for download by anyone. The data and the standard are held in a public [Git repository](https://github.com/openrepair).
+Once or twice a year [The Restart Project](https://therestartproject.org/) gathers the contributed data and transforms it to comply with the Open Repair Standard. The results are published as Open Data, freely available for download by anyone. The data and the standard are held in a public [Git repository](https://github.com/openrepair).
 
 To get an idea of the effort and challenges involved in recording repair data at live community events, take a look at [Repair data collection tips and tools](https://docs.google.com/document/d/1s9MHVIdx2jMeMq0x3qGd80suHVdupLvYYOWaAi1jq3A/edit?usp=sharing)
 
