@@ -36,16 +36,6 @@ It is compiled and published by the [Open Repair Alliance (ORA)](https://openrep
 * Organisers of [FixFest](https://fixfest.therestartproject.org/), a regular global gathering of repairers and tinkerers, activists, policy-makers, thinkers, educators and companies from all over the world.
 * Winners of the [European Union Prize for Citizen Science Digital Communities Award](https://ars.electronica.art/citizenscience/en/the-restart-project-the-right-to-repair-and-reuse-your-electronics/) for demonstrating excellence in creating and supporting communities, delivering social benefits, and fostering an open and inclusive civil society through the innovative or alternative use of digital technologies.
 
-## Lots of things yet to do
-
-* Use-cases
-* Tests
-* Data visualisation
-* Document all the things
-* Clean up poor quality code
-* Sort out requirements
-* Refactor pandas to polars for speed and clarity
-
 ## Licences & acknowledgments
 
 * Code
@@ -82,7 +72,7 @@ It is compiled and published by the [Open Repair Alliance (ORA)](https://openrep
 
 ### Data
 
-Grab the [Aggregated Open Repair Data files](https://openrepair.org/open-data/downloads/), unzip the files into the [dat/ords](./dat/ords) directory.
+Grab the latest [Aggregated Open Repair Data files](https://openrepair.org/open-data/downloads/), unzip the files into the [dat/ords](./dat/ords) directory.
 
 ### Environment variables
 

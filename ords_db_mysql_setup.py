@@ -82,11 +82,13 @@ def import_data(tablename, df):
 # If preferred, import 'sql' from ./dat/tableschema_ords_mysql.sql.
 # SQL structure gives more fine-grained column sizes, data types may differ though.
 # SQL file not guaranteed to always reflect correct schema or to exist in the future.
-def create_from_schema(schema="json"):
+def create_from_schema(schema="sql"):
 
     try:
         log_tables()
         if schema == "json":
+            drop_table(table_cats)
+            drop_table(table_data)
             schemas = get_schemas()
             # Categories table
             logger.debug(schemas[table_cats]["sql"])
@@ -112,7 +114,8 @@ def create_from_schema(schema="json"):
             )
             logger.debug(f"Reading file {path}")
             sql = path.read_text().format(table_cats, table_data)
-            dbfuncs.mysql_execute(sql)
+            logger.debug(sql)
+            dbfuncs.mysql_execute_multi(sql)
         log_tables()
     except Exception as error:
         print(f"Exception: {error}")
@@ -127,8 +130,6 @@ if __name__ == "__main__":
     table_cats = cfg.get_envvar("ORDS_CATS")
     table_data = cfg.get_envvar("ORDS_DATA")
 
-    drop_table(table_cats)
-    drop_table(table_data)
-    create_from_schema("json")
+    create_from_schema()
     import_data(table_cats, ordsfuncs.get_categories(cfg.get_envvar("ORDS_CATS")))
     import_data(table_data, ordsfuncs.get_data(cfg.get_envvar("ORDS_DATA")))

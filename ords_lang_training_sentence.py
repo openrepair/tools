@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # An attempt at using the DeepL translated problem text to train an NLP model using scikit.
-# See dat/ords_problem_translations.csv and ords_deepl_1setup.py
+# See dat/ords_problem_translations.csv
 # WORK IN PROGRESS!
 
 # THIS VERSION SPLITS THE PROBLEM TEXT.

@@ -38,6 +38,17 @@ class DbFuncsTestCase(unittest.TestCase):
         self.assertTrue(result.startswith("CREATE TABLE `testdbfuncs`"))
         self.assertIs(type(result), type("str"))
 
+    def test_mysql_executemulti(self):
+        dbfuncs.mysql_create_table(self._table_stru())
+        sql = [
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Two', 'desc two')",
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Three', 'desc three')",
+            f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES ('Title Four', 'desc four')",
+        ]
+        sql = ";\n".join(sql)
+        result = dbfuncs.mysql_execute_multi(sql)
+        self.assertEqual(3, len(result))
+
     def test_mysql_executemany(self):
         dbfuncs.mysql_create_table(self._table_stru())
         vals = [
@@ -45,16 +56,13 @@ class DbFuncsTestCase(unittest.TestCase):
             ("Title Three", "desc three"),
             ("Title Four", "desc four"),
         ]
-        # sql = f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES (%s, %s)"
         result = dbfuncs.mysql_executemany(f"INSERT INTO `{self.tablename}` (`title`, `desc`) VALUES (%s, %s)", vals)
         self.assertEqual(3, result)
 
     def test_mysql_query_fetchall(self):
         dbfuncs.mysql_create_table(self._table_stru())
-        # sql = f"INSERT INTO `{self.tablename}`  (`title`, `desc`) VALUES ('FOO', 'BAR')"
         result = dbfuncs.mysql_execute(f"INSERT INTO `{self.tablename}`  (`title`, `desc`) VALUES ('FOO', 'BAR')")
         self.assertEqual(1, result)
-        # sql = f"SELECT * FROM `{self.tablename}`"
         result = dbfuncs.mysql_query_fetchall(f"SELECT * FROM `{self.tablename}`")
         self.assertEqual(1, len(result))
 
