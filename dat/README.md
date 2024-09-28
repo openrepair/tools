@@ -91,4 +91,4 @@ An SQL script for creating a MySQL table to hold the ORDS data. It is used by or
 
 ### `tableschema_translations_mysql.sql`
 
-An SQL script for creating a MySQL table to hold the ORDS translations. Required by the ords_deepl* scripts.
+An SQL script for creating a MySQL table to hold the ORDS translations.

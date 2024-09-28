@@ -5,6 +5,5 @@ __all__ = [
     "datefuncs",
     "miscfuncs",
     "ordsfuncs",
-    "textfuncs",
-    "deeplfuncs",
+    "textfuncs"
 ]
