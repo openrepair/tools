@@ -3,9 +3,8 @@ CREATE TABLE `{0}` (
   `product_category_id` int NOT NULL,
   `product_category` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`product_category_id`),
-  KEY `product_category` (`product_category`);
+  KEY `product_category` (`product_category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-ALTER TABLE `{0}`
 DROP TABLE IF EXISTS `{1}`;
 CREATE TABLE `{1}` (
   `id` varchar(32),
