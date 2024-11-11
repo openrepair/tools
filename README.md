@@ -26,7 +26,7 @@ There is also an [installer and ORDS configuration](solr/README.md) for an Apach
 
 ## About the data
 
-The dataset contains over 100k records representing over 10 years worth of electronic repairs at events by community repair groups all over the world. See the Setup section below for how to get hold of the data.
+The dataset contains over 200k records representing over 15 years worth of electronic repairs at events by community repair groups all over the world. See the Setup section below for how to get hold of the data.
 
 It is compiled and published by the [Open Repair Alliance (ORA)](https://openrepair.org/) an organisation founded by [The Restart Project](https://therestartproject.org/), a UK based charity.
 
