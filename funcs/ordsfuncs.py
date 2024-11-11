@@ -1,3 +1,4 @@
+import ast
 import polars as pl
 from funcs import cfg
 
@@ -87,3 +88,10 @@ def table_schemas():
         }
 
     return result
+
+
+def get_data_providers():
+
+    val = cfg.get_envvar("ORDS_PROVIDERS")
+    vars = ast.literal_eval(val)
+    return vars
